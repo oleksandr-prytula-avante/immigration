@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Immigration Research Dashboard</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Immigration research</p>
+          <h1>Country Dashboard</h1>
+        </div>
+        <label class="file-button">
+          <input id="jsonFile" type="file" accept="application/json,.json">
+          Upload JSON
+        </label>
+      </section>
+
+      <section class="metrics" aria-label="Summary">
+        <article>
+          <span id="metricTotal">0</span>
+          <p>countries</p>
+        </article>
+        <article>
+          <span id="metricValid">0</span>
+          <p>eligible</p>
+        </article>
+        <article>
+          <span id="metricEligiblePath">0</span>
+          <p>fully matched</p>
+        </article>
+        <article>
+          <span id="metricAvgIncome">Not found</span>
+          <p>avg threshold, USD</p>
+        </article>
+      </section>
+
+      <section class="filters" aria-label="Filters">
+        <label>
+          Search
+          <input id="searchInput" type="search" placeholder="Portugal, nomad, PR...">
+        </label>
+        <label>
+          Status
+          <select id="validFilter">
+            <option value="all">All</option>
+            <option value="true" selected>Eligible</option>
+            <option value="false">Not eligible</option>
+            <option value="error">Errors</option>
+          </select>
+        </label>
+        <label>
+          Max income, USD/mo
+          <input id="incomeMax" type="number" min="0" step="100" placeholder="e.g. 3500">
+        </label>
+        <label>
+          Max tax, %
+          <input id="taxMax" type="number" min="0" max="100" step="1" placeholder="e.g. 20">
+        </label>
+        <label>
+          Citizenship within, yrs
+          <input id="citizenshipMax" type="number" min="0" step="1" placeholder="e.g. 7">
+        </label>
+        <label>
+          Citizenship track
+          <select id="citizenshipTrackFilter">
+            <option value="all">All</option>
+            <option value="strong_citizenship_track">Strong</option>
+            <option value="possible_with_conversion">Conversion needed</option>
+            <option value="weak_or_uncertain_citizenship_track">Weak / uncertain</option>
+            <option value="temporary_nomad_only">Nomad only</option>
+            <option value="not_valid">Not valid</option>
+            <option value="missing">Not found</option>
+          </select>
+        </label>
+        <label class="checkbox-filter">
+          <input id="fullyMatchedFilter" type="checkbox" checked>
+          <span>Fully matched</span>
+        </label>
+      </section>
+
+      <section class="status-row">
+        <p id="fileStatus">Demo JSON loaded. You can upload a result file.</p>
+        <p><span id="visibleCount">0</span> shown</p>
+      </section>
+
+      <section class="content-grid">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="number-col">#</th>
+                <th data-sort="country">Country</th>
+                <th class="status-col" data-sort="valid">Status</th>
+                <th data-sort="income">Income</th>
+                <th data-sort="tax">Tax</th>
+                <th data-sort="citizenship">Citizenship</th>
+                <th data-sort="jusSoli">Jus soli</th>
+                <th data-sort="citizenshipTrack">Citizenship track</th>
+                <th class="route-col">Route</th>
+              </tr>
+            </thead>
+            <tbody id="countryRows"></tbody>
+          </table>
+        </div>
+
+        <aside class="details" id="detailsPanel">
+          <p class="empty">Select a country in the table to see details.</p>
+        </aside>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

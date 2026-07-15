@@ -1,0 +1,14 @@
+{
+  "name": "immigration-research",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dashboard": "node serve-dashboard.mjs",
+    "research": "node immigration_research.mjs",
+    "research:test-one": "node immigration_research.mjs --country Estonia --out data/test-estonia.json"
+  },
+  "dependencies": {
+    "openai": "^6.0.0"
+  }
+}
