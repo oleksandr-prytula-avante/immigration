@@ -3,88 +3,96 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Immigration Research Dashboard</title>
+    <title>IMMIGRATION RESEARCH DASHBOARD</title>
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
     <main class="shell">
       <section class="topbar">
         <div>
-          <p class="eyebrow">Immigration research</p>
-          <h1>Country Dashboard</h1>
+          <p class="eyebrow">IMMIGRATION RESEARCH</p>
+          <h1>COUNTRY DASHBOARD</h1>
         </div>
         <label class="file-button">
           <input id="jsonFile" type="file" accept="application/json,.json">
-          Upload JSON
+          UPLOAD JSON
         </label>
       </section>
 
       <section class="metrics" aria-label="Summary">
         <article>
           <span id="metricTotal">0</span>
-          <p>countries</p>
+          <p>COUNTRIES</p>
         </article>
         <article>
           <span id="metricValid">0</span>
-          <p>eligible</p>
+          <p>MATCHES</p>
         </article>
         <article>
           <span id="metricEligiblePath">0</span>
-          <p>fully matched</p>
+          <p>INTERESTING</p>
         </article>
         <article>
-          <span id="metricAvgIncome">Not found</span>
-          <p>avg threshold, USD</p>
+          <span id="metricAvgIncome">NOT FOUND</span>
+          <p>AVG THRESHOLD, USD</p>
         </article>
       </section>
 
       <section class="filters" aria-label="Filters">
         <label>
-          Search
-          <input id="searchInput" type="search" placeholder="Portugal, nomad, PR...">
+          SEARCH
+          <input id="searchInput" type="search" placeholder="PORTUGAL, NOMAD, PR...">
         </label>
         <label>
-          Status
+          STATUS
           <select id="validFilter">
-            <option value="all">All</option>
-            <option value="true" selected>Eligible</option>
-            <option value="false">Not eligible</option>
-            <option value="error">Errors</option>
+            <option value="all">ALL</option>
+            <option value="true" selected>ELIGIBLE</option>
+            <option value="false">NOT ELIGIBLE</option>
+            <option value="partial">PARTIAL</option>
+            <option value="uncertain">REVIEW</option>
+            <option value="error">ERRORS</option>
           </select>
         </label>
         <label>
-          Max income, USD/mo
-          <input id="incomeMax" type="number" min="0" step="100" placeholder="e.g. 3500">
+          LANGUAGE
+          <select id="languageFilter">
+            <option value="all">ALL</option>
+          </select>
         </label>
         <label>
-          Max tax, %
-          <input id="taxMax" type="number" min="0" max="100" step="1" placeholder="e.g. 20">
+          MAX INCOME, USD/MO
+          <input id="incomeMax" type="number" min="0" step="100" placeholder="E.G. 3500">
         </label>
         <label>
-          Citizenship within, yrs
-          <input id="citizenshipMax" type="number" min="0" step="1" placeholder="e.g. 7">
+          MAX TAX, %
+          <input id="taxMax" type="number" min="0" max="100" step="1" placeholder="E.G. 20">
         </label>
         <label>
-          Citizenship track
+          CITIZENSHIP WITHIN, YRS
+          <input id="citizenshipMax" type="number" min="0" step="1" placeholder="E.G. 7">
+        </label>
+        <label>
+          CITIZENSHIP TRACK
           <select id="citizenshipTrackFilter">
-            <option value="all">All</option>
-            <option value="strong_citizenship_track">Strong</option>
-            <option value="possible_with_conversion">Conversion needed</option>
-            <option value="weak_or_uncertain_citizenship_track">Weak / uncertain</option>
-            <option value="temporary_nomad_only">Nomad only</option>
-            <option value="not_valid">Not valid</option>
-            <option value="missing">Not found</option>
+            <option value="all">ALL</option>
+            <option value="strong_citizenship_track">STRONG</option>
+            <option value="possible_with_conversion">CONVERSION NEEDED</option>
+            <option value="weak_or_uncertain_citizenship_track">WEAK / UNCERTAIN</option>
+            <option value="temporary_nomad_only">NOMAD ONLY</option>
+            <option value="not_valid">NOT VALID</option>
+            <option value="missing">NOT FOUND</option>
           </select>
         </label>
         <label class="checkbox-filter">
           <input id="fullyMatchedFilter" type="checkbox" checked>
-          <span>Fully matched</span>
+          <span>INTERESTING</span>
         </label>
       </section>
 
       <section class="status-row">
-        <p id="fileStatus">Demo JSON loaded. You can upload a result file.</p>
-        <p><span id="visibleCount">0</span> shown</p>
+        <p id="fileStatus">DEMO JSON LOADED. YOU CAN UPLOAD A RESULT FILE.</p>
+        <p><span id="visibleCount">0</span> SHOWN</p>
       </section>
 
       <section class="content-grid">
@@ -93,14 +101,14 @@
             <thead>
               <tr>
                 <th class="number-col">#</th>
-                <th data-sort="country">Country</th>
-                <th class="status-col" data-sort="valid">Status</th>
-                <th data-sort="income">Income</th>
-                <th data-sort="tax">Tax</th>
-                <th data-sort="citizenship">Citizenship</th>
-                <th data-sort="jusSoli">Jus soli</th>
-                <th data-sort="citizenshipTrack">Citizenship track</th>
-                <th class="route-col">Route</th>
+                <th data-sort="country">COUNTRY</th>
+                <th class="status-col" data-sort="valid">STATUS</th>
+                <th data-sort="income">INCOME</th>
+                <th data-sort="tax">TAX</th>
+                <th data-sort="citizenship">CITIZENSHIP</th>
+                <th data-sort="jusSoli">JUS SOLI</th>
+                <th data-sort="citizenshipTrack">CITIZENSHIP TRACK</th>
+                <th class="route-col">ROUTE</th>
               </tr>
             </thead>
             <tbody id="countryRows"></tbody>
@@ -108,7 +116,7 @@
         </div>
 
         <aside class="details" id="detailsPanel">
-          <p class="empty">Select a country in the table to see details.</p>
+          <p class="empty">SELECT A COUNTRY IN THE TABLE TO SEE DETAILS.</p>
         </aside>
       </section>
     </main>

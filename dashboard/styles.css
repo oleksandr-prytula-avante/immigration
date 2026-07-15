@@ -112,7 +112,7 @@ h1 {
 }
 
 .filters {
-  grid-template-columns: 1.4fr repeat(5, minmax(120px, 1fr)) minmax(128px, 0.55fr);
+  grid-template-columns: minmax(170px, 1.2fr) minmax(132px, 0.9fr) repeat(5, minmax(108px, 1fr)) minmax(120px, 0.55fr);
   align-items: center;
   padding: 14px;
   margin-bottom: 10px;
@@ -124,6 +124,13 @@ label {
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
+}
+
+.filters label {
+  padding: 8px;
+  border: 1px solid #e8ebe4;
+  border-radius: 7px;
+  background: #f6faf7;
 }
 
 input,
@@ -143,9 +150,8 @@ select {
   align-content: center;
   justify-content: center;
   grid-template-columns: auto 1fr;
-  gap: 8px;
+  gap: 7px;
   min-height: 38px;
-  white-space: nowrap;
 }
 
 .checkbox-filter input {
@@ -159,6 +165,15 @@ select {
 .checkbox-filter span {
   align-self: center;
   color: var(--ink);
+  line-height: 1.15;
+}
+
+.checkbox-filter small {
+  display: block;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 9px;
+  line-height: 1.1;
 }
 
 input:focus,
@@ -222,8 +237,8 @@ th {
 }
 
 .status-col {
-  width: 76px;
-  max-width: 76px;
+  width: 104px;
+  max-width: 104px;
 }
 
 .route-col {
@@ -250,6 +265,23 @@ tbody tr.active {
   margin-top: 4px;
   color: var(--muted);
   font-size: 12px;
+}
+
+.language-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.language-chip {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #eef6f2;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
 }
 
 .pill {

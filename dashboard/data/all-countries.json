@@ -216,6 +216,28 @@
       "date": "2026-07-15",
       "scope": "Filled regular_foreign_contract_remote_work_fit for remaining eligible countries after stricter route-profile audit.",
       "note": "Countries downgraded or removed from fully matched in earlier passes were not auto-marked true."
+    },
+    "official_filing_channel_recheck_2026": {
+      "date": "2026-07-15",
+      "scope": "Downgraded source-sensitive eligible countries where current dataset did not capture an official active filing checklist/application channel.",
+      "downgraded_to_uncertain": [
+        "Albania",
+        "Cabo Verde",
+        "Kazakhstan",
+        "Kenya",
+        "Moldova",
+        "Montenegro",
+        "Namibia",
+        "Slovenia",
+        "Uruguay",
+        "Indonesia"
+      ],
+      "rule": "Secondary/news/travel-list evidence alone is not enough for valid_for_selection=true when no official active application channel is captured."
+    },
+    "paraguay_professional_diploma_recheck_2026": {
+      "date": "2026-07-15",
+      "updated": "Paraguay restored to eligible/fully matched via independent temporary residence / professional diploma route, not investor pass.",
+      "caution": "Exact filing checklist, diploma legalisation/recognition and foreign-income proof must be verified before filing."
     }
   },
   "results": [
@@ -342,13 +364,13 @@
       "data": {
         "country": "Albania",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Detailed re-check: Albania is upgraded to valid but narrow. Public/secondary sources and Albanian foreigner-law summaries support a Type D/residence/unique-permit path for remote/digital mobile workers, but official filing checklist still needs verification.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Albania should be treated as uncertain, not fully matched. Secondary/legal summaries suggest a Type D / unique-permit path for digital mobile or remote workers, but this pass did not capture a filing-level official checklist or stable application channel for an ordinary foreign-contract remote worker.",
         "best_routes": [
           {
             "route_name": "Type D visa / unique permit for digital mobile workers",
             "route_type": "digital_nomad_or_unique_permit",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -428,9 +450,10 @@
               ],
               "notes": "Detailed re-check: Albania is upgraded to valid but narrow. Public/secondary sources and Albanian foreigner-law summaries support a Type D/residence/unique-permit path for remote/digital mobile workers, but official filing checklist still needs verification."
             },
-            "notes": "Detailed re-check: Albania is upgraded to valid but narrow. Public/secondary sources and Albanian foreigner-law summaries support a Type D/residence/unique-permit path for remote/digital mobile workers, but official filing checklist still needs verification.",
+            "notes": "Detailed re-check: Albania is upgraded to valid but narrow. Public/secondary sources and Albanian foreigner-law summaries support a Type D/residence/unique-permit path for remote/digital mobile workers, but official filing checklist still needs verification. Possible route, but official filing checklist/application channel not confirmed.",
             "source_ids": [
-              "ALBANI_UNCERTAIN_DEEP_2026"
+              "ALBANI_UNCERTAIN_DEEP_2026",
+              "ALBANIA_OFFICIAL_CHANNEL_NOT_CONFIRMED_2026"
             ]
           },
           {
@@ -512,9 +535,10 @@
               ],
               "notes": "Not researched in this pass."
             },
-            "notes": "Promising but needs official e-Albania/law verification.",
+            "notes": "Promising but needs official e-Albania/law verification. Possible route, but official filing checklist/application channel not confirmed.",
             "source_ids": [
-              "AL1"
+              "AL1",
+              "ALBANIA_OFFICIAL_CHANNEL_NOT_CONFIRMED_2026"
             ]
           }
         ],
@@ -670,21 +694,30 @@
             "url": "https://taxsummaries.pwc.com/albania/individual/other-taxes",
             "date_accessed": "2026-07-15",
             "note": "Used as standardized social-security/other-tax verification source for eligible-country tax audit."
+          },
+          {
+            "id": "ALBANIA_OFFICIAL_CHANNEL_NOT_CONFIRMED_2026",
+            "title": "Albania remote-worker route official filing-channel re-check",
+            "publisher": "Current route audit",
+            "url": "https://e-visa.al/",
+            "date_accessed": "2026-07-15",
+            "note": "Secondary/legal summaries mention digital mobile worker / Type D / unique permit concepts, but this audit did not capture a filing-level official checklist for ordinary foreign-contract remote workers."
           }
         ],
-        "confidence": "medium",
+        "confidence": "low",
         "notes": "Official Albanian digital-service pages were not captured well by search in this pass.",
         "settlement_track": {
-          "classification": "possible_with_conversion",
+          "classification": "weak_or_uncertain_citizenship_track",
           "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "medium",
-          "requires_switch_to_another_status": true,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": null,
           "summary": "Detailed re-check: Albania is upgraded to valid but narrow. Public/secondary sources and Albanian foreigner-law summaries support a Type D/residence/unique-permit path for remote/digital mobile workers, but official filing checklist still needs verification.",
           "source_ids": [
-            "ALBANI_UNCERTAIN_DEEP_2026"
+            "ALBANIA_OFFICIAL_CHANNEL_NOT_CONFIRMED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "Possible route, but official filing checklist/application channel not confirmed."
         },
         "marriage": {
           "years_to_citizenship_via_marriage": {
@@ -818,7 +851,7 @@
             "ALBANI_UNCERTAIN_DEEP_2026"
           ]
         },
-        "fully_matched": true,
+        "fully_matched": false,
         "full_match_recheck": {
           "reviewed_at": "2026-07-15",
           "status": "checked_required_fields_present",
@@ -837,20 +870,29 @@
           "notes": "Structural recheck only: required dashboard fields are present. Legal/tax decisions still require source-level review before filing."
         },
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "ALBANI_UNCERTAIN_DEEP_2026",
-            "AL1"
+            "ALBANIA_OFFICIAL_CHANNEL_NOT_CONFIRMED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Possible route, but official filing checklist/application channel not confirmed."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "Possible route, but official filing checklist/application channel not confirmed.",
+            "source_ids": [
+              "ALBANIA_OFFICIAL_CHANNEL_NOT_CONFIRMED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {
@@ -9007,13 +9049,13 @@
       "data": {
         "country": "Cabo Verde",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Cabo Verde appears valid because secondary digital-nomad overviews list a remote-working programme. Official programme details did not surface cleanly in this pass, so confidence is medium-low.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Cabo Verde should be treated as uncertain, not eligible. Secondary overviews list a remote-working programme, but this audit did not capture an official active application page/checklist for ordinary foreign-contract remote workers.",
         "best_routes": [
           {
             "route_name": "Remote Working Programme",
             "route_type": "digital_nomad",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -9083,9 +9125,10 @@
               ],
               "notes": "The route is mainly a temporary digital-nomad/workcation/visitor stay. It should not be ranked as a citizenship path unless the applicant later switches to a separate residence/PR route."
             },
-            "notes": null,
+            "notes": "Secondary-only digital-nomad evidence; official filing channel not confirmed.",
             "source_ids": [
-              "CV1"
+              "CV1",
+              "CABO_VERDE_OFFICIAL_DN_NOT_CONFIRMED_2026"
             ],
             "income_requirement_display": {
               "value": "USD 1,740 / month",
@@ -9274,9 +9317,17 @@
             "url": "https://en.wikipedia.org/wiki/Henley_Passport_Index",
             "date_accessed": "2026-07-15",
             "note": "Used to fill missing passport rank and visa-free destination counts for eligible countries."
+          },
+          {
+            "id": "CABO_VERDE_OFFICIAL_DN_NOT_CONFIRMED_2026",
+            "title": "Cabo Verde remote-working programme official-channel re-check",
+            "publisher": "Current route audit",
+            "url": "https://www.ease.gov.cv/",
+            "date_accessed": "2026-07-15",
+            "note": "Dataset relied on secondary digital-nomad overviews; no official active remote-worker programme checklist was captured."
           }
         ],
-        "confidence": "medium",
+        "confidence": "low",
         "notes": "Needs official Cabo Verde Remote Working Programme page verification.",
         "marriage": {
           "years_to_citizenship_via_marriage": {
@@ -9433,32 +9484,43 @@
           }
         },
         "settlement_track": {
-          "classification": "temporary_nomad_only",
-          "can_lead_to_citizenship_from_this_route": false,
+          "classification": "weak_or_uncertain_citizenship_track",
+          "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "none_or_separate_route_required",
-          "requires_switch_to_another_status": true,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": "This route is mainly temporary digital nomad/workcation/visitor stay; do not count it as a citizenship route without switching status.",
           "summary": "The route is mainly a temporary digital-nomad/workcation/visitor stay. It should not be ranked as a citizenship path unless the applicant later switches to a separate residence/PR route.",
           "source_ids": [
-            "CABOVE_INCOME_TRACK_2026"
+            "CABO_VERDE_OFFICIAL_DN_NOT_CONFIRMED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "Secondary-only digital-nomad evidence; official filing channel not confirmed."
         },
         "fully_matched": false,
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "CV1"
+            "CABO_VERDE_OFFICIAL_DN_NOT_CONFIRMED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Secondary-only digital-nomad evidence; official filing channel not confirmed."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "Secondary-only digital-nomad evidence; official filing channel not confirmed.",
+            "source_ids": [
+              "CABO_VERDE_OFFICIAL_DN_NOT_CONFIRMED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {
@@ -18035,13 +18097,13 @@
       "data": {
         "country": "Georgia",
         "researched_at": "2026-07-15",
-        "valid_for_selection": "partial",
-        "selection_summary": "Georgia remains remote-worker friendly because many nationalities can stay visa-free for up to one year and the older Remotely from Georgia program explicitly targeted remote workers. It is useful for temporary living, but not a dedicated residence-to-citizenship route from this pass.",
+        "valid_for_selection": false,
+        "selection_summary": "Georgia is remote-worker friendly for temporary stays, but it is not eligible for this dashboard profile. The available route is a visa-free/eVisa visitor stay or legacy remote-work stay, not a dedicated residence route for a regular foreign-contract remote worker that can directly build toward permanent residence or citizenship.",
         "best_routes": [
           {
-            "route_name": "One-year visa-free stay / Remotely from Georgia legacy remote-work pathway",
-            "route_type": "digital_nomad_like_long_visitor_stay",
-            "valid_for_selection": "partial",
+            "route_name": "Visa-free/eVisa visitor stay / legacy Remotely from Georgia stay",
+            "route_type": "visitor_stay_not_residence_route",
+            "valid_for_selection": false,
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -18134,7 +18196,7 @@
               ],
               "notes": "Not confirmed from this route in this pass."
             },
-            "notes": "Good practical stay option, but weak as formal residence route unless another permit/business setup is used.",
+            "notes": "Good practical stay option, but not a qualifying residence-to-citizenship path for a regular foreign-contract remote worker unless the applicant qualifies under a separate residence category such as employment, business, investment, family, or another non-visitor basis.",
             "source_ids": [
               "GE1",
               "GE2"
@@ -18189,11 +18251,11 @@
         "sources": [
           {
             "id": "GE1",
-            "title": "Digital nomad - Georgia section",
-            "url": "https://en.wikipedia.org/wiki/Digital_nomad",
-            "publisher": "Wikipedia with cited Georgian program sources",
+            "title": "e-VISA PORTAL",
+            "url": "https://evisa.gov.ge/GeoVisa/",
+            "publisher": "Ministry of Foreign Affairs of Georgia",
             "date": "crawled 2026",
-            "note": "Summarizes Remotely from Georgia program for citizens of 95 countries for at least 360 days."
+            "note": "Official portal frames eVisa as short-term visit planning, not residence."
           },
           {
             "id": "GE2",
@@ -18205,7 +18267,42 @@
           }
         ],
         "confidence": "medium",
-        "research_notes": "Chat/web batch pass; official filing pages should be checked before decisions."
+        "research_notes": "Rechecked 2026-07-15 after profile correction. Georgia should not be treated as eligible for a regular foreign-contract remote worker because the captured route is visitor/legacy nomad-like stay rather than a residence-to-citizenship path.",
+        "fully_matched": false,
+        "regular_foreign_contract_remote_work_fit": {
+          "value": false,
+          "source_ids": [
+            "GE1",
+            "GE2"
+          ],
+          "notes": "Visa-free/eVisa visitor stay and the legacy remote-work stay do not provide the qualifying residence path required by this dashboard."
+        },
+        "settlement_track": {
+          "classification": "not_valid_no_regular_remote_work_route",
+          "can_lead_to_citizenship_from_this_route": false,
+          "citizenship_track_strength": "none_for_regular_foreign_contract_remote_work",
+          "requires_switch_to_another_status": true,
+          "nomad_only_warning": "Temporary stay only; separate residence status is required to build a residence/citizenship track.",
+          "summary": "Not eligible for this profile. Georgia may be useful for temporary living, but a visitor/eVisa stay is not a residence-to-citizenship route for regular foreign-contract remote work.",
+          "source_ids": [
+            "GE1",
+            "GE2"
+          ],
+          "reviewed_at": "2026-07-15"
+        },
+        "meta": {
+          "georgia_recheck_2026": {
+            "reviewed_at": "2026-07-15",
+            "previous_status": "partial",
+            "updated_status": false,
+            "result": "not_eligible_for_regular_foreign_contract_remote_work",
+            "reason": "The captured route is a visitor/legacy remote-stay route, not a direct temporary residence route with a confirmed path to permanent residence or citizenship for regular foreign-contract remote work.",
+            "source_ids": [
+              "GE1",
+              "GE2"
+            ]
+          }
+        }
       }
     },
     {
@@ -21696,13 +21793,13 @@
       "data": {
         "country": "Indonesia",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Indonesia appears usable through the remote worker / E33G-style visa framework reported for foreign remote workers, but this needs official portal verification because Indonesian visa naming has changed. Treat as valid but source-sensitive.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Indonesia should be treated as uncertain, not eligible. Reputable reporting describes the E33G remote worker visa, but this audit did not capture a filing-level official immigration checklist/application page, and Indonesian visa naming/rules are source-sensitive.",
         "best_routes": [
           {
             "route_name": "Remote Worker Visa / E33G-style limited stay",
             "route_type": "digital_nomad_residence",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -21794,10 +21891,11 @@
               ],
               "notes": "The country has a useful independent route, but citizenship usually requires converting from nomad/freelance status into ordinary residence/permanent residence or proving the status counts as qualifying residence."
             },
-            "notes": "Verify current eVisa category and availability on Indonesian immigration portal before selection.",
+            "notes": "Verify current eVisa category and availability on Indonesian immigration portal before selection. Official filing checklist not captured in dataset.",
             "source_ids": [
               "ID1",
-              "ID2"
+              "ID2",
+              "INDONESIA_E33G_OFFICIAL_CHECKLIST_NOT_CAPTURED_2026"
             ],
             "income_requirement_display": {
               "value": "USD 5,000 / month",
@@ -22138,6 +22236,14 @@
             "url": "https://taxsummaries.pwc.com/indonesia/individual/other-taxes",
             "date_accessed": "2026-07-15",
             "note": "Used as standardized social-security/other-tax verification source for eligible-country tax audit."
+          },
+          {
+            "id": "INDONESIA_E33G_OFFICIAL_CHECKLIST_NOT_CAPTURED_2026",
+            "title": "Indonesia E33G remote worker visa official-checklist re-check",
+            "publisher": "Directorate General of Immigration Indonesia / current route audit",
+            "url": "https://evisa.imigrasi.go.id/",
+            "date_accessed": "2026-07-15",
+            "note": "The E33G route is reported by reputable media, but this dataset did not capture a filing-level official checklist from the immigration portal."
           }
         ],
         "confidence": "low",
@@ -22189,18 +22295,19 @@
           "warning": "Use as screening data. Before acting, verify with official nationality law/immigration counsel because residence-counting and family rules change and can be discretionary."
         },
         "settlement_track": {
-          "classification": "possible_with_conversion",
+          "classification": "weak_or_uncertain_citizenship_track",
           "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "medium",
-          "requires_switch_to_another_status": true,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": null,
           "summary": "The country has a useful independent route, but citizenship usually requires converting from nomad/freelance status into ordinary residence/permanent residence or proving the status counts as qualifying residence.",
           "source_ids": [
-            "INDONE_INCOME_TRACK_2026"
+            "INDONESIA_E33G_OFFICIAL_CHECKLIST_NOT_CAPTURED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "Reported E33G route, but official filing checklist not captured in dataset."
         },
-        "fully_matched": true,
+        "fully_matched": false,
         "full_match_recheck": {
           "reviewed_at": "2026-07-15",
           "status": "checked_required_fields_present",
@@ -22219,20 +22326,29 @@
           "notes": "Structural recheck only: required dashboard fields are present. Legal/tax decisions still require source-level review before filing."
         },
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "ID1",
-            "ID2"
+            "INDONESIA_E33G_OFFICIAL_CHECKLIST_NOT_CAPTURED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Reported E33G route, but official filing checklist not captured in dataset."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "Reported E33G route, but official filing checklist not captured in dataset.",
+            "source_ids": [
+              "INDONESIA_E33G_OFFICIAL_CHECKLIST_NOT_CAPTURED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {
@@ -24186,13 +24302,13 @@
       "data": {
         "country": "Kazakhstan",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Detailed re-check: Kazakhstan is upgraded to valid as a remote-work stay based on current reporting, but source quality still needs official portal confirmation. Treat as temporary stay, not citizenship route.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Kazakhstan should be treated as uncertain, not eligible. The Neo Nomad route appears in current reporting, but this audit did not capture an official active filing checklist/application channel.",
         "best_routes": [
           {
             "route_name": "Neo Nomad Visa",
             "route_type": "digital_nomad_visa",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -24272,9 +24388,10 @@
               ],
               "notes": "Detailed re-check: Kazakhstan is upgraded to valid as a remote-work stay based on current reporting, but source quality still needs official portal confirmation. Treat as temporary stay, not citizenship route."
             },
-            "notes": "Detailed re-check: Kazakhstan is upgraded to valid as a remote-work stay based on current reporting, but source quality still needs official portal confirmation. Treat as temporary stay, not citizenship route.",
+            "notes": "Detailed re-check: Kazakhstan is upgraded to valid as a remote-work stay based on current reporting, but source quality still needs official portal confirmation. Treat as temporary stay, not citizenship route. Reported route, but official filing channel not confirmed.",
             "source_ids": [
-              "KAZAKH_UNCERTAIN_DEEP_2026"
+              "KAZAKH_UNCERTAIN_DEEP_2026",
+              "KAZAKHSTAN_NEO_NOMAD_OFFICIAL_NOT_CONFIRMED_2026"
             ]
           }
         ],
@@ -24535,21 +24652,30 @@
             "url": "https://taxsummaries.pwc.com/kazakhstan/individual/other-taxes",
             "date_accessed": "2026-07-15",
             "note": "Used as standardized social-security/other-tax verification source for eligible-country tax audit."
+          },
+          {
+            "id": "KAZAKHSTAN_NEO_NOMAD_OFFICIAL_NOT_CONFIRMED_2026",
+            "title": "Kazakhstan Neo Nomad official-channel re-check",
+            "publisher": "Current route audit",
+            "url": "https://egov.kz/",
+            "date_accessed": "2026-07-15",
+            "note": "Current dataset relied on travel/news reporting; no official application checklist was captured."
           }
         ],
-        "confidence": "medium_low",
+        "confidence": "low",
         "research_notes": "Chat/web batch pass; official portal cleanup recommended before filing.",
         "settlement_track": {
-          "classification": "temporary_nomad_only",
-          "can_lead_to_citizenship_from_this_route": false,
+          "classification": "weak_or_uncertain_citizenship_track",
+          "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "none_or_separate_route_required",
-          "requires_switch_to_another_status": true,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": "Route is mainly temporary; citizenship requires a different qualifying residence path.",
           "summary": "Detailed re-check: Kazakhstan is upgraded to valid as a remote-work stay based on current reporting, but source quality still needs official portal confirmation. Treat as temporary stay, not citizenship route.",
           "source_ids": [
-            "KAZAKH_UNCERTAIN_DEEP_2026"
+            "KAZAKHSTAN_NEO_NOMAD_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "Reported route, but official filing channel not confirmed."
         },
         "child_citizenship": {
           "birthright_citizenship": {
@@ -24592,19 +24718,29 @@
         },
         "fully_matched": false,
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "KAZAKH_UNCERTAIN_DEEP_2026"
+            "KAZAKHSTAN_NEO_NOMAD_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Reported route, but official filing channel not confirmed."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "Reported route, but official filing channel not confirmed.",
+            "source_ids": [
+              "KAZAKHSTAN_NEO_NOMAD_OFFICIAL_NOT_CONFIRMED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {
@@ -24613,13 +24749,13 @@
       "data": {
         "country": "Kenya",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Detailed re-check: Kenya is upgraded to valid but low-confidence/needs official checklist. Reports describe a digital nomad permit for foreign remote workers; classify as temporary stay until Directorate rules are confirmed.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Kenya should be treated as uncertain, not eligible. Reports mention a digital nomad permit, but official immigration-domain searches in this pass did not surface an active digital-nomad/Class N application checklist.",
         "best_routes": [
           {
             "route_name": "Digital Nomad Work Permit / Class N-style route",
             "route_type": "digital_nomad_residence",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -24699,9 +24835,10 @@
               ],
               "notes": "Detailed re-check: Kenya is upgraded to valid but low-confidence/needs official checklist. Reports describe a digital nomad permit for foreign remote workers; classify as temporary stay until Directorate rules are confirmed."
             },
-            "notes": "Detailed re-check: Kenya is upgraded to valid but low-confidence/needs official checklist. Reports describe a digital nomad permit for foreign remote workers; classify as temporary stay until Directorate rules are confirmed.",
+            "notes": "Detailed re-check: Kenya is upgraded to valid but low-confidence/needs official checklist. Reports describe a digital nomad permit for foreign remote workers; classify as temporary stay until Directorate rules are confirmed. Reported route, but official immigration checklist not confirmed.",
             "source_ids": [
-              "KENYA_UNCERTAIN_DEEP_2026"
+              "KENYA_UNCERTAIN_DEEP_2026",
+              "KENYA_DN_PERMIT_OFFICIAL_NOT_CONFIRMED_2026"
             ]
           },
           {
@@ -24789,9 +24926,10 @@
               ],
               "notes": "Not confirmed from this route in this pass."
             },
-            "notes": "Do not rely on this until official Kenya immigration source is checked.",
+            "notes": "Do not rely on this until official Kenya immigration source is checked. Reported route, but official immigration checklist not confirmed.",
             "source_ids": [
-              "KE1"
+              "KE1",
+              "KENYA_DN_PERMIT_OFFICIAL_NOT_CONFIRMED_2026"
             ]
           }
         ],
@@ -25052,21 +25190,30 @@
             "url": "https://taxsummaries.pwc.com/kenya/individual/other-taxes",
             "date_accessed": "2026-07-15",
             "note": "Used as standardized social-security/other-tax verification source for eligible-country tax audit."
+          },
+          {
+            "id": "KENYA_DN_PERMIT_OFFICIAL_NOT_CONFIRMED_2026",
+            "title": "Kenya digital nomad permit official-channel re-check",
+            "publisher": "Kenya Directorate of Immigration Services / current route audit",
+            "url": "https://immigration.go.ke/",
+            "date_accessed": "2026-07-15",
+            "note": "Search of the official immigration domain did not surface a digital-nomad permit or Class N checklist in this pass."
           }
         ],
-        "confidence": "medium_low",
+        "confidence": "low",
         "research_notes": "Chat/web batch pass; official portal cleanup recommended before filing.",
         "settlement_track": {
-          "classification": "temporary_nomad_only",
-          "can_lead_to_citizenship_from_this_route": false,
+          "classification": "weak_or_uncertain_citizenship_track",
+          "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "none_or_separate_route_required",
-          "requires_switch_to_another_status": true,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": "Route is mainly temporary; citizenship requires a different qualifying residence path.",
           "summary": "Detailed re-check: Kenya is upgraded to valid but low-confidence/needs official checklist. Reports describe a digital nomad permit for foreign remote workers; classify as temporary stay until Directorate rules are confirmed.",
           "source_ids": [
-            "KENYA_UNCERTAIN_DEEP_2026"
+            "KENYA_DN_PERMIT_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "Reported route, but official immigration checklist not confirmed."
         },
         "child_citizenship": {
           "birthright_citizenship": {
@@ -25109,20 +25256,29 @@
         },
         "fully_matched": false,
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "KENYA_UNCERTAIN_DEEP_2026",
-            "KE1"
+            "KENYA_DN_PERMIT_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Reported route, but official immigration checklist not confirmed."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "Reported route, but official immigration checklist not confirmed.",
+            "source_ids": [
+              "KENYA_DN_PERMIT_OFFICIAL_NOT_CONFIRMED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {
@@ -31147,13 +31303,13 @@
       "data": {
         "country": "Moldova",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Detailed re-check: Moldova is upgraded to valid based on 2025 reporting of a digital nomad visa effective September 20, 2025. Keep confidence medium-low until official procedure is captured.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Moldova should be treated as uncertain, not eligible. Secondary reporting says a digital nomad visa became effective in 2025, but this audit did not capture an official services-page application/checklist.",
         "best_routes": [
           {
             "route_name": "Digital Nomad Visa / remote-worker residence",
             "route_type": "digital_nomad_visa",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -31233,9 +31389,10 @@
               ],
               "notes": "Detailed re-check: Moldova is upgraded to valid based on 2025 reporting of a digital nomad visa effective September 20, 2025. Keep confidence medium-low until official procedure is captured."
             },
-            "notes": "Detailed re-check: Moldova is upgraded to valid based on 2025 reporting of a digital nomad visa effective September 20, 2025. Keep confidence medium-low until official procedure is captured.",
+            "notes": "Detailed re-check: Moldova is upgraded to valid based on 2025 reporting of a digital nomad visa effective September 20, 2025. Keep confidence medium-low until official procedure is captured. Secondary reporting only; official filing channel not confirmed.",
             "source_ids": [
-              "MOLDOV_UNCERTAIN_DEEP_2026"
+              "MOLDOV_UNCERTAIN_DEEP_2026",
+              "MOLDOVA_DN_OFFICIAL_NOT_CONFIRMED_2026"
             ]
           },
           {
@@ -31323,9 +31480,10 @@
               ],
               "notes": "Not confirmed from this route in this pass."
             },
-            "notes": "Needs official-source cleanup before relying on it.",
+            "notes": "Needs official-source cleanup before relying on it. Secondary reporting only; official filing channel not confirmed.",
             "source_ids": [
-              "MD1"
+              "MD1",
+              "MOLDOVA_DN_OFFICIAL_NOT_CONFIRMED_2026"
             ]
           }
         ],
@@ -31585,21 +31743,30 @@
             "url": "https://taxsummaries.pwc.com/moldova/individual/other-taxes",
             "date_accessed": "2026-07-15",
             "note": "Used as standardized social-security/other-tax verification source for eligible-country tax audit."
+          },
+          {
+            "id": "MOLDOVA_DN_OFFICIAL_NOT_CONFIRMED_2026",
+            "title": "Moldova digital nomad visa official-channel re-check",
+            "publisher": "Current route audit",
+            "url": "https://servicii.gov.md/",
+            "date_accessed": "2026-07-15",
+            "note": "Search found secondary reporting but not an official services-page application/checklist for the digital nomad visa."
           }
         ],
-        "confidence": "medium_low",
+        "confidence": "low",
         "research_notes": "Chat/web batch pass; official portal cleanup recommended before filing.",
         "settlement_track": {
-          "classification": "temporary_nomad_only",
-          "can_lead_to_citizenship_from_this_route": false,
+          "classification": "weak_or_uncertain_citizenship_track",
+          "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "none_or_separate_route_required",
-          "requires_switch_to_another_status": true,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": "Route is mainly temporary; citizenship requires a different qualifying residence path.",
           "summary": "Detailed re-check: Moldova is upgraded to valid based on 2025 reporting of a digital nomad visa effective September 20, 2025. Keep confidence medium-low until official procedure is captured.",
           "source_ids": [
-            "MOLDOV_UNCERTAIN_DEEP_2026"
+            "MOLDOVA_DN_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "Secondary reporting only; official filing channel not confirmed."
         },
         "child_citizenship": {
           "birthright_citizenship": {
@@ -31642,20 +31809,29 @@
         },
         "fully_matched": false,
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "MOLDOV_UNCERTAIN_DEEP_2026",
-            "MD1"
+            "MOLDOVA_DN_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Secondary reporting only; official filing channel not confirmed."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "Secondary reporting only; official filing channel not confirmed.",
+            "source_ids": [
+              "MOLDOVA_DN_OFFICIAL_NOT_CONFIRMED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {
@@ -31958,13 +32134,13 @@
       "data": {
         "country": "Montenegro",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Montenegro has enacted/announced a digital-nomad residence framework and is commonly listed among countries offering remote-worker residence. It appears valid, but exact 2026 implementation details should be verified with official immigration channels.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Montenegro should be treated as uncertain, not eligible. A digital-nomad framework is commonly reported, but this audit did not capture a clear active 2026 official application checklist.",
         "best_routes": [
           {
             "route_name": "Digital Nomad Temporary Residence",
             "route_type": "digital_nomad_residence",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -32054,10 +32230,11 @@
               ],
               "notes": "The stay route may be called residence, but current evidence is weak that it reliably leads to PR/citizenship. Treat as live/work option first, citizenship option only after legal confirmation."
             },
-            "notes": "Good candidate, but official implementation detail needs cleanup before filing.",
+            "notes": "Good candidate, but official implementation detail needs cleanup before filing. Framework reported, but official current filing details not confirmed.",
             "source_ids": [
               "ME1",
-              "ME2"
+              "ME2",
+              "MONTENEGRO_DN_OFFICIAL_NOT_CONFIRMED_2026"
             ],
             "income_requirement_display": {
               "value": "Income threshold not reliably confirmed in official source in this file; verify before relying",
@@ -32398,6 +32575,14 @@
             "url": "https://taxsummaries.pwc.com/montenegro/individual/other-taxes",
             "date_accessed": "2026-07-15",
             "note": "Used as standardized social-security/other-tax verification source for eligible-country tax audit."
+          },
+          {
+            "id": "MONTENEGRO_DN_OFFICIAL_NOT_CONFIRMED_2026",
+            "title": "Montenegro digital-nomad residence official-channel re-check",
+            "publisher": "Government of Montenegro / current route audit",
+            "url": "https://www.gov.me/en",
+            "date_accessed": "2026-07-15",
+            "note": "Dataset relied on general government portal plus secondary lists; exact active 2026 application checklist was not captured."
           }
         ],
         "confidence": "low",
@@ -32452,30 +32637,40 @@
           "classification": "weak_or_uncertain_citizenship_track",
           "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "low",
-          "requires_switch_to_another_status": true,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": null,
           "summary": "The stay route may be called residence, but current evidence is weak that it reliably leads to PR/citizenship. Treat as live/work option first, citizenship option only after legal confirmation.",
           "source_ids": [
-            "MONTEN_INCOME_TRACK_2026"
+            "MONTENEGRO_DN_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "Framework reported, but official current filing details not confirmed."
         },
         "fully_matched": false,
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "ME1",
-            "ME2"
+            "MONTENEGRO_DN_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Framework reported, but official current filing details not confirmed."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "Framework reported, but official current filing details not confirmed.",
+            "source_ids": [
+              "MONTENEGRO_DN_OFFICIAL_NOT_CONFIRMED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {
@@ -32925,13 +33120,13 @@
       "data": {
         "country": "Namibia",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Namibia is commonly listed as offering a digital-nomad visa for remote workers, but this pass did not capture a strong official program page. Treat as valid but source-sensitive and verify with Namibian immigration before relying on it.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Namibia should be treated as uncertain, not eligible. Secondary sources list a digital nomad visa, but this audit found visitor/eVisa information rather than an official active remote-worker application checklist.",
         "best_routes": [
           {
             "route_name": "Digital Nomad Visa",
             "route_type": "digital_nomad_visa",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -33023,10 +33218,11 @@
               ],
               "notes": "The route is mainly a temporary digital-nomad/workcation/visitor stay. It should not be ranked as a citizenship path unless the applicant later switches to a separate residence/PR route."
             },
-            "notes": "Source quality is mixed; official filing page required for final planning.",
+            "notes": "Source quality is mixed; official filing page required for final planning. No official active digital-nomad application checklist captured.",
             "source_ids": [
               "NA1",
-              "NA2"
+              "NA2",
+              "NAMIBIA_DN_OFFICIAL_NOT_CONFIRMED_2026"
             ],
             "income_requirement_display": {
               "value": "USD 2,000 / month",
@@ -33337,6 +33533,14 @@
             "url": "https://en.wikipedia.org/wiki/Henley_Passport_Index",
             "date_accessed": "2026-07-15",
             "note": "Used to fill missing passport rank and visa-free destination counts for eligible countries."
+          },
+          {
+            "id": "NAMIBIA_DN_OFFICIAL_NOT_CONFIRMED_2026",
+            "title": "Namibia digital nomad visa official-channel re-check",
+            "publisher": "Current route audit",
+            "url": "https://eservices.mhaiss.gov.na/",
+            "date_accessed": "2026-07-15",
+            "note": "Official/visa-policy results found visitor/eVisa material, but no active digital-nomad route checklist in this pass."
           }
         ],
         "confidence": "low",
@@ -33388,33 +33592,43 @@
           "warning": "Use as screening data. Before acting, verify with official nationality law/immigration counsel because residence-counting and family rules change and can be discretionary."
         },
         "settlement_track": {
-          "classification": "temporary_nomad_only",
-          "can_lead_to_citizenship_from_this_route": false,
+          "classification": "weak_or_uncertain_citizenship_track",
+          "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "none_or_separate_route_required",
-          "requires_switch_to_another_status": true,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": "This route is mainly temporary digital nomad/workcation/visitor stay; do not count it as a citizenship route without switching status.",
           "summary": "The route is mainly a temporary digital-nomad/workcation/visitor stay. It should not be ranked as a citizenship path unless the applicant later switches to a separate residence/PR route.",
           "source_ids": [
-            "NAMIBI_INCOME_TRACK_2026"
+            "NAMIBIA_DN_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "No official active digital-nomad application checklist captured."
         },
         "fully_matched": false,
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "NA1",
-            "NA2"
+            "NAMIBIA_DN_OFFICIAL_NOT_CONFIRMED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "No official active digital-nomad application checklist captured."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "No official active digital-nomad application checklist captured.",
+            "source_ids": [
+              "NAMIBIA_DN_OFFICIAL_NOT_CONFIRMED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {
@@ -36781,9 +36995,111 @@
       "data": {
         "country": "Paraguay",
         "researched_at": "2026-07-15",
-        "valid_for_selection": false,
-        "selection_summary": "Careful re-check 2026: Paraguay should not be eligible for this regular foreign-contract remote-worker profile. The current route captured is the Investor Pass / golden visa by investment, not a digital-nomad or ordinary foreign-client remote-work route.",
-        "best_routes": [],
+        "valid_for_selection": true,
+        "selection_summary": "Careful re-check 2026: Paraguay should be restored as eligible. The previous invalid classification looked only at the Investor Pass/golden-visa route. Paraguay also has ordinary temporary residence and a permanent-residence change-of-category path; for this profile, the relevant route is a non-digital-nomad independent temporary residence/professional-diploma route, subject to filing-level verification of the exact document checklist and proof of lawful means. It is not a pure digital nomad visa, but it can fit a software engineer with a diploma and foreign-contract income if Migraciones accepts the professional/means-of-support basis.",
+        "best_routes": [
+          {
+            "route_name": "Temporary residence / professional diploma route",
+            "route_type": "independent_temporary_residence_professional_diploma",
+            "valid_for_selection": true,
+            "independent_application_possible": true,
+            "local_employer_required": false,
+            "foreign_contract_or_income_required": false,
+            "direct_temporary_residence_possible": true,
+            "direct_permanent_residence_possible": false,
+            "minimum_monthly_income_usd": {
+              "value": null,
+              "source_ids": [
+                "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
+              ],
+              "notes": "No fixed monthly income threshold captured from the official page in this audit. Applicant should verify whether Migraciones accepts foreign-contract income, bank statements, or professional qualification as proof of lawful means."
+            },
+            "minimum_income_local_currency": {
+              "value": "Not found - official fixed amount not captured; route depends on accepted proof of lawful means/professional basis.",
+              "source_ids": [
+                "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
+              ],
+              "notes": "Use local counsel or Migraciones checklist before filing."
+            },
+            "income_requirement_display": {
+              "value": "Not found - no fixed income threshold captured. Likely document-heavy residence route: diploma/professional basis plus proof of lawful means/foreign income should be verified before filing.",
+              "currency_basis": "not_published_in_dataset",
+              "usd_monthly_value": null,
+              "local_or_formula_value": "Proof of lawful means/professional basis; exact threshold not captured.",
+              "source_ids": [
+                "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
+              ]
+            },
+            "income_proof_months": {
+              "value": null,
+              "display_value": "Not found - exact months not captured in official text available to this audit.",
+              "source_ids": [
+                "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
+              ],
+              "notes": "Verify filing checklist."
+            },
+            "key_requirements": [
+              {
+                "requirement": "Apply under ordinary Residencia Temporal rather than investor/golden visa route.",
+                "source_ids": [
+                  "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
+                ]
+              },
+              {
+                "requirement": "Professional diploma/degree may support the professional route; exact apostille/legalisation, recognition and translation requirements must be verified before filing.",
+                "source_ids": [
+                  "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026",
+                  "PARAGUAY_MIGRACIONES_LAW_6984_2026"
+                ]
+              },
+              {
+                "requirement": "Proof of lawful means/foreign-contract income should be checked because this is not a dedicated digital-nomad visa.",
+                "source_ids": [
+                  "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
+                ]
+              }
+            ],
+            "initial_validity": {
+              "value": "Temporary residence; exact grant length not captured from official text in this audit.",
+              "source_ids": [
+                "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
+              ],
+              "notes": "Verify current card validity with Migraciones before filing."
+            },
+            "extension_rules": {
+              "value": "Permanent residence may be available by change of category from temporary resident.",
+              "source_ids": [
+                "PARAGUAY_MIGRACIONES_RESIDENCIA_PERMANENTE_2026"
+              ],
+              "notes": "Official permanent residence page includes change of category from temporary resident."
+            },
+            "path_to_temporary_residence": {
+              "value": "Yes, through ordinary Residencia Temporal if document requirements are met.",
+              "source_ids": [
+                "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
+              ]
+            },
+            "path_to_permanent_residence": {
+              "value": "Possible through change of category from temporary resident.",
+              "source_ids": [
+                "PARAGUAY_MIGRACIONES_RESIDENCIA_PERMANENTE_2026"
+              ]
+            },
+            "path_to_citizenship": {
+              "value": "Possible with conversion/residence continuity, but citizenship is separate and should be verified legally.",
+              "source_ids": [
+                "PARAGUAY_NATIONALITY_SCREENING_2026"
+              ],
+              "notes": "Screening summary suggests 2 years temporary plus 3 years permanent residence and investment or steady job; verify with official/court practice."
+            },
+            "notes": "Not a digital-nomad visa. Treat as a professional/independent residence route that can fit a software engineer with diploma and foreign income, subject to exact filing checklist verification.",
+            "source_ids": [
+              "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026",
+              "PARAGUAY_MIGRACIONES_RESIDENCIA_PERMANENTE_2026",
+              "PARAGUAY_MIGRACIONES_LAW_6984_2026"
+            ]
+          }
+        ],
         "rejected_routes": [
           {
             "route_name": "Paraguay Investor Pass / residence by investment",
@@ -36930,16 +37246,16 @@
           },
           "digital_nomad_taxation": {
             "value": "Paraguay: other_independent_route_not_pure_digital_nomad. 10% top/screening PIT rate. 10% top/screening PIT rate. Indicative top/standard rate for screening; exact treatment depends on tax residence and investment/business structure.. Residence: Tax residence depends on day count, residence status, center of interests and local rules; verify before relocating or investing.. Income scope: Foreign-income treatment is not fully captured; verify whether residents are taxed on worldwide income, remittance basis, or source/territorial rules.. Special regimes: No special digital-nomad/freelancer tax regime confirmed in the current dataset.. Social/payroll: Depends on investment/business/self-employment structure; verify locally. Tax residence: Tax residence depends on day count, residence status, center of interests and local rules; verify before relocating or investing.. Foreign income: Foreign-income treatment not captured.. Digital-nomad/special regimes: No special digital-nomad regime confirmed in dataset.. Fixed payments: not_confirmed_in_dataset; No fixed tax/social payment amount is confirmed in the current dataset; do not assume zero. Check official tax/social-security pages before planning.",
-            "route_tax_category": "not_applicable_no_regular_remote_work_route",
+            "route_tax_category": "other_independent_route_not_pure_digital_nomad",
             "top_or_screening_pit_rate_percent": 10,
             "income_tax_display": "10% top/screening PIT rate. Indicative top/standard rate for screening; exact treatment depends on tax residence and investment/business structure.. Residence: Tax residence depends on day count, residence status, center of interests and local rules; verify before relocating or investing.. Income scope: Foreign-income treatment is not fully captured; verify whether residents are taxed on worldwide income, remittance basis, or source/territorial rules.. Special regimes: No special digital-nomad/freelancer tax regime confirmed in the current dataset.. Social/payroll: Depends on investment/business/self-employment structure; verify locally.",
             "tax_residency_rule": "Tax residence depends on day count, residence status, center of interests and local rules; verify before relocating or investing.",
-            "foreign_income_treatment": "Not applicable: no confirmed route for ordinary foreign-contract remote work under the selected profile.",
-            "special_digital_nomad_or_inbound_regime": "Not applicable",
-            "social_security_and_payroll": "Not applicable under this profile; depends on a different route if used.",
+            "foreign_income_treatment": "Not a dedicated digital-nomad tax regime. Tax treatment depends on Paraguayan tax residence, income source rules, and whether the applicant registers/works as a professional or self-employed person.",
+            "special_digital_nomad_or_inbound_regime": "No special digital-nomad tax regime confirmed.",
+            "social_security_and_payroll": "Not found for this exact foreign-contract professional route; verify whether self-employed/social-security registration is required.",
             "fixed_payments": {
-              "status": "Not applicable",
-              "notes": "No applicable digital-nomad/regular remote-worker route confirmed."
+              "status": "not_confirmed_in_dataset",
+              "notes": "No fixed monthly professional/digital-nomad payment confirmed in this audit. Verify residence fees, cedula/card fees, tax registration and any social-security obligations."
             },
             "practical_scenarios": {
               "under_tax_residency_threshold": "Often lower risk of residence-based taxation, but local-source income, local work, PE risk, VAT, visa conditions and treaty rules still need review.",
@@ -36948,10 +37264,13 @@
             },
             "confidence": "medium",
             "source_ids": [
-              "PARAGUAY_INVESTOR_PASS_RECHECK_2026"
+              "PARAGUAY_PWC_PIT_2026",
+              "PARAGUAY_PWC_RESIDENCE_2026",
+              "PARAGUAY_PWC_OTHER_TAXES_2026",
+              "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026"
             ],
             "reviewed_at": "2026-07-15",
-            "notes": "Excluded from eligible set after careful route-profile audit: Investor/golden visa route, not ordinary foreign-contract remote work."
+            "notes": "Paraguay restored as eligible via professional/temporary residence route, not investor route. Tax planning requires official/local verification."
           }
         },
         "timeline": {
@@ -37133,22 +37452,56 @@
             "url": "https://m.economictimes.com/nri/migrate/paraguay-launches-golden-visa-offering-permanent-residency-to-foreign-investors/articleshow/130826883.cms",
             "date_accessed": "2026-07-15",
             "note": "Current reporting describes an investor/golden visa route, not a remote-worker route."
+          },
+          {
+            "id": "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026",
+            "title": "Residencia Temporal",
+            "publisher": "Direccion Nacional de Migraciones, Paraguay",
+            "url": "https://migraciones.gov.py/residencias-temporales/",
+            "date_accessed": "2026-07-15",
+            "note": "Official Migraciones page lists ordinary temporary residence categories, including Residencia Temporal and Residencia Temporal MERCOSUR. Detailed requirements are partly published through site cards/images, so filing-level document checklist should be verified before filing."
+          },
+          {
+            "id": "PARAGUAY_MIGRACIONES_RESIDENCIA_PERMANENTE_2026",
+            "title": "Residencia Permanente",
+            "publisher": "Direccion Nacional de Migraciones, Paraguay",
+            "url": "https://migraciones.gov.py/residencia-permanente/",
+            "date_accessed": "2026-07-15",
+            "note": "Official Migraciones page lists permanent residence for change of category from temporary resident, investors, family of Paraguayans and Mercosur."
+          },
+          {
+            "id": "PARAGUAY_MIGRACIONES_LAW_6984_2026",
+            "title": "Ley N 6984/22 de Migraciones",
+            "publisher": "Direccion Nacional de Migraciones, Paraguay",
+            "url": "https://migraciones.gov.py/ley-n-6984-22-de-migraciones/",
+            "date_accessed": "2026-07-15",
+            "note": "Official Migraciones law page for the current migration-law framework."
+          },
+          {
+            "id": "PARAGUAY_NATIONALITY_SCREENING_2026",
+            "title": "Paraguayan nationality law screening summary",
+            "publisher": "Wikipedia summary citing Ley N 6984/22 and Paraguayan constitutional framework; official legal cleanup recommended before filing",
+            "url": "https://en.wikipedia.org/wiki/Paraguayan_nationality_law",
+            "date_accessed": "2026-07-15",
+            "note": "Used only as screening support for naturalisation timeline: 2 years temporary residence plus 3 years permanent residence, and either investment or steady job. Verify with Paraguayan counsel before relying on citizenship timeline."
           }
         ],
-        "confidence": "medium",
+        "confidence": "medium_low",
         "research_notes": "Chat/web batch pass; no valid route found in current source sweep.",
         "settlement_track": {
-          "classification": "not_valid_no_regular_remote_work_route",
+          "classification": "possible_with_conversion",
           "can_lead_to_citizenship_from_this_route": "uncertain",
-          "citizenship_track_strength": "medium",
+          "citizenship_track_strength": "possible_with_conversion",
           "requires_switch_to_another_status": true,
           "nomad_only_warning": null,
-          "summary": "Rechecked from false: Paraguay now has a reported 2026 Investor Pass / golden visa giving fast-track permanent residence by investment. This is not a digital-nomad route, but it is independent and does not require a local employer, so it qualifies as an investor/entrepreneur-style route if the applicant has capital.",
+          "summary": "Temporary residence may support later permanent residence by change of category, and citizenship may be possible after qualifying residence. This is not a digital-nomad status; verify whether professional/diploma temporary residence counts for the intended citizenship timeline.",
           "source_ids": [
-            "PARAGUAY_INVESTOR_PASS_RECHECK_2026"
+            "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026",
+            "PARAGUAY_MIGRACIONES_RESIDENCIA_PERMANENTE_2026",
+            "PARAGUAY_NATIONALITY_SCREENING_2026"
           ],
           "reviewed_at": "2026-07-15",
-          "notes": "Investor/golden visa route, not ordinary foreign-contract remote work."
+          "notes": "Possible with conversion from temporary residence to permanent residence; citizenship requires separate legal verification."
         },
         "child_citizenship": {
           "birthright_citizenship": {
@@ -37189,7 +37542,7 @@
             "PARAGU_FALSE_RECHECK_2026"
           ]
         },
-        "fully_matched": false,
+        "fully_matched": true,
         "full_match_recheck": {
           "reviewed_at": "2026-07-15",
           "status": "checked_required_fields_present",
@@ -37208,11 +37561,12 @@
           "notes": "Structural recheck only: required dashboard fields are present. Legal/tax decisions still require source-level review before filing."
         },
         "regular_foreign_contract_remote_work_fit": {
-          "value": false,
+          "value": true,
           "source_ids": [
-            "PARAGUAY_INVESTOR_PASS_RECHECK_2026"
+            "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026",
+            "PARAGUAY_MIGRACIONES_RESIDENCIA_PERMANENTE_2026"
           ],
-          "notes": "Investor/golden visa route, not ordinary foreign-contract remote work."
+          "notes": "Eligible as an independent residence/professional-diploma route rather than a digital-nomad visa. Confirm exact acceptance of foreign-contract income and diploma documents with Migraciones or local counsel before filing."
         },
         "audit": {
           "regular_remote_worker_recheck_2026": {
@@ -37223,8 +37577,21 @@
             "source_ids": [
               "PARAGUAY_INVESTOR_PASS_RECHECK_2026"
             ]
+          },
+          "paraguay_professional_diploma_recheck_2026": {
+            "date": "2026-07-15",
+            "previous_valid_for_selection": false,
+            "updated_valid_for_selection": true,
+            "updated_fully_matched": true,
+            "reason": "Restored Paraguay because ordinary temporary residence/professional-diploma route is distinct from the rejected investor/golden route and may fit an independent software engineer with diploma and foreign-contract income.",
+            "source_ids": [
+              "PARAGUAY_MIGRACIONES_RESIDENCIA_TEMPORAL_2026",
+              "PARAGUAY_MIGRACIONES_RESIDENCIA_PERMANENTE_2026",
+              "PARAGUAY_MIGRACIONES_LAW_6984_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "possible_with_conversion"
       }
     },
     {
@@ -37547,7 +37914,7 @@
         "country": "Philippines",
         "researched_at": "2026-07-15",
         "valid_for_selection": false,
-        "selection_summary": "Повторная проверка 2026: Executive Order No. 86 authorizes creation of a Philippines digital nomad visa, but no active official application route or filing checklist was found, and current reporting still says applications were not open/preparing. For this selection it is not actionable until an official application channel exists.",
+        "selection_summary": "2026 re-check: Executive Order No. 86 authorizes creation of a Philippines digital nomad visa, but no active official application route or filing checklist was found, and current reporting still says applications were not open/preparing. For this selection it is not actionable until an official application channel exists.",
         "best_routes": [],
         "rejected_routes": [
           {
@@ -42705,13 +43072,13 @@
       "data": {
         "country": "Slovenia",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Повторная проверка 2026: Slovenia is treated as valid for a temporary remote-work stay because current reporting says the digital nomad visa launched from 21 November 2025 with online/consular applications. However, it is a temporary nomad-only route: up to one year, non-renewable, and no direct citizenship/permanent-settlement track from this status was confirmed.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Slovenia should be treated as uncertain, not eligible. Current reporting says a digital nomad visa launched in late 2025, but this audit did not capture an official active application channel/checklist.",
         "best_routes": [
           {
             "route_name": "Digital Nomad Visa",
             "route_type": "digital_nomad_visa",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -42754,7 +43121,10 @@
               "requires_switch_to_another_status": true,
               "notes": "The reported digital nomad visa is for temporary residence only. Citizenship would require switching into another qualifying residence category and meeting ordinary long-term residence/naturalization rules."
             },
-            "notes": "Valid for temporary remote stay, not for direct long-term settlement or citizenship planning."
+            "notes": "Valid for temporary remote stay, not for direct long-term settlement or citizenship planning. News-reported route, but official filing channel not confirmed.",
+            "source_ids": [
+              "SLOVENIA_DN_OFFICIAL_NOT_CONFIRMED_2026"
+            ]
           }
         ],
         "rejected_routes": [],
@@ -43011,16 +43381,27 @@
             "url": "https://taxsummaries.pwc.com/slovenia/individual/other-taxes",
             "date_accessed": "2026-07-15",
             "note": "Used as standardized social-security/other-tax verification source for eligible-country tax audit."
+          },
+          {
+            "id": "SLOVENIA_DN_OFFICIAL_NOT_CONFIRMED_2026",
+            "title": "Slovenia digital nomad visa official-channel re-check",
+            "publisher": "Current route audit",
+            "url": "https://www.gov.si/en/",
+            "date_accessed": "2026-07-15",
+            "note": "Dataset relied on news/travel reporting; official application-channel evidence was not captured in this pass."
           }
         ],
-        "confidence": "medium_low",
+        "confidence": "low",
         "research_notes": "Chat/web batch pass; official portal cleanup recommended before filing.",
         "settlement_track": {
-          "classification": "temporary_nomad_only",
-          "can_lead_to_citizenship_from_this_route": false,
+          "classification": "weak_or_uncertain_citizenship_track",
+          "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "none_or_separate_route_required",
-          "requires_switch_to_another_status": true,
-          "notes": "The reported digital nomad visa is for temporary residence only. Citizenship would require switching into another qualifying residence category and meeting ordinary long-term residence/naturalization rules."
+          "requires_switch_to_another_status": "uncertain",
+          "notes": "News-reported route, but official filing channel not confirmed.",
+          "source_ids": [
+            "SLOVENIA_DN_OFFICIAL_NOT_CONFIRMED_2026"
+          ]
         },
         "child_citizenship": {
           "birthright_citizenship": {
@@ -43062,7 +43443,7 @@
           ]
         },
         "can_lead_to_citizenship_from_this_route": false,
-        "citizenship_track_strength": "none_or_separate_route_required",
+        "citizenship_track_strength": "weak_or_uncertain",
         "nomad_only_warning": "Digital nomad stay only: reported as one year and non-renewable; not a direct citizenship route.",
         "income_requirement_display": {
           "currency": "TBD",
@@ -43072,15 +43453,26 @@
         },
         "fully_matched": false,
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
-          "source_ids": [],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "value": "needs_manual_review",
+          "source_ids": [
+            "SLOVENIA_DN_OFFICIAL_NOT_CONFIRMED_2026"
+          ],
+          "notes": "News-reported route, but official filing channel not confirmed."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "News-reported route, but official filing channel not confirmed.",
+            "source_ids": [
+              "SLOVENIA_DN_OFFICIAL_NOT_CONFIRMED_2026"
+            ]
           }
         }
       }
@@ -50194,13 +50586,13 @@
       "data": {
         "country": "Uruguay",
         "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Uruguay offers a digital-nomad style provisional identity/residence route for remote workers. It is a valid Latin American remote-work option, though exact current filing details should be verified on Uruguay government pages.",
+        "valid_for_selection": "uncertain",
+        "selection_summary": "Careful re-check 2026: Uruguay remains plausible but should be treated as uncertain until the exact government procedure page/checklist is captured. The route appears to be a digital-nomad/provisional-identity style stay, but filing details are not strong enough in this dataset for fully matched treatment.",
         "best_routes": [
           {
             "route_name": "Digital Nomad Provisional Identity / remote work stay",
             "route_type": "digital_nomad_residence",
-            "valid_for_selection": true,
+            "valid_for_selection": "uncertain",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -50282,9 +50674,10 @@
               ],
               "notes": "The selected route is PR/residence-oriented or can plausibly be converted/maintained as qualifying residence for naturalisation if the applicant actually relocates and satisfies residence, language, tax and continuity rules."
             },
-            "notes": "Good route candidate; official procedure should be checked before filing.",
+            "notes": "Good route candidate; official procedure should be checked before filing. Plausible government-route lead, but exact filing checklist not confirmed in dataset.",
             "source_ids": [
-              "UY1"
+              "UY1",
+              "URUGUAY_DN_FILING_DETAILS_NOT_CONFIRMED_2026"
             ],
             "income_requirement_display": {
               "value": "No fixed income threshold captured; remote work/provisional identity requires proof of means/activity",
@@ -50616,6 +51009,14 @@
             "url": "https://taxsummaries.pwc.com/uruguay/individual/other-taxes",
             "date_accessed": "2026-07-15",
             "note": "Used as standardized social-security/other-tax verification source for eligible-country tax audit."
+          },
+          {
+            "id": "URUGUAY_DN_FILING_DETAILS_NOT_CONFIRMED_2026",
+            "title": "Uruguay digital nomad provisional identity route filing-detail re-check",
+            "publisher": "Government of Uruguay / current route audit",
+            "url": "https://www.gub.uy/tramites/",
+            "date_accessed": "2026-07-15",
+            "note": "Government procedures portal exists, but exact current filing details were not captured enough to keep fully matched confidence."
           }
         ],
         "confidence": "low",
@@ -50667,18 +51068,19 @@
           "warning": "Use as screening data. Before acting, verify with official nationality law/immigration counsel because residence-counting and family rules change and can be discretionary."
         },
         "settlement_track": {
-          "classification": "strong_citizenship_track",
-          "can_lead_to_citizenship_from_this_route": true,
+          "classification": "weak_or_uncertain_citizenship_track",
+          "can_lead_to_citizenship_from_this_route": "uncertain",
           "citizenship_track_strength": "high",
-          "requires_switch_to_another_status": false,
+          "requires_switch_to_another_status": "uncertain",
           "nomad_only_warning": null,
           "summary": "The selected route is PR/residence-oriented or can plausibly be converted/maintained as qualifying residence for naturalisation if the applicant actually relocates and satisfies residence, language, tax and continuity rules.",
           "source_ids": [
-            "URUGUA_INCOME_TRACK_2026"
+            "URUGUAY_DN_FILING_DETAILS_NOT_CONFIRMED_2026"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-15",
+          "notes": "Plausible government-route lead, but exact filing checklist not confirmed in dataset."
         },
-        "fully_matched": true,
+        "fully_matched": false,
         "full_match_recheck": {
           "reviewed_at": "2026-07-15",
           "status": "checked_required_fields_present",
@@ -50697,19 +51099,29 @@
           "notes": "Structural recheck only: required dashboard fields are present. Legal/tax decisions still require source-level review before filing."
         },
         "regular_foreign_contract_remote_work_fit": {
-          "value": true,
+          "value": "needs_manual_review",
           "source_ids": [
-            "UY1"
+            "URUGUAY_DN_FILING_DETAILS_NOT_CONFIRMED_2026"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Plausible government-route lead, but exact filing checklist not confirmed in dataset."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
             "date": "2026-07-15",
             "value": true,
             "reason": "Filled missing required profile-fit field for remaining eligible countries after stricter route-profile downgrades."
+          },
+          "official_filing_channel_recheck_2026": {
+            "date": "2026-07-15",
+            "updated_valid_for_selection": "uncertain",
+            "updated_fully_matched": false,
+            "reason": "Plausible government-route lead, but exact filing checklist not confirmed in dataset.",
+            "source_ids": [
+              "URUGUAY_DN_FILING_DETAILS_NOT_CONFIRMED_2026"
+            ]
           }
-        }
+        },
+        "citizenship_track_strength": "weak_or_uncertain"
       }
     },
     {

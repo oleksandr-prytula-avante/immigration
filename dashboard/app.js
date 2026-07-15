@@ -2,13 +2,16 @@ const state = {
   raw: null,
   rows: [],
   selectedCountry: null,
-  sort: { key: "citizenship", direction: "asc" }
+  sort: { key: "country", direction: "asc" },
+  pendingUrlState: null,
+  isRestoringUrlState: false
 };
 
 const elements = {
   file: document.querySelector("#jsonFile"),
   search: document.querySelector("#searchInput"),
   valid: document.querySelector("#validFilter"),
+  language: document.querySelector("#languageFilter"),
   citizenshipTrack: document.querySelector("#citizenshipTrackFilter"),
   fullyMatched: document.querySelector("#fullyMatchedFilter"),
   incomeMax: document.querySelector("#incomeMax"),
@@ -25,12 +28,14 @@ const elements = {
 };
 
 document.addEventListener("DOMContentLoaded", async () => {
+  state.pendingUrlState = readUrlState();
+  applyUrlStateBeforeData();
   bindEvents();
   try {
     const demo = await fetch("./data/all-countries.json").then((response) => response.json());
-    loadDataset(demo, "Demo JSON loaded. You can upload a result file.");
+    loadDataset(demo, "DEMO JSON LOADED. YOU CAN UPLOAD A RESULT FILE.");
   } catch {
-    elements.fileStatus.textContent = "Choose a result JSON file to build the dashboard.";
+    elements.fileStatus.textContent = "CHOOSE A RESULT JSON FILE TO BUILD THE DASHBOARD.";
     render();
   }
 });
@@ -42,14 +47,36 @@ function bindEvents() {
 
     try {
       const json = JSON.parse(await file.text());
-      loadDataset(json, `Loaded file: ${file.name}`);
+      loadDataset(json, `LOADED FILE: ${file.name}`);
     } catch (error) {
-      elements.fileStatus.textContent = `Could not read JSON: ${error.message}`;
+      elements.fileStatus.textContent = `COULD NOT READ JSON: ${error.message}`;
     }
   });
 
-  [elements.search, elements.valid, elements.citizenshipTrack, elements.fullyMatched, elements.incomeMax, elements.taxMax, elements.citizenshipMax].forEach((input) => {
-    input.addEventListener("input", render);
+  const resettableFilters = [
+    elements.search,
+    elements.valid,
+    elements.language,
+    elements.citizenshipTrack,
+    elements.incomeMax,
+    elements.taxMax,
+    elements.citizenshipMax
+  ];
+
+  resettableFilters.forEach((input) => {
+    input.addEventListener(filterEventName(input), () => {
+      elements.fullyMatched.checked = false;
+      state.selectedCountry = null;
+      render();
+    });
+  });
+
+  elements.fullyMatched.addEventListener("change", () => {
+    if (elements.fullyMatched.checked) {
+      resetStandardFilters();
+    }
+    state.selectedCountry = null;
+    render();
   });
 
   document.querySelectorAll("th[data-sort]").forEach((header) => {
@@ -68,8 +95,9 @@ function bindEvents() {
 function loadDataset(json, statusText) {
   state.raw = json;
   state.rows = normalizeResults(json);
-  state.selectedCountry = null;
   elements.fileStatus.textContent = statusText;
+  syncLanguageFilterOptions();
+  applyUrlStateAfterData();
   render();
 }
 
@@ -80,7 +108,7 @@ function normalizeResults(json) {
     const data = item.data ?? item;
     const bestRoute = data.best_routes?.[0] ?? null;
     return {
-      country: item.country ?? data.country ?? "Unknown",
+      country: item.country ?? data.country ?? "UNKNOWN",
       status: item.status ?? "ok",
       data,
       valid: data.valid_for_selection ?? "uncertain",
@@ -93,8 +121,18 @@ function normalizeResults(json) {
       jusSoli: data.child_citizenship?.birthright_citizenship?.value ?? null,
       income: numberValue(bestRoute?.minimum_monthly_income_usd),
       incomeText: bestRoute?.income_requirement_display?.value ?? null,
-      tax: numberValue(data.taxes?.income_tax_rate_percent),
-      citizenshipYears: numberValue(data.timeline?.total_years_to_citizenship),
+      tax: firstNumberValue(
+        data.taxes?.taxation_system?.top_personal_income_tax_rate_percent,
+        data.taxes?.digital_nomad_taxation?.top_or_screening_pit_rate_percent,
+        data.taxes?.income_tax_rate_percent
+      ),
+      citizenshipYears: firstNumberValue(
+        data.timeline?.total_years_to_citizenship,
+        data.timeline?.years_to_citizenship,
+        data.citizenship?.years_to_citizenship,
+        data.citizenship?.ordinary_naturalization_years,
+        data.settlement_track?.years_to_citizenship
+      ),
       sourceCount: data.sources?.length ?? 0,
       error: item.error ?? null
     };
@@ -107,11 +145,125 @@ function render() {
   renderTable(rows);
   renderDetails(rows);
   elements.visibleCount.textContent = rows.length;
+  updateUrlState();
+}
+
+function readUrlState() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    search: params.get("q"),
+    status: params.get("status"),
+    language: params.get("language"),
+    citizenshipTrack: params.get("track"),
+    fullyMatched: params.get("fullyMatched"),
+    incomeMax: params.get("incomeMax"),
+    taxMax: params.get("taxMax"),
+    citizenshipMax: params.get("citizenshipMax"),
+    sort: params.get("sort"),
+    direction: params.get("direction"),
+    selected: params.get("selected")
+  };
+}
+
+function applyUrlStateBeforeData() {
+  const urlState = state.pendingUrlState;
+  if (!urlState) return;
+
+  state.isRestoringUrlState = true;
+  setInputValue(elements.search, urlState.search);
+  setSelectValue(elements.valid, urlState.status);
+  setSelectValue(elements.citizenshipTrack, urlState.citizenshipTrack);
+  setInputValue(elements.incomeMax, urlState.incomeMax);
+  setInputValue(elements.taxMax, urlState.taxMax);
+  setInputValue(elements.citizenshipMax, urlState.citizenshipMax);
+  if (urlState.fullyMatched !== null) {
+    elements.fullyMatched.checked = urlState.fullyMatched === "true";
+  }
+  if (elements.fullyMatched.checked) {
+    resetStandardFilters();
+  }
+  if (isValidSortKey(urlState.sort)) {
+    state.sort.key = urlState.sort;
+  }
+  if (urlState.direction === "asc" || urlState.direction === "desc") {
+    state.sort.direction = urlState.direction;
+  }
+  state.isRestoringUrlState = false;
+}
+
+function applyUrlStateAfterData() {
+  const urlState = state.pendingUrlState;
+  if (!urlState) {
+    state.selectedCountry = null;
+    return;
+  }
+
+  state.isRestoringUrlState = true;
+  if (!elements.fullyMatched.checked) {
+    setSelectValue(elements.language, urlState.language);
+  }
+  state.selectedCountry = state.rows.some((row) => row.country === urlState.selected)
+    ? urlState.selected
+    : null;
+  state.isRestoringUrlState = false;
+  state.pendingUrlState = null;
+}
+
+function resetStandardFilters() {
+  elements.search.value = "";
+  elements.valid.value = "all";
+  elements.language.value = "all";
+  elements.citizenshipTrack.value = "all";
+  elements.incomeMax.value = "";
+  elements.taxMax.value = "";
+  elements.citizenshipMax.value = "";
+}
+
+function updateUrlState() {
+  if (state.isRestoringUrlState) return;
+
+  const params = new URLSearchParams();
+  setUrlParam(params, "q", elements.search.value.trim());
+  setUrlParam(params, "status", elements.valid.value, "true");
+  setUrlParam(params, "language", elements.language.value, "all");
+  setUrlParam(params, "track", elements.citizenshipTrack.value, "all");
+  setUrlParam(params, "fullyMatched", String(elements.fullyMatched.checked), "true");
+  setUrlParam(params, "incomeMax", elements.incomeMax.value);
+  setUrlParam(params, "taxMax", elements.taxMax.value);
+  setUrlParam(params, "citizenshipMax", elements.citizenshipMax.value);
+  setUrlParam(params, "sort", state.sort.key, "country");
+  setUrlParam(params, "direction", state.sort.direction, "asc");
+  setUrlParam(params, "selected", state.selectedCountry);
+
+  const query = params.toString();
+  const nextUrl = `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`;
+  window.history.replaceState(null, "", nextUrl);
+}
+
+function setInputValue(input, value) {
+  if (value !== null) input.value = value;
+}
+
+function setSelectValue(select, value) {
+  if (value !== null && Array.from(select.options).some((option) => option.value === value)) {
+    select.value = value;
+  }
+}
+
+function setUrlParam(params, key, value, defaultValue = "") {
+  if (value !== null && value !== undefined && value !== "" && value !== defaultValue) {
+    params.set(key, value);
+  }
+}
+
+function isValidSortKey(key) {
+  return ["country", "valid", "income", "tax", "citizenship", "jusSoli", "citizenshipTrack"].includes(key);
 }
 
 function filteredRows() {
   const query = elements.search.value.trim().toLowerCase();
   const valid = elements.valid.value;
+  const language = elements.language.value;
   const citizenshipTrack = elements.citizenshipTrack.value;
   const fullyMatched = elements.fullyMatched.checked;
   const incomeMax = parseOptionalNumber(elements.incomeMax.value);
@@ -134,8 +286,9 @@ function filteredRows() {
 
     if (query && !haystack.includes(query)) return false;
     if (valid !== "all" && String(row.valid) !== valid && row.status !== valid) return false;
+    if (language !== "all" && !matchesLanguage(row, language)) return false;
     if (citizenshipTrack !== "all" && !matchesCitizenshipTrack(row.citizenshipTrack, citizenshipTrack)) return false;
-    if (fullyMatched && !hasEligibleCitizenshipPath(row)) return false;
+    if (fullyMatched && !isInterestingRow(row)) return false;
     if (incomeMax !== null && row.income !== null && row.income > incomeMax) return false;
     if (taxMax !== null && row.tax !== null && row.tax > taxMax) return false;
     if (citizenshipMax !== null && row.citizenshipYears !== null && row.citizenshipYears > citizenshipMax) return false;
@@ -146,18 +299,39 @@ function filteredRows() {
 function compareRows(a, b) {
   const direction = state.sort.direction === "asc" ? 1 : -1;
   const key = state.sort.key;
-  if (key === "country") return compareCountries(a, b) * direction || compareCitizenshipYears(a, b);
+  const primaryResult = compareBySortKey(a, b, key) * direction;
+  return primaryResult || compareDefaultOrder(a, b, key);
+}
 
+function compareBySortKey(a, b, key) {
+  if (key === "country") return compareCountries(a, b);
+  if (key === "valid") return compareStatuses(a, b);
+  if (key === "citizenshipTrack") return compareCitizenshipTracks(a, b);
   const valueA = sortValue(a, key);
   const valueB = sortValue(b, key);
 
   if (typeof valueA === "number" || typeof valueB === "number") {
-    const numericResult = compareNullableNumbers(valueA, valueB) * direction;
-    return numericResult || compareCountries(a, b) || compareTaxRates(a, b);
+    return compareNullableNumbers(valueA, valueB);
   }
 
-  const stringResult = String(valueA ?? "").localeCompare(String(valueB ?? ""), "en") * direction;
-  return stringResult || compareCountries(a, b);
+  return String(valueA ?? "").localeCompare(String(valueB ?? ""), "en");
+}
+
+function compareDefaultOrder(a, b, primaryKey) {
+  const comparisons = [
+    ["country", compareCountries],
+    ["citizenship", compareCitizenshipYears],
+    ["valid", compareStatuses],
+    ["citizenshipTrack", compareCitizenshipTracks]
+  ];
+
+  for (const [key, compare] of comparisons) {
+    if (key === primaryKey) continue;
+    const result = compare(a, b);
+    if (result !== 0) return result;
+  }
+
+  return 0;
 }
 
 function compareCountries(a, b) {
@@ -172,16 +346,22 @@ function compareTaxRates(a, b) {
   return compareNullableNumbers(a.tax, b.tax);
 }
 
+function compareStatuses(a, b) {
+  return statusRank(a) - statusRank(b);
+}
+
+function compareCitizenshipTracks(a, b) {
+  return citizenshipTrackRank(a.citizenshipTrack) - citizenshipTrackRank(b.citizenshipTrack);
+}
+
 function compareNullableNumbers(a, b) {
   return (a ?? Number.POSITIVE_INFINITY) - (b ?? Number.POSITIVE_INFINITY);
 }
 
 function sortValue(row, key) {
-  if (key === "valid") return String(row.valid);
   if (key === "income") return row.income;
   if (key === "tax") return row.tax;
   if (key === "citizenship") return row.citizenshipYears;
-  if (key === "citizenshipTrack") return citizenshipTrackRank(row.citizenshipTrack);
   if (key === "jusSoli") return jusSoliRank(row.jusSoli);
   return row.country;
 }
@@ -189,21 +369,22 @@ function sortValue(row, key) {
 function renderMetrics() {
   const okRows = state.rows.filter((row) => row.status === "ok");
   const validRows = okRows.filter((row) => row.valid === true);
-  const eligiblePathRows = validRows.filter((row) => hasEligibleCitizenshipPath(row));
+  const totalMinusNotEligibleRows = state.rows.filter((row) => row.valid !== false);
+  const fullyMatchedOrReviewRows = okRows.filter(isInterestingRow);
   const incomes = validRows.map((row) => row.income).filter((value) => value !== null);
   const avgIncome = incomes.length
     ? Math.round(incomes.reduce((sum, value) => sum + value, 0) / incomes.length)
     : null;
 
   elements.metricTotal.textContent = state.rows.length;
-  elements.metricValid.textContent = validRows.length;
-  elements.metricEligiblePath.textContent = eligiblePathRows.length;
-  elements.metricAvgIncome.textContent = avgIncome === null ? "Not found" : money(avgIncome);
+  elements.metricValid.textContent = totalMinusNotEligibleRows.length;
+  elements.metricEligiblePath.textContent = fullyMatchedOrReviewRows.length;
+  elements.metricAvgIncome.textContent = avgIncome === null ? "NOT FOUND" : money(avgIncome);
 }
 
 function renderTable(rows) {
   if (!rows.length) {
-    elements.rows.innerHTML = '<tr><td colspan="9">No countries match the selected filters.</td></tr>';
+    elements.rows.innerHTML = '<tr><td colspan="9">NO COUNTRIES MATCH THE SELECTED FILTERS.</td></tr>';
     return;
   }
 
@@ -212,17 +393,16 @@ function renderTable(rows) {
       <td class="number-col">${index + 1}</td>
       <td>
         <span class="country-name">${escapeHtml(row.country)}</span>
-        <span class="subtext">${escapeHtml(formatLanguages(row.languages))}</span>
-        <span class="subtext">${escapeHtml(row.confidence ? `confidence: ${row.confidence}` : `${row.sourceCount} sources`)}</span>
+        <span class="language-chip-row">${formatLanguageChips(row.languages)}</span>
       </td>
       <td class="status-col">${statusPill(row)}</td>
       <td>${escapeHtml(formatIncome(row))}</td>
       <td>${formatNullable(row.tax, (value) => `${value}%`)}</td>
-      <td>${formatNullable(row.citizenshipYears, (value) => `${value} yrs`)}</td>
+      <td>${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</td>
       <td>${jusSoliPill(row.jusSoli)}</td>
       <td>${citizenshipTrackPill(row.citizenshipTrack)}</td>
       <td class="route-col">
-        ${escapeHtml(row.bestRouteName ?? "Not found")}
+        ${escapeHtml(row.bestRouteName ?? "NOT FOUND")}
         <span class="subtext">${escapeHtml(row.bestRouteType ?? "")}</span>
       </td>
     </tr>
@@ -238,30 +418,30 @@ function renderTable(rows) {
 
 function renderDetails(visibleRows) {
   if (!state.selectedCountry) {
-    elements.details.innerHTML = '<p class="empty">Select a country in the table to see details.</p>';
+    elements.details.innerHTML = '<p class="empty">SELECT A COUNTRY IN THE TABLE TO SEE DETAILS.</p>';
     return;
   }
 
   if (!visibleRows.some((item) => item.country === state.selectedCountry)) {
     state.selectedCountry = null;
-    elements.details.innerHTML = '<p class="empty">Select a country in the table to see details.</p>';
+    elements.details.innerHTML = '<p class="empty">SELECT A COUNTRY IN THE TABLE TO SEE DETAILS.</p>';
     return;
   }
 
   const row = state.rows.find((item) => item.country === state.selectedCountry);
   if (!row) {
     state.selectedCountry = null;
-    elements.details.innerHTML = '<p class="empty">Select a country in the table to see details.</p>';
+    elements.details.innerHTML = '<p class="empty">SELECT A COUNTRY IN THE TABLE TO SEE DETAILS.</p>';
     return;
   }
 
   if (row.status === "error") {
     elements.details.innerHTML = `
       <h2>${escapeHtml(row.country)}</h2>
-      <p class="summary">The country request ended with an error.</p>
+      <p class="summary">THE COUNTRY REQUEST ENDED WITH AN ERROR.</p>
       <div class="detail-block">
-        <h3>Error</h3>
-        <p>${escapeHtml(row.error?.message ?? "Unknown error")}</p>
+        <h3>ERROR</h3>
+        <p>${escapeHtml(row.error?.message ?? "UNKNOWN ERROR")}</p>
       </div>
     `;
     return;
@@ -273,93 +453,129 @@ function renderDetails(visibleRows) {
 
   elements.details.innerHTML = `
     <h2>${escapeHtml(row.country)}</h2>
-    <p class="summary">${escapeHtml(row.summary || "Summary is not filled in.")}</p>
+    <p class="summary">${escapeHtml(row.summary || "SUMMARY IS NOT FILLED IN.")}</p>
     ${statusPill(row)}
+    <p class="subtext">${escapeHtml(formatResearchQuality(row))}</p>
 
     <div class="detail-block">
-      <h3>Best Route</h3>
-      <p>${escapeHtml(route?.route_name ?? "Not found")}</p>
+      <h3>BEST ROUTE</h3>
+      <p>${escapeHtml(route?.route_name ?? "NOT FOUND")}</p>
       <p class="summary">${escapeHtml(route?.notes ?? route?.initial_validity?.value ?? "")}</p>
     </div>
 
     <div class="detail-block">
-      <h3>Key Numbers</h3>
+      <h3>KEY NUMBERS</h3>
       <ul class="detail-list">
-        <li>Income: ${escapeHtml(formatIncome(row))}</li>
-        <li>Income proof: ${escapeHtml(formatIncomeProof(route))}</li>
-        <li>Tax: ${formatNullable(row.tax, (value) => `${value}%`)}</li>
-        <li>Citizenship timeline: ${formatNullable(row.citizenshipYears, (value) => `${value} yrs`)}</li>
+        <li>INCOME: ${escapeHtml(formatIncome(row))}</li>
+        <li>INCOME PROOF: ${escapeHtml(formatIncomeProof(route))}</li>
+        <li>TAX: ${formatNullable(row.tax, (value) => `${value}%`)}</li>
+        <li>CITIZENSHIP TIMELINE: ${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</li>
       </ul>
     </div>
 
     <div class="detail-block">
-      <h3>Taxation System</h3>
+      <h3>TAXATION SYSTEM</h3>
       <ul class="detail-list">
-        <li>Rate type: ${escapeHtml(data.taxes?.taxation_system?.rate_type ?? "Not found")}</li>
-        <li>Top/screening rate: ${formatNullable(data.taxes?.taxation_system?.top_personal_income_tax_rate_percent, (value) => `${value}%`)}</li>
-        <li>Residence: ${escapeHtml(data.taxes?.taxation_system?.tax_residency_rule ?? "Not found")}</li>
-        <li>Income scope: ${escapeHtml(data.taxes?.taxation_system?.income_scope ?? "Not found")}</li>
-        <li>Special regimes: ${escapeHtml(data.taxes?.taxation_system?.special_regimes ?? "Not found")}</li>
-        <li>Social/payroll: ${escapeHtml(data.taxes?.taxation_system?.social_security ?? "Not found")}</li>
+        <li>RATE TYPE: ${escapeHtml(data.taxes?.taxation_system?.rate_type ?? "NOT FOUND")}</li>
+        <li>TOP/SCREENING RATE: ${formatNullable(data.taxes?.taxation_system?.top_personal_income_tax_rate_percent, (value) => `${value}%`)}</li>
+        <li>RESIDENCE: ${escapeHtml(data.taxes?.taxation_system?.tax_residency_rule ?? "NOT FOUND")}</li>
+        <li>INCOME SCOPE: ${escapeHtml(data.taxes?.taxation_system?.income_scope ?? "NOT FOUND")}</li>
+        <li>SPECIAL REGIMES: ${escapeHtml(data.taxes?.taxation_system?.special_regimes ?? "NOT FOUND")}</li>
+        <li>SOCIAL/PAYROLL: ${escapeHtml(data.taxes?.taxation_system?.social_security ?? "NOT FOUND")}</li>
       </ul>
       <p class="summary">${escapeHtml(data.taxes?.taxation_system?.notes ?? "")}</p>
     </div>
 
     <div class="detail-block">
-      <h3>Digital Nomad Tax Detail</h3>
+      <h3>DIGITAL NOMAD TAX DETAIL</h3>
       <ul class="detail-list">
-        <li>Route category: ${escapeHtml(data.taxes?.digital_nomad_taxation?.route_tax_category ?? "Not found")}</li>
-        <li>Foreign income: ${escapeHtml(data.taxes?.digital_nomad_taxation?.foreign_income_treatment ?? "Not found")}</li>
-        <li>Nomad/inbound regime: ${escapeHtml(data.taxes?.digital_nomad_taxation?.special_digital_nomad_or_inbound_regime ?? "Not found")}</li>
-        <li>Social/payroll: ${escapeHtml(data.taxes?.digital_nomad_taxation?.social_security_and_payroll ?? "Not found")}</li>
-        <li>Fixed payments: ${escapeHtml(data.taxes?.digital_nomad_taxation?.fixed_payments?.status ?? "Not found")}</li>
-        <li>Fixed payment notes: ${escapeHtml(data.taxes?.digital_nomad_taxation?.fixed_payments?.notes ?? "Not found")}</li>
+        <li>ROUTE CATEGORY: ${escapeHtml(data.taxes?.digital_nomad_taxation?.route_tax_category ?? "NOT FOUND")}</li>
+        <li>FOREIGN INCOME: ${escapeHtml(data.taxes?.digital_nomad_taxation?.foreign_income_treatment ?? "NOT FOUND")}</li>
+        <li>NOMAD/INBOUND REGIME: ${escapeHtml(data.taxes?.digital_nomad_taxation?.special_digital_nomad_or_inbound_regime ?? "NOT FOUND")}</li>
+        <li>SOCIAL/PAYROLL: ${escapeHtml(data.taxes?.digital_nomad_taxation?.social_security_and_payroll ?? "NOT FOUND")}</li>
+        <li>FIXED PAYMENTS: ${escapeHtml(data.taxes?.digital_nomad_taxation?.fixed_payments?.status ?? "NOT FOUND")}</li>
+        <li>FIXED PAYMENT NOTES: ${escapeHtml(data.taxes?.digital_nomad_taxation?.fixed_payments?.notes ?? "NOT FOUND")}</li>
       </ul>
       <p class="summary">${escapeHtml(data.taxes?.digital_nomad_taxation?.notes ?? "")}</p>
     </div>
 
     <div class="detail-block">
-      <h3>Transitions</h3>
+      <h3>TRANSITIONS</h3>
       <ul class="detail-list">
-        <li>Track: ${citizenshipTrackPill(row.citizenshipTrack)}</li>
-        <li>Raw track: ${escapeHtml(data.settlement_track?.classification ?? "Not found")}</li>
-        <li>Citizenship from this route: ${escapeHtml(formatCitizenshipTrack(data.settlement_track?.can_lead_to_citizenship_from_this_route))}</li>
+        <li>TRACK: ${citizenshipTrackPill(row.citizenshipTrack)}</li>
+        <li>RAW TRACK: ${escapeHtml(data.settlement_track?.classification ?? "NOT FOUND")}</li>
+        <li>CITIZENSHIP FROM THIS ROUTE: ${escapeHtml(formatCitizenshipTrack(data.settlement_track?.can_lead_to_citizenship_from_this_route))}</li>
       </ul>
-      <p>${escapeHtml(data.timeline?.key_conditions?.value ?? "Not found.")}</p>
+      <p>${escapeHtml(data.timeline?.key_conditions?.value ?? "NOT FOUND.")}</p>
       <p class="summary">${escapeHtml(data.settlement_track?.summary ?? "")}</p>
     </div>
 
     <div class="detail-block">
-      <h3>Marriage And Child</h3>
-      <p>${escapeHtml(data.marriage?.requirements_and_risks?.value ?? "Not found.")}</p>
+      <h3>MARRIAGE AND CHILD</h3>
+      <p>${escapeHtml(data.marriage?.requirements_and_risks?.value ?? "NOT FOUND.")}</p>
       <p class="summary">${escapeHtml(data.child_citizenship?.benefit_to_migrant_father?.value ?? "")}</p>
     </div>
 
     <div class="detail-block">
-      <h3>Passport And Languages</h3>
+      <h3>PASSPORT AND LANGUAGES</h3>
       <ul class="detail-list">
-        <li>Rank: ${formatNullable(numberValue(data.passport?.rank), (value) => `#${value}`)}</li>
-        <li>Visa-free: ${formatNullable(numberValue(data.passport?.visa_free_destinations), (value) => `${value} destinations`)}</li>
-        <li>Languages: ${escapeHtml((data.languages?.official_languages ?? []).join(", ") || "Not found")}</li>
+        <li>RANK: ${formatNullable(numberValue(data.passport?.rank), (value) => `#${value}`)}</li>
+        <li>VISA-FREE: ${formatNullable(numberValue(data.passport?.visa_free_destinations), (value) => `${value} DESTINATIONS`)}</li>
+        <li>LANGUAGES: ${escapeHtml((data.languages?.official_languages ?? []).join(", ") || "NOT FOUND")}</li>
       </ul>
     </div>
 
     <div class="detail-block">
-      <h3>Sources</h3>
+      <h3>SOURCES</h3>
       <div class="sources">
         ${sources.length ? sources.map((source) => `
           <a href="${escapeAttr(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.title || source.url)}</a>
-        `).join("") : '<p class="empty">No sources listed.</p>'}
+        `).join("") : '<p class="empty">NO SOURCES LISTED.</p>'}
       </div>
     </div>
   `;
 }
 
 function statusPill(row) {
-  if (row.status === "error") return '<span class="pill bad">error</span>';
-  if (row.valid === true) return '<span class="pill good">eligible</span>';
-  if (row.valid === "uncertain") return '<span class="pill warn">review</span>';
-  return '<span class="pill bad">not eligible</span>';
+  if (row.status === "error") return '<span class="pill bad">ERROR</span>';
+  if (row.valid === true) return '<span class="pill good">ELIGIBLE</span>';
+  if (row.valid === "partial") return '<span class="pill info">PARTIAL</span>';
+  if (row.valid === "uncertain") return '<span class="pill warn">REVIEW</span>';
+  return '<span class="pill bad">NOT ELIGIBLE</span>';
+}
+
+function statusRank(row) {
+  if (row.valid === true) return 1;
+  if (row.valid === "partial") return 2;
+  if (row.valid === "uncertain") return 3;
+  if (row.valid === false) return 4;
+  if (row.status === "error") return 5;
+  return 6;
+}
+
+function syncLanguageFilterOptions() {
+  const current = elements.language.value;
+  const languages = Array.from(new Set(
+    state.rows.flatMap((row) => row.languages).filter(Boolean)
+  )).sort((a, b) => a.localeCompare(b, "en"));
+  const hasMissing = state.rows.some((row) => row.languages.length === 0);
+
+  elements.language.innerHTML = [
+    '<option value="all">ALL</option>',
+    ...languages.map((language) => `<option value="${escapeAttr(language)}">${escapeHtml(language.toUpperCase())}</option>`),
+    hasMissing ? '<option value="missing">NOT FOUND</option>' : ""
+  ].join("");
+
+  if (current === "missing" && hasMissing) {
+    elements.language.value = current;
+    return;
+  }
+
+  elements.language.value = languages.includes(current) ? current : "all";
+}
+
+function filterEventName(input) {
+  return input.tagName === "SELECT" ? "change" : "input";
 }
 
 function matchesCitizenshipTrack(actual, selected) {
@@ -367,11 +583,25 @@ function matchesCitizenshipTrack(actual, selected) {
   return actual === selected;
 }
 
+function matchesLanguage(row, selected) {
+  if (selected === "missing") return row.languages.length === 0;
+  return row.languages.some((language) => language.toLowerCase() === selected.toLowerCase());
+}
+
 function hasEligibleCitizenshipPath(row) {
-  return row.valid === true && row.data?.regular_foreign_contract_remote_work_fit?.value !== false && (
-    row.citizenshipTrack === "strong_citizenship_track" ||
-    row.citizenshipTrack === "possible_with_conversion"
-  );
+  return row.valid === true &&
+    row.data?.fully_matched === true &&
+    row.data?.regular_foreign_contract_remote_work_fit?.value === true &&
+    (
+      row.citizenshipTrack === "strong_citizenship_track" ||
+      row.citizenshipTrack === "possible_with_conversion"
+    );
+}
+
+function isInterestingRow(row) {
+  return hasEligibleCitizenshipPath(row) ||
+    row.valid === "partial" ||
+    row.valid === "uncertain";
 }
 
 function citizenshipTrackRank(value) {
@@ -384,12 +614,12 @@ function citizenshipTrackRank(value) {
 }
 
 function citizenshipTrackLabel(value) {
-  if (value === "strong_citizenship_track") return "Strong";
-  if (value === "possible_with_conversion") return "Conversion needed";
-  if (value === "weak_or_uncertain_citizenship_track") return "Weak / uncertain";
-  if (value === "temporary_nomad_only") return "Nomad only";
-  if (String(value).startsWith("not_valid")) return "Not valid";
-  return "Not found";
+  if (value === "strong_citizenship_track") return "STRONG";
+  if (value === "possible_with_conversion") return "CONVERSION NEEDED";
+  if (value === "weak_or_uncertain_citizenship_track") return "WEAK / UNCERTAIN";
+  if (value === "temporary_nomad_only") return "NOMAD ONLY";
+  if (String(value).startsWith("not_valid")) return "NOT VALID";
+  return "NOT FOUND";
 }
 
 function citizenshipTrackTone(value) {
@@ -416,12 +646,12 @@ function jusSoliRank(value) {
 
 function jusSoliLabel(value) {
   const normalized = String(value || "").toLowerCase();
-  if (normalized.includes("unconditional")) return "Yes";
-  if (normalized.includes("birthright")) return "Yes / exceptions";
-  if (normalized.includes("conditional")) return "Conditional";
-  if (normalized.includes("restricted") || normalized.includes("limited")) return "Limited";
-  if (normalized.includes("sanguinis")) return "No";
-  return "Not found";
+  if (normalized.includes("unconditional")) return "YES";
+  if (normalized.includes("birthright")) return "YES / EXCEPTIONS";
+  if (normalized.includes("conditional")) return "CONDITIONAL";
+  if (normalized.includes("restricted") || normalized.includes("limited")) return "LIMITED";
+  if (normalized.includes("sanguinis")) return "NO";
+  return "NOT FOUND";
 }
 
 function jusSoliTone(value) {
@@ -442,6 +672,14 @@ function numberValue(sourcedValue) {
   return null;
 }
 
+function firstNumberValue(...values) {
+  for (const value of values) {
+    const number = numberValue(value);
+    if (number !== null) return number;
+  }
+  return null;
+}
+
 function parseOptionalNumber(value) {
   if (value === "") return null;
   const number = Number(value);
@@ -449,29 +687,39 @@ function parseOptionalNumber(value) {
 }
 
 function formatNullable(value, formatter) {
-  return value === null || value === undefined ? "Not found" : formatter(value);
+  return value === null || value === undefined ? "NOT FOUND" : formatter(value);
 }
 
 function formatIncome(row) {
-  if (row.income !== null && row.income !== undefined) return `${money(row.income)} / mo`;
-  return row.incomeText || "Not found";
+  if (row.income !== null && row.income !== undefined) return `${money(row.income)} / MO`;
+  return row.incomeText || "NOT FOUND";
 }
 
 function formatIncomeProof(route) {
   const months = numberValue(route?.income_proof_months);
-  if (months !== null) return `${months} mo`;
-  return route?.income_proof_months?.display_value || route?.income_proof_months?.value || "Not found";
+  if (months !== null) return `${months} MO`;
+  return route?.income_proof_months?.display_value || route?.income_proof_months?.value || "NOT FOUND";
 }
 
 function formatLanguages(languages) {
-  return languages.length ? `Languages: ${languages.join(", ")}` : "Languages: Not found";
+  return languages.length ? languages.join(", ") : "NOT FOUND";
+}
+
+function formatLanguageChips(languages) {
+  const values = languages.length ? languages : ["NOT FOUND"];
+  return values.map((language) => `<span class="language-chip">${escapeHtml(language)}</span>`).join("");
+}
+
+function formatResearchQuality(row) {
+  const confidence = row.confidence ? row.confidence.toUpperCase() : "NOT FOUND";
+  return `RESEARCH QUALITY: ${confidence} · ${row.sourceCount} SOURCES`;
 }
 
 function formatCitizenshipTrack(value) {
-  if (value === true) return "yes, if conditions are met";
-  if (value === false) return "no, another status is required";
-  if (value === "uncertain") return "unclear / conversion needed";
-  return "Not found";
+  if (value === true) return "YES, IF CONDITIONS ARE MET";
+  if (value === false) return "NO, ANOTHER STATUS IS REQUIRED";
+  if (value === "uncertain") return "UNCLEAR / CONVERSION NEEDED";
+  return "NOT FOUND";
 }
 
 function money(value) {
