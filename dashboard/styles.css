@@ -233,13 +233,6 @@ th {
   cursor: pointer;
 }
 
-.number-col {
-  width: 4%;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
 .status-col {
   width: 9%;
   max-width: none;

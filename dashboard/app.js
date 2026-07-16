@@ -418,27 +418,26 @@ function renderMetrics() {
 
 function renderTable(rows) {
   if (!rows.length) {
-    elements.rows.innerHTML = '<tr><td colspan="9">NO COUNTRIES MATCH THE SELECTED FILTERS.</td></tr>';
+    elements.rows.innerHTML = '<tr><td colspan="8">NO COUNTRIES MATCH THE SELECTED FILTERS.</td></tr>';
     return;
   }
 
   elements.rows.innerHTML = rows.map((row, index) => `
     <tr class="${row.country === state.selectedCountry ? "active" : ""}" data-country="${escapeAttr(row.country)}">
-      <td class="number-col">${index + 1}</td>
       <td>
         <span class="country-name">${escapeHtml(row.country)}</span>
         <span class="language-chip-row">${formatLanguageChips(row.languages)}</span>
       </td>
       <td class="status-col">${statusPill(row)}</td>
-      <td class="income-col">${escapeHtml(formatIncome(row))}</td>
-      <td>${formatNullable(row.tax, (value) => `${value}%`)}</td>
-      <td>${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</td>
-      <td>${jusSoliPill(row.jusSoli)}</td>
-      <td class="nomad-col">${nomadTransitionPill(row.nomadTransition)}</td>
       <td class="route-col">
         ${escapeHtml(row.bestRouteName ?? "NOT FOUND")}
         <span class="subtext">${escapeHtml(row.bestRouteType ?? "")}</span>
       </td>
+      <td class="income-col">${escapeHtml(formatIncome(row))}</td>
+      <td>${formatNullable(row.tax, (value) => `${value}%`)}</td>
+      <td class="nomad-col">${nomadTransitionPill(row.nomadTransition)}</td>
+      <td>${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</td>
+      <td>${jusSoliPill(row.jusSoli)}</td>
     </tr>
   `).join("");
 
