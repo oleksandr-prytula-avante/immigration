@@ -24,6 +24,8 @@ What to research:
 3. For each potentially suitable route:
    - program name;
    - status type: visa, temporary residence, permanent residence, freelancer status, entrepreneur status, citizenship, or other;
+   - official application link: direct online application portal if available; otherwise the official route page or official visa/immigration authority page where the applicant starts or verifies the application;
+   - whether the application link is `direct_application`, `official_route_info`, `official_general_visa_portal`, `official_immigration_home`, or `not_found`;
    - whether the applicant can apply independently;
    - whether a local employer is required;
    - whether a foreign contract is required;
@@ -36,6 +38,8 @@ What to research:
 4. Taxes:
    - when tax residency starts;
    - personal income tax rate on this type of income, as a percentage;
+   - whether the system is flat, progressive, territorial/remittance-based, no personal income tax, or special-regime based;
+   - if taxation is progressive, capture the bracket/range structure where available: rate percentage, threshold/range in local currency, approximate USD threshold if reliable, and whether the dashboard numeric tax value is the top marginal/screening rate rather than the expected effective rate;
    - social contributions / fixed payments / minimum monthly payments;
    - separately check fixed payments for the digital nomad / self-employed scenario: mandatory health insurance, social security, minimum monthly contribution, flat/fixed freelancer tax, municipal/business registration fee, visa/residence-card fees, renewal fees, stamp duties, VAT registration thresholds, financial transaction taxes;
    - whether there are special regimes for digital nomads, freelancers, expatriates, remittance basis, territorial tax, non-dom, or tax holidays;
@@ -56,9 +60,13 @@ What to research:
    - warn about genuine-marriage checks and sham-marriage risks.
 7. Child citizenship by birth:
    - whether the country uses jus soli, jus sanguinis, or a mixed system;
+   - always fill `child_citizenship.birthright_citizenship.value` with one of: `unconditional_jus_soli`, `conditional_jus_soli`, `restricted_jus_soli`, `mostly_jus_sanguinis_or_conditional`, `jus_sanguinis_limited`, `restricted_jus_sanguinis`, or `uncertain`;
+   - do not leave birthright citizenship as `not found`, `not researched`, empty, or vague. If official law is not captured, use a cautious classification and explain the missing source in `notes`;
+   - for unrestricted/broad jus soli countries, use `unconditional_jus_soli` even when there are narrow diplomatic, foreign-government-service, enemy-occupation, or similar exceptions. Example: Canada is `unconditional_jus_soli` because the Citizenship Act grants citizenship to persons born in Canada, except narrow diplomatic/international-organization exceptions;
+   - separately verify whether the country has conditional or restricted jus soli, such as parent residence/permanent-residence requirements, registration requirements, anti-statelessness-only rules, foundling rules, double jus soli, or age/election requirements;
    - whether a child gets citizenship if both parents are migrants;
    - whether a child gets citizenship if only the father is a migrant and the other parent is a local citizen or permanent resident;
-   - whether birth of a citizen child gives the father advantages for residence, permanent residence, or citizenship.
+   - whether birth of a citizen child gives the father advantages for residence, permanent residence, or citizenship. Do not imply that father citizenship is automatic just because the child is a citizen.
 8. Passport:
    - passport rank in the Henley Passport Index or another named index;
    - number of visa-free destinations;
@@ -70,8 +78,11 @@ What to research:
    - how realistic it is to live and work remotely in English, Russian, or Ukrainian, if sources support that.
    - Always fill `languages.official_languages` for every country, even when the country is not eligible. Do not leave it empty and do not use vague values like "other official languages"; list the language names.
 10. Economy:
-   - average monthly salary in USD;
+   - average monthly salary for an average citizen/resident worker in USD and/or local currency;
    - median salary, if available;
+   - minimum and maximum monthly salary/range when a reliable source publishes a national wage distribution, official wage bands, minimum wage, or average advertised salary range. Do not invent min/max. If only minimum wage is available, put it in the minimum field and explain that it is statutory minimum wage rather than observed minimum salary. If max is not meaningful or not published, use `null` and explain;
+   - salary period and basis: monthly gross, monthly net, annual gross converted to monthly, minimum wage, formal-sector average, household survey, or job-advertisement average;
+   - local currency amount and approximate USD conversion where reliable. If conversion is approximate, say so in notes;
    - brief cost-of-living note only if there is a reliable source.
 
 Selection validity criteria:
@@ -111,6 +122,7 @@ Final country audit before returning JSON:
 - Ask: "Can this exact route count toward or convert into permanent residence/citizenship for an ordinary foreign-contract remote worker?" If not confirmed by official/current sources, do not mark it fully matched.
 - Ask: "Does this require a local employer, local client, local assignment, investment, startup/founder role, elite-talent threshold, or points/invitation route?" If yes, set `valid_for_selection=false` unless a separate ordinary remote-worker/freelance route exists.
 - Then ask: "Is this points/skilled/degree route independent, no local employer sponsor, and residence/permanent-residence oriented?" If yes, set `valid_for_selection="partial"` rather than `false`.
+- Re-check `child_citizenship.birthright_citizenship.value`: if the country has broad birthright citizenship, including Canada, United States, Mexico, most of Central/South America, and other unrestricted jus soli jurisdictions, do not return `not found` or `not researched`. If the rule is conditional, state the condition.
 - Use `rejected_routes` for attractive but non-fitting options, including visitor remote-work permission, closed/legacy programs, temporary-only digital nomad visas, passive-income-only routes, investor routes, and employer-sponsored routes.
 - Use `best_routes` for an independent skilled/points/degree route when it is the reason for `valid_for_selection="partial"`. Keep `fully_matched=false` and make `regular_foreign_contract_remote_work_fit.value=false`.
 - Do not keep empty fields as `No data`; use `Not found` or `not_confirmed_in_dataset` consistently with notes and source IDs.
@@ -121,7 +133,10 @@ Response requirements:
 - If the official income threshold is published only in local currency, do not leave the field empty: include the local currency amount and `income_requirement_display`. USD may be approximate or `null` if conversion is unreliable.
 - Do not invent exact numbers. If an exact number is unavailable, use `null` and explain in `notes`.
 - For `best_routes[0]`, always fill `income_requirement_display.value`, even if `minimum_monthly_income_usd.value=null`.
-- For all `valid_for_selection=true` countries, always fill `taxes.taxation_system`: `rate_type`, `top_personal_income_tax_rate_percent`, `tax_residency_rule`, `income_scope`, `special_regimes`, `social_security`, `confidence`, `source_ids`, `notes`.
+- For all `valid_for_selection=true` countries, always fill `taxes.taxation_system`: `rate_type`, `top_personal_income_tax_rate_percent`, `tax_residency_rule`, `income_scope`, `special_regimes`, `social_security`, `progressive_tax_notes`, `tax_brackets`, `confidence`, `source_ids`, `notes`.
+  - `rate_type` must be one of: `flat`, `progressive`, `none`, `territorial`, `remittance_basis`, `special_regime`, `mixed`, or `uncertain`.
+  - For progressive systems, set `top_personal_income_tax_rate_percent` to the top marginal/screening rate used for dashboard filtering, not an estimated effective rate. Explain this in `progressive_tax_notes`.
+  - Fill `tax_brackets` with available bracket rows. If exact brackets are not captured, use an empty array and explain what is missing in `progressive_tax_notes`; do not invent thresholds.
 - For all `valid_for_selection=true` countries, always fill `taxes.digital_nomad_taxation`:
   - `route_tax_category`;
   - `top_or_screening_pit_rate_percent`;
@@ -140,4 +155,16 @@ Response requirements:
   - `practical_scenarios.self_employed_or_local_registration`.
   If fixed payments are not found, do not leave them empty: use `not_confirmed_in_dataset` and explain that official verification is still needed.
 - Add `source_ids` for every important claim, pointing to the `sources` array.
+- Always fill `labor_market.average_citizen_salary` for every country:
+  - `min_salary_usd_monthly`, `average_salary_usd_monthly`, `median_salary_usd_monthly`, `max_salary_usd_monthly`;
+  - `min_salary_local_currency`, `average_salary_local_currency`, `median_salary_local_currency`, `max_salary_local_currency`;
+  - `currency`, `salary_basis`, `period`, `confidence`, `source_ids`, and `notes`.
+  - Use official statistics offices, labor ministries, social-security/wage agencies, ILO/OECD/World Bank, or reputable salary datasets. Prefer official statistics for average citizens over expat/job-board numbers.
+  - Do not guess min/max. If not found, use `null` for numeric USD values and `Not confirmed in dataset` in local-currency text, with notes explaining what is missing.
+- Always fill country-level `visa_application`:
+  - `application_url`: the direct official application URL if found; otherwise an official route/visa information URL; use `null` only if no official/current application or visa authority page was found.
+  - `application_url_type`: one of `direct_application`, `official_route_info`, `official_general_visa_portal`, `official_immigration_home`, or `not_found`.
+  - `title`, `source_ids`, `last_checked`, and `notes`.
+  - Prefer immigration authority, consulate, eVisa, e-government, or official route pages. Do not use blogs, news, Wikipedia, generic Google searches, or tax pages as the application URL except as notes explaining that the official application page was not found.
+  - If the country is not eligible, still provide the official visa/immigration page where a person would check or apply for visas when available.
 - Prefer concise output, but do not omit criteria, amounts, and timelines.

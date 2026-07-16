@@ -342,6 +342,16 @@ tbody tr.active {
   line-height: 1.5;
 }
 
+.explain {
+  margin: 8px 0 12px;
+  padding: 9px 10px;
+  border-left: 3px solid var(--accent);
+  border-radius: 0 7px 7px 0;
+  background: #f3f7f4;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
 .detail-block {
   padding-top: 14px;
   margin-top: 14px;
@@ -373,6 +383,49 @@ tbody tr.active {
   list-style: none;
 }
 
+.detail-list.compact {
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+
+.tax-brackets {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 16px;
+}
+
+.tax-bracket {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 4px 10px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fbfbf8;
+}
+
+.tax-bracket strong {
+  grid-row: span 2;
+  align-self: center;
+  color: var(--accent);
+}
+
+.tax-bracket span,
+.tax-bracket small,
+.tax-bracket p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tax-bracket small {
+  color: var(--muted);
+}
+
+.tax-bracket p {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+
 .sources {
   display: grid;
   gap: 8px;
@@ -387,6 +440,10 @@ tbody tr.active {
 .empty {
   margin: 0;
   color: var(--muted);
+}
+
+.empty.compact {
+  margin: 8px 0 16px;
 }
 
 @media (max-width: 980px) {

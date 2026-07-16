@@ -321,6 +321,42 @@ const sourcedNumber = {
   required: ["value", "source_ids", "notes"]
 };
 
+const sourcedBoolean = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    value: nullableBoolean,
+    source_ids: sourceIds,
+    notes: nullableString
+  },
+  required: ["value", "source_ids", "notes"]
+};
+
+const sourcedSelectionValue = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    value: { type: ["boolean", "string", "null"], enum: [true, false, "needs_manual_review", "uncertain", "partial", null] },
+    source_ids: sourceIds,
+    notes: nullableString
+  },
+  required: ["value", "source_ids", "notes"]
+};
+
+const incomeRequirementDisplay = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    value: nullableString,
+    currency_basis: nullableString,
+    usd_monthly_value: nullableNumber,
+    local_or_formula_value: nullableString,
+    notes: nullableString,
+    source_ids: sourceIds
+  },
+  required: ["value", "currency_basis", "usd_monthly_value", "local_or_formula_value", "notes", "source_ids"]
+};
+
 const routeSchema = {
   type: "object",
   additionalProperties: false,
@@ -349,6 +385,7 @@ const routeSchema = {
     direct_permanent_residence_possible: nullableBoolean,
     minimum_monthly_income_usd: sourcedNumber,
     minimum_income_local_currency: sourcedText,
+    income_requirement_display: incomeRequirementDisplay,
     income_proof_months: sourcedNumber,
     key_requirements: {
       type: "array",
@@ -381,6 +418,7 @@ const routeSchema = {
     "direct_permanent_residence_possible",
     "minimum_monthly_income_usd",
     "minimum_income_local_currency",
+    "income_requirement_display",
     "income_proof_months",
     "key_requirements",
     "initial_validity",
@@ -393,6 +431,266 @@ const routeSchema = {
   ]
 };
 
+const visaApplicationSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    application_url: nullableString,
+    application_url_type: {
+      type: "string",
+      enum: [
+        "direct_application",
+        "official_route_info",
+        "official_general_visa_portal",
+        "official_immigration_home",
+        "not_found"
+      ]
+    },
+    title: nullableString,
+    source_ids: sourceIds,
+    last_checked: { type: "string" },
+    notes: nullableString
+  },
+  required: [
+    "application_url",
+    "application_url_type",
+    "title",
+    "source_ids",
+    "last_checked",
+    "notes"
+  ]
+};
+
+const averageCitizenSalarySchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    min_salary_usd_monthly: sourcedNumber,
+    average_salary_usd_monthly: sourcedNumber,
+    median_salary_usd_monthly: sourcedNumber,
+    max_salary_usd_monthly: sourcedNumber,
+    min_salary_local_currency: sourcedText,
+    average_salary_local_currency: sourcedText,
+    median_salary_local_currency: sourcedText,
+    max_salary_local_currency: sourcedText,
+    currency: nullableString,
+    salary_basis: nullableString,
+    period: nullableString,
+    confidence: { type: "string", enum: ["high", "medium", "low"] },
+    source_ids: sourceIds,
+    notes: nullableString
+  },
+  required: [
+    "min_salary_usd_monthly",
+    "average_salary_usd_monthly",
+    "median_salary_usd_monthly",
+    "max_salary_usd_monthly",
+    "min_salary_local_currency",
+    "average_salary_local_currency",
+    "median_salary_local_currency",
+    "max_salary_local_currency",
+    "currency",
+    "salary_basis",
+    "period",
+    "confidence",
+    "source_ids",
+    "notes"
+  ]
+};
+
+const taxationSystemSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    value: nullableString,
+    rate_type: {
+      type: ["string", "null"],
+      enum: ["flat", "progressive", "none", "territorial", "remittance_basis", "special_regime", "mixed", "uncertain", null]
+    },
+    top_personal_income_tax_rate_percent: nullableNumber,
+    tax_residency_rule: nullableString,
+    income_scope: nullableString,
+    special_regimes: nullableString,
+    social_security: nullableString,
+    progressive_tax_notes: nullableString,
+    tax_brackets: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          rate_percent: nullableNumber,
+          threshold_local: nullableString,
+          threshold_usd_approx: nullableNumber,
+          applies_to: nullableString,
+          notes: nullableString,
+          source_ids: sourceIds
+        },
+        required: [
+          "rate_percent",
+          "threshold_local",
+          "threshold_usd_approx",
+          "applies_to",
+          "notes",
+          "source_ids"
+        ]
+      }
+    },
+    confidence: { type: ["string", "null"], enum: ["high", "medium_high", "medium", "low", null] },
+    source_ids: sourceIds,
+    reviewed_at: nullableString,
+    notes: nullableString
+  },
+  required: [
+    "value",
+    "rate_type",
+    "top_personal_income_tax_rate_percent",
+    "tax_residency_rule",
+    "income_scope",
+    "special_regimes",
+    "social_security",
+    "progressive_tax_notes",
+    "tax_brackets",
+    "confidence",
+    "source_ids",
+    "reviewed_at",
+    "notes"
+  ]
+};
+
+const digitalNomadTaxationSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    value: nullableString,
+    route_tax_category: nullableString,
+    top_or_screening_pit_rate_percent: nullableNumber,
+    income_tax_display: nullableString,
+    tax_residency_rule: nullableString,
+    foreign_income_treatment: nullableString,
+    special_digital_nomad_or_inbound_regime: nullableString,
+    social_security_and_payroll: nullableString,
+    fixed_payments: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        status: nullableString,
+        social_security_or_payroll: nullableString,
+        visa_or_state_fees: nullableString,
+        other_fixed_or_transaction_taxes: nullableString,
+        notes: nullableString
+      },
+      required: [
+        "status",
+        "social_security_or_payroll",
+        "visa_or_state_fees",
+        "other_fixed_or_transaction_taxes",
+        "notes"
+      ]
+    },
+    practical_scenarios: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        under_tax_residency_threshold: nullableString,
+        tax_resident_remote_worker: nullableString,
+        self_employed_or_local_registration: nullableString
+      },
+      required: [
+        "under_tax_residency_threshold",
+        "tax_resident_remote_worker",
+        "self_employed_or_local_registration"
+      ]
+    },
+    confidence: { type: ["string", "null"], enum: ["high", "medium_high", "medium", "low", null] },
+    source_ids: sourceIds,
+    reviewed_at: nullableString,
+    notes: nullableString
+  },
+  required: [
+    "value",
+    "route_tax_category",
+    "top_or_screening_pit_rate_percent",
+    "income_tax_display",
+    "tax_residency_rule",
+    "foreign_income_treatment",
+    "special_digital_nomad_or_inbound_regime",
+    "social_security_and_payroll",
+    "fixed_payments",
+    "practical_scenarios",
+    "confidence",
+    "source_ids",
+    "reviewed_at",
+    "notes"
+  ]
+};
+
+const settlementTrackSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    classification: {
+      type: "string",
+      enum: [
+        "strong_citizenship_track",
+        "possible_with_conversion",
+        "weak_or_uncertain_citizenship_track",
+        "temporary_nomad_only",
+        "not_valid_no_regular_remote_work_route",
+        "not_valid_no_current_route_confirmed",
+        "not_valid_employer_or_job_offer_required",
+        "not_valid_pending_implementation"
+      ]
+    },
+    can_lead_to_citizenship_from_this_route: { type: ["boolean", "string"], enum: [true, false, "uncertain"] },
+    citizenship_track_strength: {
+      type: "string",
+      enum: ["strong", "possible_with_conversion", "weak_or_uncertain", "none_or_separate_route_required", "none"]
+    },
+    requires_switch_to_another_status: { type: ["boolean", "string"], enum: [true, false, "uncertain"] },
+    nomad_only_warning: nullableString,
+    years_to_citizenship: nullableNumber,
+    summary: nullableString,
+    source_ids: sourceIds,
+    reviewed_at: nullableString,
+    notes: nullableString
+  },
+  required: [
+    "classification",
+    "can_lead_to_citizenship_from_this_route",
+    "citizenship_track_strength",
+    "requires_switch_to_another_status",
+    "nomad_only_warning",
+    "years_to_citizenship",
+    "summary",
+    "source_ids",
+    "reviewed_at",
+    "notes"
+  ]
+};
+
+const birthrightCitizenshipSchema = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    value: {
+      type: "string",
+      enum: [
+        "unconditional_jus_soli",
+        "conditional_jus_soli",
+        "restricted_jus_soli",
+        "mostly_jus_sanguinis_or_conditional",
+        "jus_sanguinis_limited",
+        "restricted_jus_sanguinis",
+        "uncertain"
+      ]
+    },
+    source_ids: sourceIds,
+    notes: nullableString
+  },
+  required: ["value", "source_ids", "notes"]
+};
+
 const countryResearchSchema = {
   type: "object",
   additionalProperties: false,
@@ -401,6 +699,7 @@ const countryResearchSchema = {
     researched_at: { type: "string" },
     valid_for_selection: { type: ["boolean", "string"], enum: [true, false, "uncertain", "partial"] },
     selection_summary: nullableString,
+    visa_application: visaApplicationSchema,
     best_routes: { type: "array", items: routeSchema },
     rejected_routes: { type: "array", items: routeSchema },
     education_or_qualification_based_residence: {
@@ -428,7 +727,9 @@ const countryResearchSchema = {
         social_contributions_percent: sourcedNumber,
         fixed_payments_usd_monthly: sourcedNumber,
         special_tax_regimes: sourcedText,
-        caveats: nullableString
+        caveats: nullableString,
+        taxation_system: taxationSystemSchema,
+        digital_nomad_taxation: digitalNomadTaxationSchema
       },
       required: [
         "tax_residency_rule",
@@ -436,7 +737,9 @@ const countryResearchSchema = {
         "social_contributions_percent",
         "fixed_payments_usd_monthly",
         "special_tax_regimes",
-        "caveats"
+        "caveats",
+        "taxation_system",
+        "digital_nomad_taxation"
       ]
     },
     timeline: {
@@ -480,16 +783,24 @@ const countryResearchSchema = {
       additionalProperties: false,
       properties: {
         citizenship_principle: { type: "string", enum: ["jus_soli", "jus_sanguinis", "mixed", "uncertain"] },
+        birthright_citizenship: birthrightCitizenshipSchema,
         child_gets_citizenship_if_both_parents_migrants: nullableBoolean,
         child_gets_citizenship_if_one_parent_local_citizen: nullableBoolean,
         child_gets_citizenship_if_one_parent_permanent_resident: nullableBoolean,
+        if_both_parents_migrants: sourcedText,
+        if_second_parent_local_citizen: sourcedText,
+        parent_benefit_summary: sourcedText,
         benefit_to_migrant_father: sourcedText
       },
       required: [
         "citizenship_principle",
+        "birthright_citizenship",
         "child_gets_citizenship_if_both_parents_migrants",
         "child_gets_citizenship_if_one_parent_local_citizen",
         "child_gets_citizenship_if_one_parent_permanent_resident",
+        "if_both_parents_migrants",
+        "if_second_parent_local_citizen",
+        "parent_benefit_summary",
         "benefit_to_migrant_father"
       ]
     },
@@ -533,9 +844,15 @@ const countryResearchSchema = {
       properties: {
         average_wage_usd_monthly: sourcedNumber,
         median_wage_usd_monthly: sourcedNumber,
+        average_citizen_salary: averageCitizenSalarySchema,
         cost_of_living_note: sourcedText
       },
-      required: ["average_wage_usd_monthly", "median_wage_usd_monthly", "cost_of_living_note"]
+      required: [
+        "average_wage_usd_monthly",
+        "median_wage_usd_monthly",
+        "average_citizen_salary",
+        "cost_of_living_note"
+      ]
     },
     sources: {
       type: "array",
@@ -556,6 +873,13 @@ const countryResearchSchema = {
         required: ["id", "title", "url", "publisher", "source_type", "accessed_at"]
       }
     },
+    settlement_track: settlementTrackSchema,
+    citizenship_track_strength: {
+      type: "string",
+      enum: ["strong", "possible_with_conversion", "weak_or_uncertain", "none_or_separate_route_required", "none"]
+    },
+    regular_foreign_contract_remote_work_fit: sourcedSelectionValue,
+    fully_matched: { type: "boolean" },
     confidence: { type: "string", enum: ["high", "medium", "low"] },
     notes: nullableString
   },
@@ -564,6 +888,7 @@ const countryResearchSchema = {
     "researched_at",
     "valid_for_selection",
     "selection_summary",
+    "visa_application",
     "best_routes",
     "rejected_routes",
     "education_or_qualification_based_residence",
@@ -575,6 +900,10 @@ const countryResearchSchema = {
     "languages",
     "labor_market",
     "sources",
+    "settlement_track",
+    "citizenship_track_strength",
+    "regular_foreign_contract_remote_work_fit",
+    "fully_matched",
     "confidence",
     "notes"
   ]

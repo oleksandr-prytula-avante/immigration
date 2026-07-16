@@ -349,10 +349,11 @@ function compareBySortKey(a, b, key) {
 
 function compareDefaultOrder(a, b, primaryKey) {
   const comparisons = [
-    ["country", compareCountries],
     ["citizenship", compareCitizenshipYears],
-    ["valid", compareStatuses],
-    ["citizenshipTrack", compareCitizenshipTracks]
+    ["citizenshipTrack", compareCitizenshipTracks],
+    ["country", compareCountries],
+    ["tax", compareTaxRates],
+    ["valid", compareStatuses]
   ];
 
   for (const [key, compare] of comparisons) {
@@ -486,15 +487,24 @@ function renderDetails(visibleRows) {
     <p class="summary">${escapeHtml(row.summary || "SUMMARY IS NOT FILLED IN.")}</p>
     ${statusPill(row)}
     <p class="subtext">${escapeHtml(formatResearchQuality(row))}</p>
+    <p class="explain">${escapeHtml(formatStatusMeaning(row))}</p>
 
     <div class="detail-block">
       <h3>BEST ROUTE</h3>
       <p>${escapeHtml(route?.route_name ?? "NOT FOUND")}</p>
+      ${formatRouteFacts(route)}
       <p class="summary">${escapeHtml(route?.notes ?? route?.initial_validity?.value ?? "")}</p>
     </div>
 
     <div class="detail-block">
+      <h3>VISA APPLICATION</h3>
+      <p class="explain">Official application link when confirmed; otherwise the safest official route or immigration page found in the dataset.</p>
+      ${formatVisaApplication(data.visa_application)}
+    </div>
+
+    <div class="detail-block">
       <h3>KEY NUMBERS</h3>
+      <p class="explain">Income is the route threshold, tax is the top or screening personal rate, and citizenship is the estimated minimum timeline where captured.</p>
       <ul class="detail-list">
         <li>INCOME: ${escapeHtml(formatIncome(row))}</li>
         <li>INCOME PROOF: ${escapeHtml(formatIncomeProof(route))}</li>
@@ -505,6 +515,7 @@ function renderDetails(visibleRows) {
 
     <div class="detail-block">
       <h3>TAXATION SYSTEM</h3>
+      <p class="explain">Tax values are screening data. Progressive systems show the top marginal rate, not the expected effective rate.</p>
       <ul class="detail-list">
         <li>RATE TYPE: ${escapeHtml(data.taxes?.taxation_system?.rate_type ?? "NOT FOUND")}</li>
         <li>TOP/SCREENING RATE: ${formatNullable(data.taxes?.taxation_system?.top_personal_income_tax_rate_percent, (value) => `${value}%`)}</li>
@@ -512,12 +523,15 @@ function renderDetails(visibleRows) {
         <li>INCOME SCOPE: ${escapeHtml(data.taxes?.taxation_system?.income_scope ?? "NOT FOUND")}</li>
         <li>SPECIAL REGIMES: ${escapeHtml(data.taxes?.taxation_system?.special_regimes ?? "NOT FOUND")}</li>
         <li>SOCIAL/PAYROLL: ${escapeHtml(data.taxes?.taxation_system?.social_security ?? "NOT FOUND")}</li>
+        <li>PROGRESSIVE NOTES: ${escapeHtml(data.taxes?.taxation_system?.progressive_tax_notes ?? "NOT FOUND")}</li>
       </ul>
+      ${formatTaxBrackets(data.taxes?.taxation_system?.tax_brackets)}
       <p class="summary">${escapeHtml(data.taxes?.taxation_system?.notes ?? "")}</p>
     </div>
 
     <div class="detail-block">
       <h3>DIGITAL NOMAD TAX DETAIL</h3>
+      <p class="explain">Route-specific tax notes for remote workers, freelancers, and nomad-style statuses. These can differ from ordinary employee tax.</p>
       <ul class="detail-list">
         <li>ROUTE CATEGORY: ${escapeHtml(data.taxes?.digital_nomad_taxation?.route_tax_category ?? "NOT FOUND")}</li>
         <li>FOREIGN INCOME: ${escapeHtml(data.taxes?.digital_nomad_taxation?.foreign_income_treatment ?? "NOT FOUND")}</li>
@@ -531,10 +545,12 @@ function renderDetails(visibleRows) {
 
     <div class="detail-block">
       <h3>TRANSITIONS</h3>
+      <p class="explain">${escapeHtml(citizenshipTrackDescription(row.citizenshipTrack))}</p>
       <ul class="detail-list">
         <li>TRACK: ${citizenshipTrackPill(row.citizenshipTrack)}</li>
         <li>RAW TRACK: ${escapeHtml(data.settlement_track?.classification ?? "NOT FOUND")}</li>
         <li>CITIZENSHIP FROM THIS ROUTE: ${escapeHtml(formatCitizenshipTrack(data.settlement_track?.can_lead_to_citizenship_from_this_route))}</li>
+        <li>STATUS SWITCH NEEDED: ${escapeHtml(formatBooleanish(data.settlement_track?.requires_switch_to_another_status))}</li>
       </ul>
       <p>${escapeHtml(data.timeline?.key_conditions?.value ?? "NOT FOUND.")}</p>
       <p class="summary">${escapeHtml(data.settlement_track?.summary ?? "")}</p>
@@ -542,12 +558,14 @@ function renderDetails(visibleRows) {
 
     <div class="detail-block">
       <h3>MARRIAGE AND CHILD</h3>
+      <p class="explain">Family data separates child citizenship, parent residence benefit, and marriage shortcuts. A citizen child or spouse usually does not mean automatic citizenship for the applicant.</p>
       <p>${escapeHtml(data.marriage?.requirements_and_risks?.value ?? "NOT FOUND.")}</p>
       <p class="summary">${escapeHtml(data.child_citizenship?.benefit_to_migrant_father?.value ?? "")}</p>
     </div>
 
     <div class="detail-block">
       <h3>PASSPORT AND LANGUAGES</h3>
+      <p class="explain">Passport values come from the captured passport index source; language values are official languages, not a guarantee of practical English support.</p>
       <ul class="detail-list">
         <li>RANK: ${formatNullable(numberValue(data.passport?.rank), (value) => `#${value}`)}</li>
         <li>VISA-FREE: ${formatNullable(numberValue(data.passport?.visa_free_destinations), (value) => `${value} DESTINATIONS`)}</li>
@@ -556,7 +574,14 @@ function renderDetails(visibleRows) {
     </div>
 
     <div class="detail-block">
+      <h3>AVERAGE CITIZEN SALARY</h3>
+      <p class="explain">Salary is for an average citizen or resident worker, not the immigration income threshold. Missing min/max means no reliable wage range has been captured yet.</p>
+      ${formatAverageCitizenSalary(data.labor_market?.average_citizen_salary)}
+    </div>
+
+    <div class="detail-block">
       <h3>SOURCES</h3>
+      <p class="explain">First captured sources for this country. Prefer official immigration, tax, statistics, and law pages before acting.</p>
       <div class="sources">
         ${sources.length ? sources.map((source) => `
           <a href="${escapeAttr(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.title || source.url)}</a>
@@ -757,6 +782,140 @@ function formatLanguageChips(languages) {
 function formatResearchQuality(row) {
   const confidence = row.confidence ? row.confidence.toUpperCase() : "NOT FOUND";
   return `RESEARCH QUALITY: ${confidence} · ${row.sourceCount} SOURCES`;
+}
+
+function formatStatusMeaning(row) {
+  if (row.valid === true) {
+    return row.data?.fully_matched
+      ? "Eligible means the selected route fits the foreign-contract remote-worker profile and has a credible residence-to-citizenship path in the captured sources."
+      : "Eligible but not fully matched means the route can work, but one or more filing, tax, or settlement details still need review.";
+  }
+  if (row.valid === "partial") {
+    return "Partial means the country has an interesting independent skilled or residence route, but it is not a clean ordinary remote-work match.";
+  }
+  if (row.valid === "uncertain") {
+    return "Review means the route may fit, but official filing or settlement evidence is incomplete, contradictory, or still needs manual verification.";
+  }
+  return "Not eligible means the captured routes are visitor-only, employer-sponsored, investment/startup/elite based, pending, temporary-only, or otherwise not a fit for this profile.";
+}
+
+function formatRouteFacts(route) {
+  if (!route) return '<p class="empty compact">ROUTE DETAILS NOT FOUND.</p>';
+
+  return `
+    <ul class="detail-list compact">
+      <li>TYPE: ${escapeHtml(route.route_type ?? "NOT FOUND")}</li>
+      <li>INDEPENDENT APPLICATION: ${escapeHtml(formatBooleanish(route.independent_application_possible))}</li>
+      <li>LOCAL EMPLOYER REQUIRED: ${escapeHtml(formatBooleanish(route.local_employer_required))}</li>
+      <li>FOREIGN CONTRACT / INCOME: ${escapeHtml(formatBooleanish(route.foreign_contract_or_income_required))}</li>
+      <li>TEMPORARY RESIDENCE: ${escapeHtml(formatBooleanish(route.direct_temporary_residence_possible))}</li>
+      <li>PERMANENT RESIDENCE: ${escapeHtml(formatBooleanish(route.direct_permanent_residence_possible))}</li>
+    </ul>
+  `;
+}
+
+function citizenshipTrackDescription(value) {
+  if (value === "strong_citizenship_track") {
+    return "Strong means the selected independent route is itself residence-oriented and can realistically support PR or citizenship if requirements are met.";
+  }
+  if (value === "possible_with_conversion") {
+    return "Conversion needed means the route can be useful, but long-term settlement depends on renewal, ordinary residence rules, or switching/maintaining a qualifying status.";
+  }
+  if (value === "weak_or_uncertain_citizenship_track") {
+    return "Weak or uncertain means the route exists, but the link to PR or citizenship is unclear, discretionary, or not confirmed enough for ranking.";
+  }
+  if (value === "temporary_nomad_only") {
+    return "Nomad only means the status may allow temporary remote work or stay, but should not be treated as a citizenship path.";
+  }
+  if (String(value ?? "").startsWith("not_valid")) {
+    return "Not valid means no current route matching the ordinary foreign-contract remote-worker profile was confirmed.";
+  }
+  return "Track meaning was not captured in the normalized dataset.";
+}
+
+function formatBooleanish(value) {
+  if (value === true) return "YES";
+  if (value === false) return "NO";
+  if (value === null || value === undefined) return "NOT FOUND";
+  if (value === "uncertain") return "UNCERTAIN";
+  if (value === "partial") return "PARTIAL";
+  return String(value).replaceAll("_", " ").toUpperCase();
+}
+
+function formatVisaApplication(application) {
+  if (!application?.application_url) {
+    return `
+      <p class="empty compact">OFFICIAL APPLICATION LINK NOT FOUND.</p>
+      <p class="summary">${escapeHtml(application?.notes ?? "")}</p>
+    `;
+  }
+
+  return `
+    <div class="sources">
+      <a href="${escapeAttr(application.application_url)}" target="_blank" rel="noreferrer">
+        ${escapeHtml(application.title || application.application_url)}
+      </a>
+    </div>
+    <ul class="detail-list compact">
+      <li>TYPE: ${escapeHtml(formatApplicationUrlType(application.application_url_type))}</li>
+      <li>CHECKED: ${escapeHtml(application.last_checked ?? "NOT FOUND")}</li>
+    </ul>
+    <p class="summary">${escapeHtml(application.notes ?? "")}</p>
+  `;
+}
+
+function formatApplicationUrlType(value) {
+  if (value === "direct_application") return "DIRECT APPLICATION";
+  if (value === "official_route_info") return "OFFICIAL ROUTE INFO";
+  if (value === "official_general_visa_portal") return "OFFICIAL VISA PORTAL";
+  if (value === "official_immigration_home") return "OFFICIAL IMMIGRATION HOME";
+  return "NOT FOUND";
+}
+
+function formatAverageCitizenSalary(salary) {
+  if (!salary) return '<p class="empty compact">SALARY DATA NOT FOUND.</p>';
+
+  return `
+    <ul class="detail-list compact">
+      <li>MIN: ${formatSourcedMoney(salary.min_salary_usd_monthly)} · ${escapeHtml(salary.min_salary_local_currency?.value ?? "LOCAL NOT FOUND")}</li>
+      <li>AVERAGE: ${formatSourcedMoney(salary.average_salary_usd_monthly)} · ${escapeHtml(salary.average_salary_local_currency?.value ?? "LOCAL NOT FOUND")}</li>
+      <li>MEDIAN: ${formatSourcedMoney(salary.median_salary_usd_monthly)} · ${escapeHtml(salary.median_salary_local_currency?.value ?? "LOCAL NOT FOUND")}</li>
+      <li>MAX: ${formatSourcedMoney(salary.max_salary_usd_monthly)} · ${escapeHtml(salary.max_salary_local_currency?.value ?? "LOCAL NOT FOUND")}</li>
+      <li>BASIS: ${escapeHtml(salary.salary_basis ?? "NOT FOUND")}</li>
+      <li>PERIOD: ${escapeHtml((salary.period ?? "NOT FOUND").toUpperCase())}</li>
+      <li>CONFIDENCE: ${escapeHtml((salary.confidence ?? "NOT FOUND").toUpperCase())}</li>
+    </ul>
+    <p class="summary">${escapeHtml(salary.notes ?? "")}</p>
+  `;
+}
+
+function formatSourcedMoney(value) {
+  const number = numberValue(value);
+  return number === null ? "USD NOT FOUND" : `${money(number)} / MO`;
+}
+
+function formatTaxBrackets(brackets) {
+  if (!Array.isArray(brackets) || brackets.length === 0) {
+    return '<p class="empty compact">NO TAX BRACKETS CAPTURED.</p>';
+  }
+
+  return `
+    <div class="tax-brackets">
+      ${brackets.map((bracket) => `
+        <div class="tax-bracket">
+          <strong>${formatNullable(bracket.rate_percent, (value) => `${value}%`)}</strong>
+          <span>${escapeHtml(bracket.threshold_local ?? "THRESHOLD NOT FOUND")}</span>
+          <small>${escapeHtml(formatBracketUsd(bracket.threshold_usd_approx))}</small>
+          <p>${escapeHtml(bracket.applies_to ?? bracket.notes ?? "")}</p>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function formatBracketUsd(value) {
+  if (value === null || value === undefined) return "USD NOT FOUND";
+  return `~${money(value)} USD`;
 }
 
 function formatCitizenshipTrack(value) {
