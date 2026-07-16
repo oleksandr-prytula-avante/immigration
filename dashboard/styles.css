@@ -199,18 +199,20 @@ button:focus-visible,
 }
 
 .content-grid {
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 480px);
   align-items: start;
 }
 
 .table-wrap {
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
-  min-width: 760px;
+  min-width: 0;
 }
 
 th,
@@ -232,21 +234,28 @@ th {
 }
 
 .number-col {
-  width: 48px;
+  width: 4%;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
 
 .status-col {
-  width: 104px;
-  max-width: 104px;
+  width: 9%;
+  max-width: none;
 }
 
+.income-col,
 .route-col {
-  width: 210px;
-  max-width: 210px;
+  width: 20%;
+  min-width: 0;
+  max-width: none;
   overflow-wrap: anywhere;
+}
+
+.nomad-col {
+  width: 8%;
+  max-width: none;
 }
 
 tr {
@@ -271,22 +280,31 @@ tbody tr.active {
 
 .language-chip-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 4px;
   margin-top: 5px;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .language-chip {
   display: inline-flex;
-  padding: 4px 8px;
-  border-radius: 6px;
+  flex: 0 1 auto;
+  max-width: 100%;
+  padding: 2px 5px;
+  border-radius: 5px;
   background: #eef6f2;
   color: var(--accent);
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .language-chip.more {
+  flex: 0 0 auto;
   background: #ecefeb;
   color: var(--muted);
 }
@@ -294,11 +312,17 @@ tbody tr.active {
 .pill {
   display: inline-flex;
   align-items: center;
-  min-height: 24px;
-  padding: 0 9px;
+  justify-content: center;
+  max-width: 100%;
+  min-height: 20px;
+  padding: 2px 6px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pill.good {
@@ -454,6 +478,39 @@ tbody tr.active {
   color: var(--accent);
   text-decoration: none;
   overflow-wrap: anywhere;
+}
+
+.source-ids {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.full-data {
+  min-width: 0;
+}
+
+.full-data summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.full-data pre {
+  max-width: 100%;
+  margin: 10px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fbfbf8;
+  color: var(--ink);
+  font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .empty {

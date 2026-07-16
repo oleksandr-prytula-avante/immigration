@@ -12,7 +12,7 @@ const elements = {
   search: document.querySelector("#searchInput"),
   valid: document.querySelector("#validFilter"),
   language: document.querySelector("#languageFilter"),
-  citizenshipTrack: document.querySelector("#citizenshipTrackFilter"),
+  prCit: document.querySelector("#prCitFilter"),
   jusSoli: document.querySelector("#jusSoliFilter"),
   matches: document.querySelector("#matchesFilter"),
   incomeMax: document.querySelector("#incomeMax"),
@@ -57,7 +57,7 @@ function bindEvents() {
     elements.search,
     elements.valid,
     elements.language,
-    elements.citizenshipTrack,
+    elements.prCit,
     elements.jusSoli,
     elements.incomeMax,
     elements.taxMax,
@@ -108,6 +108,7 @@ function normalizeResults(json) {
   return results.map((item) => {
     const data = item.data ?? item;
     const bestRoute = data.best_routes?.[0] ?? null;
+    const nomadTransition = buildNomadTransition(data, bestRoute);
     return {
       country: item.country ?? data.country ?? "UNKNOWN",
       status: item.status ?? "ok",
@@ -118,6 +119,7 @@ function normalizeResults(json) {
       bestRouteName: bestRoute?.route_name ?? null,
       bestRouteType: bestRoute?.route_type ?? null,
       citizenshipTrack: data.settlement_track?.classification ?? "missing",
+      nomadTransition,
       languages: Array.isArray(data.languages?.official_languages) ? data.languages.official_languages : [],
       jusSoli: data.child_citizenship?.birthright_citizenship?.value ?? null,
       income: numberValue(bestRoute?.minimum_monthly_income_usd),
@@ -155,7 +157,7 @@ function readUrlState() {
     search: params.get("q"),
     status: params.get("status"),
     language: params.get("language"),
-    citizenshipTrack: params.get("track"),
+    prCit: params.get("prCit") ?? params.get("nomadTransition"),
     jusSoli: params.get("jusSoli"),
     matches: params.get("matches") ?? params.get("interesting") ?? params.get("fullyMatched"),
     incomeMax: params.get("incomeMax"),
@@ -177,7 +179,7 @@ function applyUrlStateBeforeData() {
   elements.matches.checked = matchesFromUrl || (!hasStandardFilters && urlState.matches === null);
   setInputValue(elements.search, urlState.search);
   setSelectValue(elements.valid, urlState.status);
-  setSelectValue(elements.citizenshipTrack, urlState.citizenshipTrack);
+  setSelectValue(elements.prCit, urlState.prCit);
   setSelectValue(elements.jusSoli, urlState.jusSoli);
   setInputValue(elements.incomeMax, urlState.incomeMax);
   setInputValue(elements.taxMax, urlState.taxMax);
@@ -202,9 +204,7 @@ function applyUrlStateAfterData() {
   }
 
   state.isRestoringUrlState = true;
-  if (!elements.matches.checked) {
-    setSelectValue(elements.language, urlState.language);
-  }
+  setSelectValue(elements.language, urlState.language);
   state.selectedCountry = state.rows.some((row) => row.country === urlState.selected)
     ? urlState.selected
     : null;
@@ -216,7 +216,7 @@ function resetStandardFilters() {
   elements.search.value = "";
   elements.valid.value = "all";
   elements.language.value = "all";
-  elements.citizenshipTrack.value = "all";
+  elements.prCit.value = "all";
   elements.jusSoli.value = "all";
   elements.incomeMax.value = "";
   elements.taxMax.value = "";
@@ -229,16 +229,15 @@ function updateUrlState() {
   const params = new URLSearchParams();
   if (elements.matches.checked) {
     params.set("matches", "true");
-  } else {
-    setUrlParam(params, "q", elements.search.value.trim());
-    setUrlParam(params, "status", elements.valid.value, "all");
-    setUrlParam(params, "language", elements.language.value, "all");
-    setUrlParam(params, "track", elements.citizenshipTrack.value, "all");
-    setUrlParam(params, "jusSoli", elements.jusSoli.value, "all");
-    setUrlParam(params, "incomeMax", elements.incomeMax.value);
-    setUrlParam(params, "taxMax", elements.taxMax.value);
-    setUrlParam(params, "citizenshipMax", elements.citizenshipMax.value);
   }
+  setUrlParam(params, "q", elements.search.value.trim());
+  setUrlParam(params, "status", elements.valid.value, "all");
+  setUrlParam(params, "language", elements.language.value, "all");
+  setUrlParam(params, "prCit", elements.prCit.value, "all");
+  setUrlParam(params, "jusSoli", elements.jusSoli.value, "all");
+  setUrlParam(params, "incomeMax", elements.incomeMax.value);
+  setUrlParam(params, "taxMax", elements.taxMax.value);
+  setUrlParam(params, "citizenshipMax", elements.citizenshipMax.value);
   setUrlParam(params, "sort", state.sort.key, "citizenship");
   setUrlParam(params, "direction", state.sort.direction, "asc");
   setUrlParam(params, "selected", state.selectedCountry);
@@ -269,7 +268,7 @@ function hasStandardUrlFilters(urlState) {
     urlState.search ||
     (urlState.status && normalizeStatusFilterValue(urlState.status) !== "all") ||
     (urlState.language && urlState.language !== "all") ||
-    (urlState.citizenshipTrack && urlState.citizenshipTrack !== "all") ||
+    (urlState.prCit && urlState.prCit !== "all") ||
     (urlState.jusSoli && urlState.jusSoli !== "all") ||
     urlState.incomeMax ||
     urlState.taxMax ||
@@ -284,14 +283,14 @@ function setUrlParam(params, key, value, defaultValue = "") {
 }
 
 function isValidSortKey(key) {
-  return ["country", "valid", "income", "tax", "citizenship", "jusSoli", "citizenshipTrack"].includes(key);
+  return ["country", "valid", "income", "tax", "citizenship", "jusSoli", "citizenshipTrack", "nomadTransition"].includes(key);
 }
 
 function filteredRows() {
   const query = elements.search.value.trim().toLowerCase();
   const valid = elements.valid.value;
   const language = elements.language.value;
-  const citizenshipTrack = elements.citizenshipTrack.value;
+  const prCit = elements.prCit.value;
   const jusSoli = elements.jusSoli.value;
   const matches = elements.matches.checked;
   const incomeMax = parseOptionalNumber(elements.incomeMax.value);
@@ -306,6 +305,7 @@ function filteredRows() {
       row.bestRouteType,
       row.citizenshipTrack,
       citizenshipTrackLabel(row.citizenshipTrack),
+      row.nomadTransition.label,
       row.jusSoli,
       jusSoliLabel(row.jusSoli),
       row.languages.join(" "),
@@ -315,7 +315,7 @@ function filteredRows() {
     if (query && !haystack.includes(query)) return false;
     if (valid !== "all" && !matchesStatus(row, valid)) return false;
     if (language !== "all" && !matchesLanguage(row, language)) return false;
-    if (citizenshipTrack !== "all" && !matchesCitizenshipTrack(row.citizenshipTrack, citizenshipTrack)) return false;
+    if (prCit !== "all" && row.nomadTransition.status !== prCit) return false;
     if (jusSoli !== "all" && jusSoliFilterValue(row.jusSoli) !== jusSoli) return false;
     if (matches && !isMatchesRow(row)) return false;
     if (incomeMax !== null && row.income !== null && row.income > incomeMax) return false;
@@ -336,6 +336,7 @@ function compareBySortKey(a, b, key) {
   if (key === "country") return compareCountries(a, b);
   if (key === "valid") return compareStatuses(a, b);
   if (key === "citizenshipTrack") return compareCitizenshipTracks(a, b);
+  if (key === "nomadTransition") return compareNomadTransitions(a, b);
   const valueA = sortValue(a, key);
   const valueB = sortValue(b, key);
 
@@ -350,6 +351,7 @@ function compareDefaultOrder(a, b, primaryKey) {
   const comparisons = [
     ["citizenship", compareCitizenshipYears],
     ["citizenshipTrack", compareCitizenshipTracks],
+    ["nomadTransition", compareNomadTransitions],
     ["country", compareCountries],
     ["tax", compareTaxRates],
     ["valid", compareStatuses]
@@ -382,6 +384,10 @@ function compareStatuses(a, b) {
 
 function compareCitizenshipTracks(a, b) {
   return citizenshipTrackRank(a.citizenshipTrack) - citizenshipTrackRank(b.citizenshipTrack);
+}
+
+function compareNomadTransitions(a, b) {
+  return nomadTransitionRank(a.nomadTransition.status) - nomadTransitionRank(b.nomadTransition.status);
 }
 
 function compareNullableNumbers(a, b) {
@@ -424,11 +430,11 @@ function renderTable(rows) {
         <span class="language-chip-row">${formatLanguageChips(row.languages)}</span>
       </td>
       <td class="status-col">${statusPill(row)}</td>
-      <td>${escapeHtml(formatIncome(row))}</td>
+      <td class="income-col">${escapeHtml(formatIncome(row))}</td>
       <td>${formatNullable(row.tax, (value) => `${value}%`)}</td>
       <td>${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</td>
       <td>${jusSoliPill(row.jusSoli)}</td>
-      <td>${citizenshipTrackPill(row.citizenshipTrack)}</td>
+      <td class="nomad-col">${nomadTransitionPill(row.nomadTransition)}</td>
       <td class="route-col">
         ${escapeHtml(row.bestRouteName ?? "NOT FOUND")}
         <span class="subtext">${escapeHtml(row.bestRouteType ?? "")}</span>
@@ -477,7 +483,7 @@ function renderDetails(visibleRows) {
 
   const data = row.data;
   const route = data.best_routes?.[0];
-  const sources = (data.sources ?? []).slice(0, 6);
+  const sources = data.sources ?? [];
 
   elements.details.innerHTML = `
     <h2>${escapeHtml(row.country)}</h2>
@@ -487,9 +493,24 @@ function renderDetails(visibleRows) {
     <p class="explain">${escapeHtml(formatStatusMeaning(row))}</p>
 
     <div class="detail-block">
+      <h3>COUNTRY OVERVIEW</h3>
+      <ul class="detail-list">
+        <li>VALID FOR SELECTION: ${escapeHtml(formatBooleanish(data.valid_for_selection))}</li>
+        <li>FULLY MATCHED: ${escapeHtml(formatBooleanish(data.fully_matched))}</li>
+        <li>REMOTE WORK FIT: ${escapeHtml(formatBooleanish(data.regular_foreign_contract_remote_work_fit))}</li>
+        <li>PR/CIT: ${nomadTransitionPill(row.nomadTransition)}<span class="subtext">${escapeHtml(row.nomadTransition.description)}</span></li>
+        <li>CONFIDENCE: ${escapeHtml((data.confidence ?? "NOT FOUND").toUpperCase())}</li>
+        <li>RESEARCHED AT: ${escapeHtml(data.researched_at ?? "NOT FOUND")}</li>
+        <li>SOURCE COUNT: ${escapeHtml(String(row.sourceCount ?? sources.length ?? 0))}</li>
+      </ul>
+      <p class="summary">${escapeHtml(data.notes ?? "")}</p>
+    </div>
+
+    <div class="detail-block">
       <h3>BEST ROUTE</h3>
       <p>${escapeHtml(route?.route_name ?? "NOT FOUND")}</p>
       ${formatRouteFacts(route)}
+      ${formatRouteRequirements(route)}
       <p class="summary">${escapeHtml(route?.notes ?? route?.initial_validity?.value ?? "")}</p>
     </div>
 
@@ -546,18 +567,42 @@ function renderDetails(visibleRows) {
       <ul class="detail-list">
         <li>TRACK: ${citizenshipTrackPill(row.citizenshipTrack)}</li>
         <li>RAW TRACK: ${escapeHtml(data.settlement_track?.classification ?? "NOT FOUND")}</li>
+        <li>TRACK STRENGTH: ${escapeHtml(data.settlement_track?.citizenship_track_strength ?? data.citizenship_track_strength ?? "NOT FOUND")}</li>
         <li>CITIZENSHIP FROM THIS ROUTE: ${escapeHtml(formatCitizenshipTrack(data.settlement_track?.can_lead_to_citizenship_from_this_route))}</li>
         <li>STATUS SWITCH NEEDED: ${escapeHtml(formatBooleanish(data.settlement_track?.requires_switch_to_another_status))}</li>
+        <li>NOMAD WARNING: ${escapeHtml(data.settlement_track?.nomad_only_warning ?? "NOT FOUND")}</li>
       </ul>
       <p>${escapeHtml(data.timeline?.key_conditions?.value ?? "NOT FOUND.")}</p>
       <p class="summary">${escapeHtml(data.settlement_track?.summary ?? "")}</p>
     </div>
 
     <div class="detail-block">
+      <h3>CITIZENSHIP TIMELINE</h3>
+      <ul class="detail-list">
+        <li>TOTAL YEARS: ${formatSourcedInline(data.timeline?.total_years_to_citizenship, (value) => `${value} YRS`)}</li>
+        <li>PERMANENT RESIDENCE YEARS: ${formatSourcedInline(data.timeline?.permanent_residence_years, (value) => `${value} YRS`)}</li>
+        <li>DUAL CITIZENSHIP: ${formatSourcedInline(data.timeline?.dual_citizenship)}</li>
+        <li>PROCESSING TIME: ${formatSourcedInline(data.timeline?.citizenship_processing_time)}</li>
+        <li>NOMAD ROUTE: ${formatSourcedInline(data.timeline?.citizenship_via_nomad_route)}</li>
+        <li>ROUTE REALISM: ${formatSourcedInline(data.timeline?.citizenship_route_realism)}</li>
+      </ul>
+      <p class="summary">${escapeHtml(data.timeline?.status_transition_notes?.value ?? "")}</p>
+    </div>
+
+    <div class="detail-block">
       <h3>MARRIAGE AND CHILD</h3>
       <p class="explain">Family data separates child citizenship, parent residence benefit, and marriage shortcuts. A citizen child or spouse usually does not mean automatic citizenship for the applicant.</p>
+      <ul class="detail-list">
+        <li>CHILD BIRTHRIGHT: ${formatSourcedInline(data.child_citizenship?.birthright_citizenship)}</li>
+        <li>IF BOTH PARENTS MIGRANTS: ${formatSourcedInline(data.child_citizenship?.if_both_parents_migrants)}</li>
+        <li>IF SECOND PARENT LOCAL: ${formatSourcedInline(data.child_citizenship?.if_second_parent_local_citizen)}</li>
+        <li>FATHER BENEFIT: ${formatSourcedInline(data.child_citizenship?.benefit_to_migrant_father)}</li>
+        <li>MARRIAGE YEARS: ${formatSourcedInline(data.marriage?.years_to_citizenship_via_marriage, (value) => `${value} YRS`)}</li>
+        <li>MARRIAGE BENEFIT: ${formatSourcedInline(data.marriage?.residence_benefit)}</li>
+        <li>EXISTING MARRIAGE IMPACT: ${formatSourcedInline(data.marriage?.existing_marriage_impact)}</li>
+      </ul>
       <p>${escapeHtml(data.marriage?.requirements_and_risks?.value ?? "NOT FOUND.")}</p>
-      <p class="summary">${escapeHtml(data.child_citizenship?.benefit_to_migrant_father?.value ?? "")}</p>
+      <p class="summary">${escapeHtml(data.marriage?.genuine_marriage_warning?.value ?? data.child_citizenship?.parent_benefit_summary?.value ?? "")}</p>
     </div>
 
     <div class="detail-block">
@@ -567,6 +612,7 @@ function renderDetails(visibleRows) {
         <li>RANK: ${formatNullable(numberValue(data.passport?.rank), (value) => `#${value}`)}</li>
         <li>VISA-FREE: ${formatNullable(numberValue(data.passport?.visa_free_destinations), (value) => `${value} DESTINATIONS`)}</li>
         <li>LANGUAGES: ${escapeHtml((data.languages?.official_languages ?? []).join(", ") || "NOT FOUND")}</li>
+        <li>PASSPORT NOTES: ${formatSourcedInline(data.passport?.notes)}</li>
       </ul>
     </div>
 
@@ -574,16 +620,27 @@ function renderDetails(visibleRows) {
       <h3>AVERAGE CITIZEN SALARY</h3>
       <p class="explain">Salary is for an average citizen or resident worker, not the immigration income threshold. Missing min/max means no reliable wage range has been captured yet.</p>
       ${formatAverageCitizenSalary(data.labor_market?.average_citizen_salary)}
+      <p class="summary">${escapeHtml(data.labor_market?.software_engineer_notes ?? "")}</p>
+    </div>
+
+    <div class="detail-block">
+      <h3>REJECTED ROUTES</h3>
+      ${formatRejectedRoutes(data.rejected_routes)}
     </div>
 
     <div class="detail-block">
       <h3>SOURCES</h3>
-      <p class="explain">First captured sources for this country. Prefer official immigration, tax, statistics, and law pages before acting.</p>
+      <p class="explain">Captured sources for this country. Prefer official immigration, tax, statistics, and law pages before acting.</p>
       <div class="sources">
         ${sources.length ? sources.map((source) => `
           <a href="${escapeAttr(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.title || source.url)}</a>
         `).join("") : '<p class="empty">NO SOURCES LISTED.</p>'}
       </div>
+    </div>
+
+    <div class="detail-block">
+      <h3>FULL DATA</h3>
+      ${formatFullData(data)}
     </div>
   `;
 }
@@ -591,8 +648,8 @@ function renderDetails(visibleRows) {
 function statusPill(row) {
   if (row.status === "error") return '<span class="pill bad">ERROR</span>';
   if (row.valid === true) return '<span class="pill good">ELIGIBLE</span>';
-  if (row.valid === "partial" || row.valid === "uncertain") return '<span class="pill warn">REVIEW / PARTIAL</span>';
-  return '<span class="pill bad">NOT ELIGIBLE</span>';
+  if (row.valid === "partial" || row.valid === "uncertain") return '<span class="pill warn">REVIEW</span>';
+  return '<span class="pill bad">NO</span>';
 }
 
 function matchesStatus(row, selected) {
@@ -644,7 +701,15 @@ function matchesLanguage(row, selected) {
 }
 
 function isMatchesRow(row) {
-  return row.status === "ok" && row.valid !== false;
+  const value = String(row.valid);
+  const hasMatchingStatus = row.status === "ok" && (
+    row.valid === true ||
+    value === "partial" ||
+    value === "uncertain" ||
+    value.startsWith("partial")
+  );
+  const hasMatchingPrCit = ["direct", "switch_needed", "possible", "unclear"].includes(row.nomadTransition.status);
+  return hasMatchingStatus && hasMatchingPrCit;
 }
 
 function citizenshipTrackRank(value) {
@@ -676,6 +741,133 @@ function citizenshipTrackTone(value) {
 
 function citizenshipTrackPill(value) {
   return `<span class="pill ${citizenshipTrackTone(value)}">${escapeHtml(citizenshipTrackLabel(value))}</span>`;
+}
+
+function buildNomadTransition(data, route) {
+  if (!isNomadEquivalentRoute(data, route)) {
+    return {
+      status: "no_nomad_route",
+      label: "NO DNV",
+      tone: "neutral",
+      description: "No digital-nomad or equivalent remote-work residence route is captured for the selected route."
+    };
+  }
+
+  const settlement = data.settlement_track ?? {};
+  const classification = String(settlement.classification ?? "").toLowerCase();
+  const canLead = settlement.can_lead_to_citizenship_from_this_route;
+  const requiresSwitch = settlement.requires_switch_to_another_status;
+
+  if (canLead === true && requiresSwitch !== true) {
+    return {
+      status: "direct",
+      label: "YES",
+      tone: "good",
+      description: "Captured route can plausibly lead onward to PR or citizenship without a separate status switch."
+    };
+  }
+
+  if (requiresSwitch === true && !classification.startsWith("not_valid")) {
+    return {
+      status: "switch_needed",
+      label: "SWITCH",
+      tone: "info",
+      description: "Living on the nomad/equivalent route may help, but PR or citizenship needs conversion or another qualifying status."
+    };
+  }
+
+  if (String(canLead).toLowerCase().includes("possible") || classification.includes("possible")) {
+    return {
+      status: "possible",
+      label: "POSSIBLE",
+      tone: "info",
+      description: "Dataset suggests a possible onward path, but the route needs manual confirmation."
+    };
+  }
+
+  if (canLead === "uncertain" || requiresSwitch === "uncertain" || classification.includes("uncertain")) {
+    return {
+      status: "unclear",
+      label: "UNCLEAR",
+      tone: "warn",
+      description: "The onward PR/citizenship effect of time on this route is not confirmed."
+    };
+  }
+
+  if (classification.includes("temporary_nomad_only") || String(route?.route_type ?? "").includes("temporary_only") || canLead === false) {
+    return {
+      status: "temporary_only",
+      label: "TEMP ONLY",
+      tone: "bad",
+      description: "Captured route is temporary-only or not confirmed to count toward PR/citizenship."
+    };
+  }
+
+  return {
+    status: "unclear",
+    label: "UNCLEAR",
+    tone: "warn",
+    description: "The dataset does not clearly answer whether this route can lead onward."
+  };
+}
+
+function isNomadEquivalentRoute(data, route) {
+  if (!route) return false;
+
+  const routeText = [
+    route.route_type,
+    route.route_name,
+    data.taxes?.digital_nomad_taxation?.route_tax_category,
+    data.regular_foreign_contract_remote_work_fit?.value
+  ].join(" ").toLowerCase();
+
+  const includeTerms = [
+    "digital_nomad",
+    "digital nomad",
+    "remote_work",
+    "remote work",
+    "remote-worker",
+    "workcation",
+    "foreign_company_remote_work",
+    "foreign-company remote",
+    "freelance",
+    "self_employed",
+    "self-employed",
+    "independent_means",
+    "rentista",
+    "financial_solvency"
+  ];
+
+  const excludeTerms = [
+    "not_applicable_no_regular_remote_work_route",
+    "visitor_stay_not_residence_route",
+    "tourist_evisa",
+    "tourist visa",
+    "no digital_nomad",
+    "no digital-nomad",
+    "no digital nomad",
+    "no remote-worker",
+    "no remote worker",
+    "talent_or_high_skill",
+    "points_tested_skilled"
+  ];
+
+  return includeTerms.some((term) => routeText.includes(term)) &&
+    !excludeTerms.some((term) => routeText.includes(term));
+}
+
+function nomadTransitionRank(value) {
+  if (value === "direct") return 1;
+  if (value === "switch_needed") return 2;
+  if (value === "possible") return 3;
+  if (value === "unclear") return 4;
+  if (value === "temporary_only") return 5;
+  if (value === "no_nomad_route") return 6;
+  return 7;
+}
+
+function nomadTransitionPill(transition) {
+  return `<span class="pill ${transition.tone}">${escapeHtml(transition.label)}</span>`;
 }
 
 function jusSoliRank(value) {
@@ -761,7 +953,7 @@ function formatLanguages(languages) {
 function formatLanguageChips(languages) {
   if (!languages.length) return '<span class="language-chip">NOT FOUND</span>';
 
-  const visibleLanguages = languages.slice(0, 2);
+  const visibleLanguages = languages.slice(0, 1);
   const remainingCount = languages.length - visibleLanguages.length;
   const chips = visibleLanguages.map((language) => `<span class="language-chip">${escapeHtml(language)}</span>`);
 
@@ -804,6 +996,67 @@ function formatRouteFacts(route) {
       <li>TEMPORARY RESIDENCE: ${escapeHtml(formatBooleanish(route.direct_temporary_residence_possible))}</li>
       <li>PERMANENT RESIDENCE: ${escapeHtml(formatBooleanish(route.direct_permanent_residence_possible))}</li>
     </ul>
+  `;
+}
+
+function formatRouteRequirements(route) {
+  if (!route) return "";
+
+  return `
+    <ul class="detail-list compact">
+      <li>MINIMUM INCOME USD: ${formatSourcedInline(route.minimum_monthly_income_usd, (value) => `${money(value)} / MO`)}</li>
+      <li>MINIMUM INCOME LOCAL: ${formatSourcedInline(route.minimum_income_local_currency)}</li>
+      <li>INCOME PROOF MONTHS: ${formatSourcedInline(route.income_proof_months, (value) => `${value} MO`)}</li>
+      <li>INITIAL VALIDITY: ${formatSourcedInline(route.initial_validity)}</li>
+      <li>EXTENSION: ${formatSourcedInline(route.extension_rules)}</li>
+      <li>TEMPORARY PATH: ${formatSourcedInline(route.path_to_temporary_residence)}</li>
+      <li>PERMANENT PATH: ${formatSourcedInline(route.path_to_permanent_residence)}</li>
+      <li>CITIZENSHIP PATH: ${formatSourcedInline(route.path_to_citizenship)}</li>
+    </ul>
+    ${formatKeyRequirements(route.key_requirements)}
+  `;
+}
+
+function formatKeyRequirements(requirements) {
+  if (!Array.isArray(requirements) || requirements.length === 0) {
+    return '<p class="empty compact">KEY REQUIREMENTS NOT FOUND.</p>';
+  }
+
+  return `
+    <ul class="detail-list compact">
+      ${requirements.map((item) => `
+        <li>REQUIREMENT: ${escapeHtml(item.requirement ?? String(item))}
+          ${formatSourceIds(item.source_ids)}
+        </li>
+      `).join("")}
+    </ul>
+  `;
+}
+
+function formatRejectedRoutes(routes) {
+  if (!Array.isArray(routes) || routes.length === 0) {
+    return '<p class="empty compact">NO REJECTED ROUTES CAPTURED.</p>';
+  }
+
+  return `
+    <ul class="detail-list compact">
+      ${routes.map((route) => `
+        <li>
+          <strong>${escapeHtml(route.route_name ?? route.name ?? "UNNAMED ROUTE")}</strong>
+          <span class="subtext">${escapeHtml(route.reason ?? route.notes ?? "REASON NOT FOUND")}</span>
+          ${formatSourceIds(route.source_ids)}
+        </li>
+      `).join("")}
+    </ul>
+  `;
+}
+
+function formatFullData(data) {
+  return `
+    <details class="full-data">
+      <summary>NORMALIZED COUNTRY RECORD</summary>
+      <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+    </details>
   `;
 }
 
@@ -880,6 +1133,29 @@ function formatAverageCitizenSalary(salary) {
     </ul>
     <p class="summary">${escapeHtml(salary.notes ?? "")}</p>
   `;
+}
+
+function formatSourcedInline(item, formatter) {
+  if (item === null || item === undefined || item === "") return "NOT FOUND";
+
+  if (typeof item !== "object" || Array.isArray(item)) {
+    const value = formatter ? formatter(item) : String(item);
+    return escapeHtml(value);
+  }
+
+  const rawValue = item.display_value ?? item.value ?? item.local_or_formula_value ?? item.status;
+  const displayValue = rawValue === null || rawValue === undefined || rawValue === ""
+    ? "NOT FOUND"
+    : formatter && typeof rawValue === "number"
+      ? formatter(rawValue)
+      : String(rawValue);
+  const notes = item.notes ? `<span class="subtext">${escapeHtml(item.notes)}</span>` : "";
+  return `${escapeHtml(displayValue)}${notes}${formatSourceIds(item.source_ids)}`;
+}
+
+function formatSourceIds(sourceIds) {
+  if (!Array.isArray(sourceIds) || sourceIds.length === 0) return "";
+  return `<span class="source-ids">${escapeHtml(sourceIds.join(", "))}</span>`;
 }
 
 function formatSourcedMoney(value) {
