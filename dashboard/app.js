@@ -108,7 +108,7 @@ function normalizeResults(json) {
   return results.map((item) => {
     const data = item.data ?? item;
     const bestRoute = data.best_routes?.[0] ?? null;
-    const nomadTransition = buildNomadTransition(data, bestRoute);
+    const nomadTransition = normalizeNomadStatus(data.nomad_status) ?? buildNomadTransition(data, bestRoute);
     return {
       country: item.country ?? data.country ?? "UNKNOWN",
       status: item.status ?? "ok",
@@ -496,8 +496,8 @@ function renderDetails(visibleRows) {
       <ul class="detail-list">
         <li>VALID FOR SELECTION: ${escapeHtml(formatBooleanish(data.valid_for_selection))}</li>
         <li>FULLY MATCHED: ${escapeHtml(formatBooleanish(data.fully_matched))}</li>
-        <li>REMOTE WORK FIT: ${escapeHtml(formatBooleanish(data.regular_foreign_contract_remote_work_fit))}</li>
-        <li>PR/CIT: ${nomadTransitionPill(row.nomadTransition)}<span class="subtext">${escapeHtml(row.nomadTransition.description)}</span></li>
+        <li>REMOTE WORK FIT: ${formatRemoteWorkFit(data.regular_foreign_contract_remote_work_fit)}</li>
+        <li>NOMAD STATUS: ${nomadTransitionPill(row.nomadTransition)}<span class="subtext">${escapeHtml(row.nomadTransition.description)}</span></li>
         <li>CONFIDENCE: ${escapeHtml((data.confidence ?? "NOT FOUND").toUpperCase())}</li>
         <li>RESEARCHED AT: ${escapeHtml(data.researched_at ?? "NOT FOUND")}</li>
         <li>SOURCE COUNT: ${escapeHtml(String(row.sourceCount ?? sources.length ?? 0))}</li>
@@ -568,7 +568,7 @@ function renderDetails(visibleRows) {
         <li>RAW TRACK: ${escapeHtml(data.settlement_track?.classification ?? "NOT FOUND")}</li>
         <li>TRACK STRENGTH: ${escapeHtml(data.settlement_track?.citizenship_track_strength ?? data.citizenship_track_strength ?? "NOT FOUND")}</li>
         <li>CITIZENSHIP FROM THIS ROUTE: ${escapeHtml(formatCitizenshipTrack(data.settlement_track?.can_lead_to_citizenship_from_this_route))}</li>
-        <li>STATUS SWITCH NEEDED: ${escapeHtml(formatBooleanish(data.settlement_track?.requires_switch_to_another_status))}</li>
+        <li>NOMAD STATUS SWITCH NEEDED: ${escapeHtml(formatBooleanish(data.settlement_track?.requires_switch_to_another_status))}</li>
         <li>NOMAD WARNING: ${escapeHtml(data.settlement_track?.nomad_only_warning ?? "NOT FOUND")}</li>
       </ul>
       <p>${escapeHtml(data.timeline?.key_conditions?.value ?? "NOT FOUND.")}</p>
@@ -645,20 +645,23 @@ function renderDetails(visibleRows) {
 }
 
 function statusPill(row) {
+  const value = String(row.valid);
   if (row.status === "error") return '<span class="pill bad">ERROR</span>';
   if (row.valid === true) return '<span class="pill good">ELIGIBLE</span>';
-  if (row.valid === "partial" || row.valid === "uncertain") return '<span class="pill warn">REVIEW</span>';
+  if (value.startsWith("partial") || row.valid === "uncertain") return '<span class="pill warn">REVIEW</span>';
   return '<span class="pill bad">NO</span>';
 }
 
 function matchesStatus(row, selected) {
-  if (selected === "review") return row.valid === "partial" || row.valid === "uncertain";
+  const value = String(row.valid);
+  if (selected === "review") return value.startsWith("partial") || row.valid === "uncertain";
   return String(row.valid) === selected || row.status === selected;
 }
 
 function statusRank(row) {
+  const value = String(row.valid);
   if (row.valid === true) return 1;
-  if (row.valid === "partial" || row.valid === "uncertain") return 2;
+  if (value.startsWith("partial") || row.valid === "uncertain") return 2;
   if (row.valid === false) return 4;
   if (row.status === "error") return 5;
   return 6;
@@ -701,11 +704,14 @@ function matchesLanguage(row, selected) {
 
 function isMatchesRow(row) {
   const value = String(row.valid);
+  const classification = String(row.citizenshipTrack ?? "").toLowerCase();
+  const isTemporaryOnly = classification === "temporary_nomad_only" || row.nomadTransition.status === "temporary_only";
+  if (isTemporaryOnly) return false;
+
   const hasMatchingStatus = row.status === "ok" && (
     row.valid === true ||
     value === "partial" ||
-    value === "uncertain" ||
-    value.startsWith("partial")
+    value === "uncertain"
   );
   const hasMatchingPrCit = ["direct", "switch_needed", "possible", "unclear"].includes(row.nomadTransition.status);
   return hasMatchingStatus && hasMatchingPrCit;
@@ -762,34 +768,16 @@ function buildNomadTransition(data, route) {
       status: "direct",
       label: "YES",
       tone: "good",
-      description: "Captured route can plausibly lead onward to PR or citizenship without a separate status switch."
+      description: "Captured nomad or equivalent status can plausibly lead onward without a separate status switch."
     };
   }
 
-  if (requiresSwitch === true && !classification.startsWith("not_valid")) {
+  if (requiresSwitch === true && data.valid_for_selection === true && !classification.startsWith("not_valid")) {
     return {
       status: "switch_needed",
       label: "SWITCH",
       tone: "info",
-      description: "Living on the nomad/equivalent route may help, but PR or citizenship needs conversion or another qualifying status."
-    };
-  }
-
-  if (String(canLead).toLowerCase().includes("possible") || classification.includes("possible")) {
-    return {
-      status: "possible",
-      label: "POSSIBLE",
-      tone: "info",
-      description: "Dataset suggests a possible onward path, but the route needs manual confirmation."
-    };
-  }
-
-  if (canLead === "uncertain" || requiresSwitch === "uncertain" || classification.includes("uncertain")) {
-    return {
-      status: "unclear",
-      label: "UNCLEAR",
-      tone: "warn",
-      description: "The onward PR/citizenship effect of time on this route is not confirmed."
+      description: "The nomad or equivalent status fits, and long-term residence depends on switching or converting to another qualifying status."
     };
   }
 
@@ -798,7 +786,34 @@ function buildNomadTransition(data, route) {
       status: "temporary_only",
       label: "TEMP ONLY",
       tone: "bad",
-      description: "Captured route is temporary-only or not confirmed to count toward PR/citizenship."
+      description: "Captured nomad or equivalent status is temporary-only, with no confirmed onward switch or conversion path."
+    };
+  }
+
+  if (requiresSwitch === true && !classification.startsWith("not_valid")) {
+    return {
+      status: "switch_needed",
+      label: "SWITCH",
+      tone: "info",
+      description: "The nomad or equivalent status may help, but long-term residence needs conversion or another qualifying status."
+    };
+  }
+
+  if (String(canLead).toLowerCase().includes("possible") || classification.includes("possible")) {
+    return {
+      status: "possible",
+      label: "POSSIBLE",
+      tone: "info",
+      description: "Dataset suggests the nomad or equivalent status may have an onward path, but it needs manual confirmation."
+    };
+  }
+
+  if (canLead === "uncertain" || requiresSwitch === "uncertain" || classification.includes("uncertain")) {
+    return {
+      status: "unclear",
+      label: "UNCLEAR",
+      tone: "warn",
+      description: "The onward effect of time on this nomad or equivalent status is not confirmed."
     };
   }
 
@@ -806,8 +821,37 @@ function buildNomadTransition(data, route) {
     status: "unclear",
     label: "UNCLEAR",
     tone: "warn",
-    description: "The dataset does not clearly answer whether this route can lead onward."
+    description: "The dataset does not clearly answer whether this nomad or equivalent status can lead onward."
   };
+}
+
+function normalizeNomadStatus(status) {
+  if (!status || typeof status !== "object" || !status.status) return null;
+
+  return {
+    status: status.status,
+    label: status.label ?? nomadStatusLabel(status.status),
+    tone: status.tone ?? nomadStatusTone(status.status),
+    description: status.description ?? "Nomad status description was not captured in the normalized dataset."
+  };
+}
+
+function nomadStatusLabel(status) {
+  if (status === "direct") return "YES";
+  if (status === "switch_needed") return "SWITCH";
+  if (status === "possible") return "POSSIBLE";
+  if (status === "unclear") return "UNCLEAR";
+  if (status === "temporary_only") return "TEMP ONLY";
+  if (status === "no_nomad_route") return "NO DNV";
+  return "UNKNOWN";
+}
+
+function nomadStatusTone(status) {
+  if (status === "direct") return "good";
+  if (status === "switch_needed" || status === "possible") return "info";
+  if (status === "unclear") return "warn";
+  if (status === "temporary_only") return "bad";
+  return "neutral";
 }
 
 function isNomadEquivalentRoute(data, route) {
@@ -829,6 +873,8 @@ function isNomadEquivalentRoute(data, route) {
     "workcation",
     "foreign_company_remote_work",
     "foreign-company remote",
+    "foreign_employer",
+    "foreign employer",
     "freelance",
     "self_employed",
     "self-employed",
@@ -1057,6 +1103,15 @@ function formatFullData(data) {
       <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
     </details>
   `;
+}
+
+function formatRemoteWorkFit(fit) {
+  if (fit && typeof fit === "object") {
+    const notes = fit.notes ? `<span class="subtext">${escapeHtml(fit.notes)}</span>` : "";
+    return `${escapeHtml(formatBooleanish(fit.value))}${notes}`;
+  }
+
+  return escapeHtml(formatBooleanish(fit));
 }
 
 function citizenshipTrackDescription(value) {
