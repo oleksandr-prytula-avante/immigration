@@ -14,7 +14,7 @@ const elements = {
   language: document.querySelector("#languageFilter"),
   citizenshipTrack: document.querySelector("#citizenshipTrackFilter"),
   jusSoli: document.querySelector("#jusSoliFilter"),
-  fullyMatched: document.querySelector("#fullyMatchedFilter"),
+  matches: document.querySelector("#matchesFilter"),
   incomeMax: document.querySelector("#incomeMax"),
   taxMax: document.querySelector("#taxMax"),
   citizenshipMax: document.querySelector("#citizenshipMax"),
@@ -24,7 +24,6 @@ const elements = {
   visibleCount: document.querySelector("#visibleCount"),
   metricTotal: document.querySelector("#metricTotal"),
   metricValid: document.querySelector("#metricValid"),
-  metricEligiblePath: document.querySelector("#metricEligiblePath"),
   metricAvgIncome: document.querySelector("#metricAvgIncome")
 };
 
@@ -67,14 +66,14 @@ function bindEvents() {
 
   resettableFilters.forEach((input) => {
     input.addEventListener(filterEventName(input), () => {
-      elements.fullyMatched.checked = false;
+      elements.matches.checked = false;
       state.selectedCountry = null;
       render();
     });
   });
 
-  elements.fullyMatched.addEventListener("change", () => {
-    if (elements.fullyMatched.checked) {
+  elements.matches.addEventListener("change", () => {
+    if (elements.matches.checked) {
       resetStandardFilters();
     }
     state.selectedCountry = null;
@@ -158,7 +157,7 @@ function readUrlState() {
     language: params.get("language"),
     citizenshipTrack: params.get("track"),
     jusSoli: params.get("jusSoli"),
-    interesting: params.get("interesting") ?? params.get("fullyMatched"),
+    matches: params.get("matches") ?? params.get("interesting") ?? params.get("fullyMatched"),
     incomeMax: params.get("incomeMax"),
     taxMax: params.get("taxMax"),
     citizenshipMax: params.get("citizenshipMax"),
@@ -174,8 +173,8 @@ function applyUrlStateBeforeData() {
 
   state.isRestoringUrlState = true;
   const hasStandardFilters = hasStandardUrlFilters(urlState);
-  const interestingFromUrl = urlState.interesting === "true";
-  elements.fullyMatched.checked = interestingFromUrl || (!hasStandardFilters && urlState.interesting === null);
+  const matchesFromUrl = urlState.matches === "true";
+  elements.matches.checked = matchesFromUrl || (!hasStandardFilters && urlState.matches === null);
   setInputValue(elements.search, urlState.search);
   setSelectValue(elements.valid, urlState.status);
   setSelectValue(elements.citizenshipTrack, urlState.citizenshipTrack);
@@ -183,7 +182,7 @@ function applyUrlStateBeforeData() {
   setInputValue(elements.incomeMax, urlState.incomeMax);
   setInputValue(elements.taxMax, urlState.taxMax);
   setInputValue(elements.citizenshipMax, urlState.citizenshipMax);
-  if (elements.fullyMatched.checked) {
+  if (elements.matches.checked) {
     resetStandardFilters();
   }
   if (isValidSortKey(urlState.sort)) {
@@ -203,7 +202,7 @@ function applyUrlStateAfterData() {
   }
 
   state.isRestoringUrlState = true;
-  if (!elements.fullyMatched.checked) {
+  if (!elements.matches.checked) {
     setSelectValue(elements.language, urlState.language);
   }
   state.selectedCountry = state.rows.some((row) => row.country === urlState.selected)
@@ -228,8 +227,8 @@ function updateUrlState() {
   if (state.isRestoringUrlState) return;
 
   const params = new URLSearchParams();
-  if (elements.fullyMatched.checked) {
-    params.set("interesting", "true");
+  if (elements.matches.checked) {
+    params.set("matches", "true");
   } else {
     setUrlParam(params, "q", elements.search.value.trim());
     setUrlParam(params, "status", elements.valid.value, "all");
@@ -294,7 +293,7 @@ function filteredRows() {
   const language = elements.language.value;
   const citizenshipTrack = elements.citizenshipTrack.value;
   const jusSoli = elements.jusSoli.value;
-  const fullyMatched = elements.fullyMatched.checked;
+  const matches = elements.matches.checked;
   const incomeMax = parseOptionalNumber(elements.incomeMax.value);
   const taxMax = parseOptionalNumber(elements.taxMax.value);
   const citizenshipMax = parseOptionalNumber(elements.citizenshipMax.value);
@@ -318,7 +317,7 @@ function filteredRows() {
     if (language !== "all" && !matchesLanguage(row, language)) return false;
     if (citizenshipTrack !== "all" && !matchesCitizenshipTrack(row.citizenshipTrack, citizenshipTrack)) return false;
     if (jusSoli !== "all" && jusSoliFilterValue(row.jusSoli) !== jusSoli) return false;
-    if (fullyMatched && !isInterestingRow(row)) return false;
+    if (matches && !isMatchesRow(row)) return false;
     if (incomeMax !== null && row.income !== null && row.income > incomeMax) return false;
     if (taxMax !== null && row.tax !== null && row.tax > taxMax) return false;
     if (citizenshipMax !== null && row.citizenshipYears !== null && row.citizenshipYears > citizenshipMax) return false;
@@ -400,16 +399,14 @@ function sortValue(row, key) {
 function renderMetrics() {
   const okRows = state.rows.filter((row) => row.status === "ok");
   const validRows = okRows.filter((row) => row.valid === true);
-  const totalMinusNotEligibleRows = state.rows.filter((row) => row.valid !== false);
-  const fullyMatchedOrReviewRows = okRows.filter(isInterestingRow);
+  const matchRows = okRows.filter(isMatchesRow);
   const incomes = validRows.map((row) => row.income).filter((value) => value !== null);
   const avgIncome = incomes.length
     ? Math.round(incomes.reduce((sum, value) => sum + value, 0) / incomes.length)
     : null;
 
   elements.metricTotal.textContent = state.rows.length;
-  elements.metricValid.textContent = totalMinusNotEligibleRows.length;
-  elements.metricEligiblePath.textContent = fullyMatchedOrReviewRows.length;
+  elements.metricValid.textContent = matchRows.length;
   elements.metricAvgIncome.textContent = avgIncome === null ? "NOT FOUND" : money(avgIncome);
 }
 
@@ -646,21 +643,8 @@ function matchesLanguage(row, selected) {
   return row.languages.some((language) => language.toLowerCase() === selected.toLowerCase());
 }
 
-function hasEligibleCitizenshipPath(row) {
-  return row.valid === true &&
-    row.data?.fully_matched === true &&
-    row.data?.regular_foreign_contract_remote_work_fit?.value === true &&
-    (
-      row.citizenshipTrack === "strong_citizenship_track" ||
-      row.citizenshipTrack === "possible_with_conversion"
-    );
-}
-
-function isInterestingRow(row) {
-  if (row.citizenshipTrack === "weak_or_uncertain_citizenship_track") return false;
-  return hasEligibleCitizenshipPath(row) ||
-    row.valid === "partial" ||
-    row.valid === "uncertain";
+function isMatchesRow(row) {
+  return row.status === "ok" && row.valid !== false;
 }
 
 function citizenshipTrackRank(value) {
@@ -775,8 +759,17 @@ function formatLanguages(languages) {
 }
 
 function formatLanguageChips(languages) {
-  const values = languages.length ? languages : ["NOT FOUND"];
-  return values.map((language) => `<span class="language-chip">${escapeHtml(language)}</span>`).join("");
+  if (!languages.length) return '<span class="language-chip">NOT FOUND</span>';
+
+  const visibleLanguages = languages.slice(0, 2);
+  const remainingCount = languages.length - visibleLanguages.length;
+  const chips = visibleLanguages.map((language) => `<span class="language-chip">${escapeHtml(language)}</span>`);
+
+  if (remainingCount > 0) {
+    chips.push(`<span class="language-chip more">+${remainingCount} MORE</span>`);
+  }
+
+  return chips.join("");
 }
 
 function formatResearchQuality(row) {
@@ -791,7 +784,7 @@ function formatStatusMeaning(row) {
       : "Eligible but not fully matched means the route can work, but one or more filing, tax, or settlement details still need review.";
   }
   if (row.valid === "partial") {
-    return "Partial means the country has an interesting independent skilled or residence route, but it is not a clean ordinary remote-work match.";
+    return "Partial means the country has a potential independent skilled or residence route, but it is not a clean ordinary remote-work match.";
   }
   if (row.valid === "uncertain") {
     return "Review means the route may fit, but official filing or settlement evidence is incomplete, contradictory, or still needs manual verification.";

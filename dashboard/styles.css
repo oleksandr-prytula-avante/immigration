@@ -81,7 +81,7 @@ h1 {
 }
 
 .metrics {
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   margin-bottom: 16px;
 }
 
@@ -284,6 +284,11 @@ tbody tr.active {
   color: var(--accent);
   font-size: 11px;
   font-weight: 800;
+}
+
+.language-chip.more {
+  background: #ecefeb;
+  color: var(--muted);
 }
 
 .pill {

@@ -12,6 +12,7 @@ Applicant context:
 - Final selection is citizenship-path oriented. A country is not eligible just because the applicant can live there temporarily, work remotely as a visitor, or use a digital-nomad/workcation status. The chosen route must either be a qualifying residence route itself or have a confirmed conversion path into qualifying residence for permanent residence/citizenship.
 - Independent skilled-worker / points-tested / degree-based migration routes may be marked `valid_for_selection="partial"` when they can be applied for without a local employer and can lead directly to residence/permanent residence/citizenship, but they are not ordinary foreign-contract remote-work routes. Example: Australia subclass 189-style skilled independent PR.
 - Dashboard interpretation: `valid_for_selection="partial"` and `valid_for_selection="uncertain"` are shown together as `REVIEW / PARTIAL`. Partial means "interesting independent skilled/residence route, not a remote-work match"; uncertain means "needs source/manual verification".
+- Dashboard detail panel depends on clear explanatory text. Write `selection_summary`, route `notes`, tax `notes`, settlement `summary`, salary `notes`, and visa application `notes` in plain language so a reader can understand what is usable, what is temporary-only, what is missing, and what must be verified before applying.
 
 What to research:
 1. Whether there is an independent self-application route:
@@ -29,12 +30,15 @@ What to research:
    - whether the applicant can apply independently;
    - whether a local employer is required;
    - whether a foreign contract is required;
+   - whether the route directly gives temporary residence;
+   - whether the route directly gives permanent residence;
    - minimum monthly income in USD;
    - minimum income in local currency;
    - UI display value for income: if there is no USD threshold, use local currency; if no threshold is published, state that clearly in `income_requirement_display`;
    - how many months of income must be proven;
    - other key requirements: degree, experience, insurance, accommodation, criminal record certificate, bank balance, business plan, sole-proprietor registration, tax number, local address;
    - initial status duration and renewal rules.
+   - Important for UI: fill every route flag (`independent_application_possible`, `local_employer_required`, `foreign_contract_or_income_required`, `direct_temporary_residence_possible`, `direct_permanent_residence_possible`) as true/false/null with notes in the route text. These flags are shown directly in the dashboard.
 4. Taxes:
    - when tax residency starts;
    - personal income tax rate on this type of income, as a percentage;
@@ -44,6 +48,7 @@ What to research:
    - separately check fixed payments for the digital nomad / self-employed scenario: mandatory health insurance, social security, minimum monthly contribution, flat/fixed freelancer tax, municipal/business registration fee, visa/residence-card fees, renewal fees, stamp duties, VAT registration thresholds, financial transaction taxes;
    - whether there are special regimes for digital nomads, freelancers, expatriates, remittance basis, territorial tax, non-dom, or tax holidays;
    - include caveats because tax depends on residence, contract structure, and double-tax treaty position.
+   - Important for UI: clearly state whether the displayed tax number is a top marginal/screening rate, a flat rate, a special-regime rate, or not applicable. Do not let a progressive top rate look like an expected effective rate.
 5. Status transitions:
    - whether this visa/status can transition to residence;
    - whether it can transition to permanent residence;
@@ -52,6 +57,7 @@ What to research:
    - requirements: language, integration, physical presence, absence limits, income, tax compliance, renunciation of previous citizenship.
    - Always separate the right to live temporarily on a digital nomad / remote worker visa from a real path to permanent residence or citizenship. If the route is temporary only and does not lead to settlement, explicitly classify it as `temporary_nomad_only`.
    - Verify whether time spent on the route counts toward permanent residence or citizenship. If official sources do not confirm that it counts, do not mark it as a fully matched citizenship path.
+   - Important for UI: `settlement_track.summary` must explain in one or two sentences why the route is `strong_citizenship_track`, `possible_with_conversion`, `weak_or_uncertain_citizenship_track`, `temporary_nomad_only`, or not valid.
 6. Marriage:
    - whether citizenship or permanent residence is accelerated by marriage to a citizen;
    - whether an already existing marriage matters;
@@ -129,10 +135,12 @@ Final country audit before returning JSON:
 
 Response requirements:
 - Return only valid JSON matching the given schema.
+- Use human-readable wording in all `value`, `notes`, and `summary` fields. The dashboard displays these fields directly; avoid cryptic fragments like "OK", "N/A", or "see source" without explanation.
 - All USD amounts should be approximately converted as of the research date. If the exchange rate is approximate, say so in `notes`.
 - If the official income threshold is published only in local currency, do not leave the field empty: include the local currency amount and `income_requirement_display`. USD may be approximate or `null` if conversion is unreliable.
 - Do not invent exact numbers. If an exact number is unavailable, use `null` and explain in `notes`.
 - For `best_routes[0]`, always fill `income_requirement_display.value`, even if `minimum_monthly_income_usd.value=null`.
+- For `best_routes[0]`, make route `notes` explain why the route does or does not fit an ordinary foreign-contract remote worker, and whether it is settlement-oriented or temporary-only.
 - For all `valid_for_selection=true` countries, always fill `taxes.taxation_system`: `rate_type`, `top_personal_income_tax_rate_percent`, `tax_residency_rule`, `income_scope`, `special_regimes`, `social_security`, `progressive_tax_notes`, `tax_brackets`, `confidence`, `source_ids`, `notes`.
   - `rate_type` must be one of: `flat`, `progressive`, `none`, `territorial`, `remittance_basis`, `special_regime`, `mixed`, or `uncertain`.
   - For progressive systems, set `top_personal_income_tax_rate_percent` to the top marginal/screening rate used for dashboard filtering, not an estimated effective rate. Explain this in `progressive_tax_notes`.
@@ -161,10 +169,15 @@ Response requirements:
   - `currency`, `salary_basis`, `period`, `confidence`, `source_ids`, and `notes`.
   - Use official statistics offices, labor ministries, social-security/wage agencies, ILO/OECD/World Bank, or reputable salary datasets. Prefer official statistics for average citizens over expat/job-board numbers.
   - Do not guess min/max. If not found, use `null` for numeric USD values and `Not confirmed in dataset` in local-currency text, with notes explaining what is missing.
+  - Salary is not the immigration income threshold. In `notes`, explicitly say whether the salary data is average citizen/resident worker salary, statutory minimum wage, formal-sector wage, household-survey wage, or job-board salary.
 - Always fill country-level `visa_application`:
   - `application_url`: the direct official application URL if found; otherwise an official route/visa information URL; use `null` only if no official/current application or visa authority page was found.
   - `application_url_type`: one of `direct_application`, `official_route_info`, `official_general_visa_portal`, `official_immigration_home`, or `not_found`.
   - `title`, `source_ids`, `last_checked`, and `notes`.
   - Prefer immigration authority, consulate, eVisa, e-government, or official route pages. Do not use blogs, news, Wikipedia, generic Google searches, or tax pages as the application URL except as notes explaining that the official application page was not found.
   - If the country is not eligible, still provide the official visa/immigration page where a person would check or apply for visas when available.
+- Source-quality discipline:
+  - For every official application or route page, include a source object with title, URL, publisher, source type, and access date.
+  - If a link is not a direct application page, say what it is in `visa_application.notes`: official route info, general visa portal, immigration home page, or not found.
+  - If a claim relies on current news because no official page was found, mark confidence lower and do not promote the country to fully matched solely from news.
 - Prefer concise output, but do not omit criteria, amounts, and timelines.

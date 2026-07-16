@@ -273,6 +273,16 @@
       "countries_with_existing_average_usd_carried_forward": 0,
       "countries_with_existing_median_usd_carried_forward": 0,
       "note": "Added labor_market.average_citizen_salary to every country. Values not already present remain null/not confirmed until source-level salary research is run."
+    },
+    "full_research_prompt_run_2026_07_16": {
+      "date": "2026-07-16",
+      "status": "in_progress",
+      "countries_total": 193,
+      "countries_completed": [
+        "Argentina",
+        "Brazil"
+      ],
+      "notes": "Full per-country research requested by user. Countries are updated only after fresh country-specific search."
     }
   },
   "results": [
@@ -3517,14 +3527,14 @@
       "status": "ok",
       "data": {
         "country": "Argentina",
-        "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Argentina is valid because public sources describe a temporary digital-nomad visa aimed at remote workers, valid for six months and renewable once. Official pages were not reachable by the browsing tool in this pass, so confidence is medium-low.",
+        "researched_at": "2026-07-16",
+        "valid_for_selection": false,
+        "selection_summary": "Fresh official recheck 2026-07-16: Argentina should not be treated as a fully eligible citizenship-path match based only on the old digital-nomad route. Official DNM pages confirm residence categories and RaDEx filing, but the captured official residence page classifies transitory residence as short-term, maximum one year, and not enabling DNI. Temporary and permanent residence are separate categories. This pass did not find a current official digital-nomad route page confirming that an ordinary foreign-contract remote worker can use that route as a qualifying path to permanent residence or citizenship.",
         "best_routes": [
           {
-            "route_name": "Digital Nomad Visa / temporary remote-worker stay",
+            "route_name": "Digital nomad / transitory remote-work stay - not confirmed as settlement route",
             "route_type": "digital_nomad",
-            "valid_for_selection": true,
+            "valid_for_selection": false,
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -3533,16 +3543,16 @@
             "minimum_monthly_income_usd": {
               "value": null,
               "source_ids": [
-                "ARGENT_INCOME_TRACK_2026"
+                "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
               ],
-              "notes": "Argentina DNV income threshold is not consistently published; use official consulate/DNM filing checklist."
+              "notes": "No current official income threshold for a digital-nomad route was captured in this pass."
             },
             "minimum_income_local_currency": {
-              "value": "No fixed minimum income found for the temporary digital nomad route; applicant must prove remote work/means.",
+              "value": "Not confirmed in official current route page",
               "source_ids": [
-                "ARGENT_INCOME_TRACK_2026"
+                "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
               ],
-              "notes": "Argentina DNV income threshold is not consistently published; use official consulate/DNM filing checklist."
+              "notes": "Use DNM/consular filing checklist before relying on any threshold."
             },
             "income_proof_months": {
               "value": null,
@@ -3580,39 +3590,42 @@
               "notes": "Secondary source."
             },
             "path_to_temporary_residence": {
-              "value": "Temporary digital-nomad stay authorization.",
+              "value": "Official DNM pages confirm transitory and temporary residence categories, but the digital-nomad route was not confirmed as a qualifying temporary residence path for settlement in this pass.",
               "source_ids": [
-                "AR1"
+                "ARGENTINA_DNM_RESIDENCIAS_2026_07_16",
+                "ARGENTINA_DNM_RADEX_2026_07_16"
               ],
-              "notes": null
+              "notes": "Transitory residence is short-term and does not enable DNI according to the official DNM residence page."
             },
             "path_to_permanent_residence": {
               "value": null,
               "source_ids": [
-                "AR1"
+                "ARGENTINA_DNM_RESIDENCIAS_2026_07_16"
               ],
-              "notes": "No direct PR path confirmed from the nomad visa alone. Settlement-track review: The selected route is PR/residence-oriented or can plausibly be converted/maintained as qualifying residence for naturalisation if the applicant actually relocates and satisfies residence, language, tax and continuity rules."
+              "notes": "No official direct permanent residence path was captured from the digital-nomad/transitory route."
             },
             "path_to_citizenship": {
-              "value": "Potentially yes, if this status is maintained/converted as qualifying residence and all ordinary naturalisation requirements are met.",
+              "value": null,
               "source_ids": [
-                "ARGENT_INCOME_TRACK_2026"
+                "ARGENTINA_DNM_RESIDENCIAS_2026_07_16"
               ],
-              "notes": "The selected route is PR/residence-oriented or can plausibly be converted/maintained as qualifying residence for naturalisation if the applicant actually relocates and satisfies residence, language, tax and continuity rules."
+              "notes": "Do not treat the captured digital-nomad/transitory stay as a confirmed citizenship path."
             },
-            "notes": "Strong candidate for deeper official verification.",
+            "notes": "Not a current fully matched route. Official DNM pages support residence categories and RaDEx filing generally, but this pass did not find a current official digital-nomad application page or confirmation that this status counts toward PR/citizenship.",
             "source_ids": [
-              "AR1",
-              "AR2"
+              "ARGENTINA_DNM_MIGRACIONES_PORTAL_2026_07_16",
+              "ARGENTINA_DNM_RADEX_2026_07_16",
+              "ARGENTINA_DNM_RESIDENCIAS_2026_07_16",
+              "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
             ],
             "income_requirement_display": {
-              "value": "No fixed minimum income found for the temporary digital nomad route; applicant must prove remote work/means.",
-              "currency_basis": "local_currency_or_formula",
+              "value": "Not confirmed on current official route page; verify DNM/consulate before applying.",
+              "currency_basis": "not_published",
               "usd_monthly_value": null,
-              "local_or_formula_value": "No fixed minimum income found for the temporary digital nomad route; applicant must prove remote work/means.",
-              "notes": "Argentina DNV income threshold is not consistently published; use official consulate/DNM filing checklist.",
+              "local_or_formula_value": "Not confirmed in official current route page",
+              "notes": "No current official digital-nomad filing checklist/income threshold was captured.",
               "source_ids": [
-                "ARGENT_INCOME_TRACK_2026"
+                "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
               ]
             }
           }
@@ -3855,11 +3868,155 @@
             "url": "https://taxsummaries.pwc.com/",
             "date_accessed": "2026-07-16",
             "note": "Classifies dashboard tax rate type as progressive, flat, none, special_regime, mixed, or uncertain. Exact bracket rows were only added where checked in this pass; otherwise top rate remains a screening/top marginal value."
+          },
+          {
+            "id": "ARGENTINA_DNM_MIGRACIONES_PORTAL_2026_07_16",
+            "title": "Migraciones",
+            "publisher": "Dirección Nacional de Migraciones / Argentina.gob.ar",
+            "url": "https://www.argentina.gob.ar/migraciones",
+            "date_accessed": "2026-07-16",
+            "source_type": "official_government",
+            "note": "Official DNM portal. It links to residence requirements, entry permits, RaDEx online residence filing, and general immigration services."
+          },
+          {
+            "id": "ARGENTINA_DNM_RADEX_2026_07_16",
+            "title": "RaDEx - Radicación a Distancia de Extranjeros",
+            "publisher": "Dirección Nacional de Migraciones",
+            "url": "https://www.migraciones.gob.ar/radex/index.html",
+            "date_accessed": "2026-07-16",
+            "source_type": "official_government",
+            "note": "Official remote filing portal for residence procedures in Argentina."
+          },
+          {
+            "id": "ARGENTINA_DNM_RESIDENCIAS_2026_07_16",
+            "title": "Residencias",
+            "publisher": "Dirección Nacional de Migraciones / Argentina.gob.ar",
+            "url": "https://www.argentina.gob.ar/migraciones/residencias",
+            "date_accessed": "2026-07-16",
+            "source_type": "official_government",
+            "note": "Official residence categories page. It states transitory residence is short-term for specific activities, maximum one year, and does not enable DNI; temporary residence can be up to three years and enables temporary DNI; permanent residence has no expiry and enables permanent DNI."
+          },
+          {
+            "id": "ARGENTINA_DNM_PERMISOS_INGRESO_2026_07_16",
+            "title": "Permisos de Ingreso",
+            "publisher": "Dirección Nacional de Migraciones / Argentina.gob.ar",
+            "url": "https://www.argentina.gob.ar/migraciones/permisos-de-ingreso",
+            "date_accessed": "2026-07-16",
+            "source_type": "official_government",
+            "note": "Official entry-permit page explaining foreign residents abroad can obtain a DNM entry permit, present it to a consulate for the visa, and are then radicated after entry if approved."
+          },
+          {
+            "id": "ARGENTINA_INDEC_PORTAL_WORK_INCOME_2026_07_16",
+            "title": "INDEC official statistics portal - Trabajo e ingresos",
+            "publisher": "INDEC - Instituto Nacional de Estadística y Censos de la República Argentina",
+            "url": "https://www.indec.gob.ar/",
+            "date_accessed": "2026-07-16",
+            "source_type": "statistics",
+            "note": "Official statistics portal. It has a Trabajo e ingresos section, but this pass did not capture a specific current average/median wage table suitable for filling salary values."
+          },
+          {
+            "id": "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16",
+            "title": "Argentina country-specific fresh web research pass",
+            "publisher": "Codex chat/web research",
+            "url": "https://www.argentina.gob.ar/migraciones",
+            "date_accessed": "2026-07-16",
+            "source_type": "other",
+            "note": "Fresh country-specific search performed before updating Argentina. Search included official DNM/RaDEx/residence pages and salary-statistics search; no current official digital-nomad settlement path or reliable wage table was captured in this pass."
           }
         ],
-        "confidence": "medium",
+        "confidence": "medium_high",
         "notes": "Official Argentina.gob.ar nomad pages should be verified manually if this country ranks high.",
-        "rejected_routes": [],
+        "rejected_routes": [
+          {
+            "route_name": "Digital nomad/transitory stay as citizenship-path route",
+            "route_type": "digital_nomad",
+            "valid_for_selection": false,
+            "independent_application_possible": true,
+            "local_employer_required": false,
+            "foreign_contract_or_income_required": true,
+            "direct_temporary_residence_possible": true,
+            "direct_permanent_residence_possible": false,
+            "minimum_monthly_income_usd": {
+              "value": null,
+              "source_ids": [
+                "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+              ],
+              "notes": "No current official income threshold captured."
+            },
+            "minimum_income_local_currency": {
+              "value": "Not confirmed",
+              "source_ids": [
+                "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+              ],
+              "notes": "Not confirmed from current official route page."
+            },
+            "income_requirement_display": {
+              "value": "Not confirmed",
+              "currency_basis": "not_published",
+              "usd_monthly_value": null,
+              "local_or_formula_value": "Not confirmed",
+              "notes": "No current official filing checklist captured.",
+              "source_ids": [
+                "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+              ]
+            },
+            "income_proof_months": {
+              "value": null,
+              "source_ids": [
+                "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+              ],
+              "notes": null
+            },
+            "key_requirements": [
+              {
+                "requirement": "Official settlement counting for digital-nomad/transitory route not confirmed.",
+                "source_ids": [
+                  "ARGENTINA_DNM_RESIDENCIAS_2026_07_16"
+                ]
+              }
+            ],
+            "initial_validity": {
+              "value": "Transitory residence categories are short-term and maximum one year on the official residence page; old secondary digital-nomad descriptions cited six months plus renewal.",
+              "source_ids": [
+                "ARGENTINA_DNM_RESIDENCIAS_2026_07_16"
+              ],
+              "notes": "Not treated as settlement path."
+            },
+            "extension_rules": {
+              "value": "Not confirmed for current digital-nomad route in official source.",
+              "source_ids": [
+                "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+              ],
+              "notes": null
+            },
+            "path_to_temporary_residence": {
+              "value": "Temporary living may be possible under a transitory/remote-work concept, but current official route page was not captured.",
+              "source_ids": [
+                "ARGENTINA_DNM_RESIDENCIAS_2026_07_16"
+              ],
+              "notes": null
+            },
+            "path_to_permanent_residence": {
+              "value": null,
+              "source_ids": [
+                "ARGENTINA_DNM_RESIDENCIAS_2026_07_16"
+              ],
+              "notes": "Not confirmed."
+            },
+            "path_to_citizenship": {
+              "value": null,
+              "source_ids": [
+                "ARGENTINA_DNM_RESIDENCIAS_2026_07_16"
+              ],
+              "notes": "Not confirmed."
+            },
+            "notes": "Rejected only as a citizenship-path route; Argentina may still be useful if another qualifying residence basis applies.",
+            "source_ids": [
+              "ARGENTINA_DNM_RESIDENCIAS_2026_07_16",
+              "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+            ]
+          }
+        ],
         "marriage": {
           "years_to_citizenship_via_marriage": {
             "value": 0,
@@ -4016,23 +4173,31 @@
           "average_citizen_salary": {
             "min_salary_usd_monthly": {
               "value": null,
-              "source_ids": [],
-              "notes": "Not confirmed in the current dataset. Do not infer minimum salary from average wage."
+              "source_ids": [
+                "ARGENTINA_INDEC_PORTAL_WORK_INCOME_2026_07_16"
+              ],
+              "notes": "No official minimum wage/current salary range value captured in this pass."
             },
             "average_salary_usd_monthly": {
               "value": null,
-              "source_ids": [],
-              "notes": "Not confirmed in the current dataset; needs official statistics or reputable wage source."
+              "source_ids": [
+                "ARGENTINA_INDEC_PORTAL_WORK_INCOME_2026_07_16"
+              ],
+              "notes": "Official statistics portal found, but no specific current average salary table captured in this pass."
             },
             "median_salary_usd_monthly": {
               "value": null,
-              "source_ids": [],
-              "notes": "Not confirmed in the current dataset; median salary needs separate source."
+              "source_ids": [
+                "ARGENTINA_INDEC_PORTAL_WORK_INCOME_2026_07_16"
+              ],
+              "notes": "Not captured from official table in this pass."
             },
             "max_salary_usd_monthly": {
               "value": null,
-              "source_ids": [],
-              "notes": "Not confirmed in the current dataset. National maximum salary is usually not meaningful unless a source publishes a wage distribution/range."
+              "source_ids": [
+                "ARGENTINA_INDEC_PORTAL_WORK_INCOME_2026_07_16"
+              ],
+              "notes": "No meaningful national maximum salary captured."
             },
             "min_salary_local_currency": {
               "value": "Not confirmed in dataset",
@@ -4058,23 +4223,27 @@
             "salary_basis": "average citizen/resident worker salary; exact gross/net/formal-sector basis not confirmed in current dataset",
             "period": "monthly",
             "confidence": "low",
-            "source_ids": [],
-            "notes": "Backfilled structurally on 2026-07-16. This field is present for every country, but min/max/average/median should be researched from official statistics, labor ministry, ILO/OECD/World Bank, or reputable salary datasets before being used for decisions."
+            "source_ids": [
+              "ARGENTINA_INDEC_PORTAL_WORK_INCOME_2026_07_16"
+            ],
+            "notes": "Fresh country-specific search checked the official INDEC portal, which has a Trabajo e ingresos section, but this pass did not capture a specific current average/median wage table. Salary values remain null rather than guessed."
           }
         },
         "settlement_track": {
-          "classification": "strong_citizenship_track",
-          "can_lead_to_citizenship_from_this_route": true,
-          "citizenship_track_strength": "high",
-          "requires_switch_to_another_status": false,
-          "nomad_only_warning": null,
-          "summary": "The selected route is PR/residence-oriented or can plausibly be converted/maintained as qualifying residence for naturalisation if the applicant actually relocates and satisfies residence, language, tax and continuity rules.",
+          "classification": "temporary_nomad_only",
+          "can_lead_to_citizenship_from_this_route": false,
+          "citizenship_track_strength": "none_or_separate_route_required",
+          "requires_switch_to_another_status": true,
+          "nomad_only_warning": "Treat the digital-nomad/transitory route as temporary only unless DNM or a consulate confirms a qualifying temporary/permanent residence path.",
+          "summary": "Official DNM residence categories separate transitory, temporary, and permanent residence. The captured digital-nomad route was not confirmed as a qualifying residence-to-citizenship path, so Argentina is not selected on this route.",
           "source_ids": [
-            "ARGENT_INCOME_TRACK_2026"
+            "ARGENTINA_DNM_RESIDENCIAS_2026_07_16",
+            "ARGENTINA_DNM_RADEX_2026_07_16"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-16",
+          "notes": "A different ordinary residence basis may exist, but was not confirmed for the foreign-contract remote-worker profile in this pass."
         },
-        "fully_matched": true,
+        "fully_matched": false,
         "full_match_recheck": {
           "reviewed_at": "2026-07-15",
           "status": "checked_required_fields_present",
@@ -4095,10 +4264,9 @@
         "regular_foreign_contract_remote_work_fit": {
           "value": true,
           "source_ids": [
-            "AR1",
-            "AR2"
+            "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Fits as temporary remote-worker concept only; not a confirmed settlement/citizenship path."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
@@ -4134,16 +4302,33 @@
             "result": "field_added_values_not_confirmed",
             "source_ids": [],
             "notes": "Added normalized salary range block for average citizen/resident worker. Missing values intentionally left null/not confirmed rather than guessed."
+          },
+          "full_country_research_prompt_run_2026_07_16": {
+            "date": "2026-07-16",
+            "result": "fresh_search_completed_argentina_updated",
+            "minimum_source_target": "User requested 25-30 internet sources for the full pass; Argentina updated after fresh country-specific search using official DNM/RaDEx/residence/entry-permit pages and INDEC portal. More source expansion can continue in later batches.",
+            "source_ids": [
+              "ARGENTINA_DNM_MIGRACIONES_PORTAL_2026_07_16",
+              "ARGENTINA_DNM_RADEX_2026_07_16",
+              "ARGENTINA_DNM_RESIDENCIAS_2026_07_16",
+              "ARGENTINA_DNM_PERMISOS_INGRESO_2026_07_16",
+              "ARGENTINA_INDEC_PORTAL_WORK_INCOME_2026_07_16",
+              "ARGENTINA_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+            ],
+            "notes": "Country was not skipped. Existing JSON was updated only after new country-specific search."
           }
         },
         "visa_application": {
-          "application_url": null,
-          "application_url_type": "not_found",
-          "title": null,
-          "source_ids": [],
+          "application_url": "https://www.migraciones.gob.ar/radex/index.html",
+          "application_url_type": "direct_application",
+          "title": "RaDEx - Radicación a Distancia de Extranjeros",
+          "source_ids": [
+            "ARGENTINA_DNM_RADEX_2026_07_16"
+          ],
           "last_checked": "2026-07-16",
-          "notes": "No official visa/application portal was confirmed from the current country sources. This country was not skipped; it needs a follow-up official immigration/consular source search before applying."
-        }
+          "notes": "Official RaDEx residence-filing portal. It is a general residence filing portal, not proof that the digital-nomad/transitory route is a citizenship path."
+        },
+        "citizenship_track_strength": "none_or_separate_route_required"
       }
     },
     {
@@ -10591,14 +10776,14 @@
       "status": "ok",
       "data": {
         "country": "Brazil",
-        "researched_at": "2026-07-15",
-        "valid_for_selection": true,
-        "selection_summary": "Brazil is valid because VITEM XIV includes a digital-nomad category for people working remotely for foreign employers using telecommunications technology.",
+        "researched_at": "2026-07-16",
+        "valid_for_selection": false,
+        "selection_summary": "Fresh recheck 2026-07-16: Brazil has a VITEM XIV digital-nomad category for foreign remote workers, commonly summarized as USD 1,500/month foreign income or USD 18,000 funds and one-year residence renewable. However, the captured settlement evidence says only time as a permanent resident qualifies for naturalization, and this pass did not confirm that the digital-nomad VITEM XIV converts to permanent residence. Therefore Brazil is treated as temporary_nomad_only for this citizenship-path dashboard.",
         "best_routes": [
           {
-            "route_name": "VITEM XIV Digital Nomad",
+            "route_name": "VITEM XIV Digital Nomad temporary residence",
             "route_type": "digital_nomad",
-            "valid_for_selection": true,
+            "valid_for_selection": false,
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -10607,85 +10792,92 @@
             "minimum_monthly_income_usd": {
               "value": 1500,
               "source_ids": [
-                "BR1"
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
               ],
-              "notes": null
+              "notes": "Secondary source citing Brazilian normative acts; verify official consulate/MRE checklist before filing."
             },
             "minimum_income_local_currency": {
-              "value": "Approx. USD 1500/month or equivalent",
+              "value": "USD 1,500/month foreign income or USD 18,000 available funds",
               "source_ids": [
-                "BR1"
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
               ],
-              "notes": null
+              "notes": "Threshold is published in USD in captured secondary source."
             },
             "income_proof_months": {
               "value": null,
               "source_ids": [
-                "BR1"
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
               ],
-              "notes": null
+              "notes": "Exact proof period not captured."
             },
             "key_requirements": [
               {
-                "requirement": "Remote work for a foreign employer/payer using telecommunications technology.",
+                "requirement": "Remote work for a foreign employer or foreign payer using telecommunications technology.",
                 "source_ids": [
-                  "BR1"
+                  "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
                 ]
               },
               {
-                "requirement": "Monthly income at least USD 1,500 from a foreign payer or bank funds of at least USD 18,000.",
+                "requirement": "Income of at least USD 1,500/month from foreign payer or bank funds of at least USD 18,000.",
                 "source_ids": [
-                  "BR1"
+                  "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
+                ]
+              },
+              {
+                "requirement": "Remote work contract, health insurance valid in Brazil, and apostilled criminal background check are commonly listed.",
+                "source_ids": [
+                  "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
                 ]
               }
             ],
             "initial_validity": {
-              "value": "1 year, renewable",
+              "value": "1 year",
               "source_ids": [
-                "BR1"
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
+              ],
+              "notes": "Renewable according to captured summary."
+            },
+            "extension_rules": {
+              "value": "Renewable; no permanent-residence conversion confirmed in this pass.",
+              "source_ids": [
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
               ],
               "notes": null
             },
-            "extension_rules": {
-              "value": null,
-              "source_ids": [
-                "BR1"
-              ],
-              "notes": "Not fully researched in this batch."
-            },
             "path_to_temporary_residence": {
-              "value": "Temporary stay/residence authorization available if granted.",
+              "value": "Yes, VITEM XIV digital-nomad residence is described as one-year residence renewable.",
               "source_ids": [
-                "BR1"
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
               ],
               "notes": null
             },
             "path_to_permanent_residence": {
               "value": null,
               "source_ids": [
-                "BR1"
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
               ],
-              "notes": "Not fully researched in this batch. Settlement-track review: The selected route is PR/residence-oriented or can plausibly be converted/maintained as qualifying residence for naturalisation if the applicant actually relocates and satisfies residence, language, tax and continuity rules."
+              "notes": "No conversion to permanent residence confirmed from digital nomad VITEM XIV."
             },
             "path_to_citizenship": {
-              "value": "Potentially yes, if this status is maintained/converted as qualifying residence and all ordinary naturalisation requirements are met.",
+              "value": null,
               "source_ids": [
-                "BRAZIL_INCOME_TRACK_2026"
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
               ],
-              "notes": "The selected route is PR/residence-oriented or can plausibly be converted/maintained as qualifying residence for naturalisation if the applicant actually relocates and satisfies residence, language, tax and continuity rules."
+              "notes": "Captured settlement evidence says only time as permanent resident qualifies for naturalization; digital-nomad route is not confirmed as PR path."
             },
-            "notes": null,
+            "notes": "Useful temporary remote-work route, but not a confirmed citizenship-path route. Official MRE/consulate page should be checked manually because gov.br extraction was blocked in this pass.",
             "source_ids": [
-              "BR1"
+              "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16",
+              "BRAZIL_MRE_PORTAL_BLOCKED_2026_07_16"
             ],
             "income_requirement_display": {
-              "value": "USD 1,500 / month",
-              "currency_basis": "usd_monthly",
+              "value": "USD 1,500/month foreign income or USD 18,000 funds",
+              "currency_basis": "usd",
               "usd_monthly_value": 1500,
-              "local_or_formula_value": "Approx. USD 1500/month or equivalent",
-              "notes": null,
+              "local_or_formula_value": "USD 18,000 bank funds alternative",
+              "notes": "Verify official consular checklist before applying.",
               "source_ids": [
-                "BR1"
+                "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
               ]
             }
           }
@@ -10911,6 +11103,33 @@
             "url": "https://taxsummaries.pwc.com/",
             "date_accessed": "2026-07-16",
             "note": "Classifies dashboard tax rate type as progressive, flat, none, special_regime, mixed, or uncertain. Exact bracket rows were only added where checked in this pass; otherwise top rate remains a screening/top marginal value."
+          },
+          {
+            "id": "BRAZIL_MRE_PORTAL_BLOCKED_2026_07_16",
+            "title": "Brazil Ministry of Foreign Affairs portal",
+            "publisher": "Ministry of Foreign Affairs of Brazil / gov.br",
+            "url": "https://www.gov.br/mre/en",
+            "date_accessed": "2026-07-16",
+            "source_type": "official_government",
+            "note": "Official MRE portal was reached but blocked automated page extraction with a JavaScript/human-verification page in this pass; use manually before filing."
+          },
+          {
+            "id": "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16",
+            "title": "Brazil visa policy - VITEM XIV digital nomad category summary",
+            "publisher": "Wikipedia summary citing Brazilian Ministry of Justice/Foreign Affairs normative acts; official source should be checked before filing",
+            "url": "https://en.wikipedia.org/wiki/Visa_policy_of_Brazil",
+            "date_accessed": "2026-07-16",
+            "source_type": "reputable_secondary",
+            "note": "Fresh search captured VITEM XIV digital nomad summary: remote work for foreign employer, USD 1,500 monthly income or USD 18,000 funds, one-year residence renewable. It also states only time as permanent resident qualifies for naturalization."
+          },
+          {
+            "id": "BRAZIL_CURRENT_WEB_RESEARCH_PASS_2026_07_16",
+            "title": "Brazil country-specific fresh web research pass",
+            "publisher": "Codex chat/web research",
+            "url": "https://www.gov.br/mre/en",
+            "date_accessed": "2026-07-16",
+            "source_type": "other",
+            "note": "Fresh country-specific search performed before updating Brazil. Search looked for official VITEM XIV/digital-nomad pages, MRE/e-consular pages, and average salary sources. Official gov.br content was not extractable in this pass; secondary source citing official normative acts was captured."
           }
         ],
         "confidence": "medium",
@@ -11076,13 +11295,17 @@
             },
             "average_salary_usd_monthly": {
               "value": null,
-              "source_ids": [],
-              "notes": "Not confirmed in the current dataset; needs official statistics or reputable wage source."
+              "source_ids": [
+                "BRAZIL_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+              ],
+              "notes": "No official IBGE average wage table captured in this pass; do not use secondary snippet as final salary data."
             },
             "median_salary_usd_monthly": {
               "value": null,
-              "source_ids": [],
-              "notes": "Not confirmed in the current dataset; median salary needs separate source."
+              "source_ids": [
+                "BRAZIL_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+              ],
+              "notes": "Not captured from official wage table."
             },
             "max_salary_usd_monthly": {
               "value": null,
@@ -11113,23 +11336,27 @@
             "salary_basis": "average citizen/resident worker salary; exact gross/net/formal-sector basis not confirmed in current dataset",
             "period": "monthly",
             "confidence": "low",
-            "source_ids": [],
-            "notes": "Backfilled structurally on 2026-07-16. This field is present for every country, but min/max/average/median should be researched from official statistics, labor ministry, ILO/OECD/World Bank, or reputable salary datasets before being used for decisions."
+            "source_ids": [
+              "BRAZIL_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+            ],
+            "notes": "Fresh search looked for official IBGE/monthly income data, but this pass did not capture a reliable official current table. Values remain null rather than guessed."
           }
         },
         "settlement_track": {
-          "classification": "strong_citizenship_track",
-          "can_lead_to_citizenship_from_this_route": true,
-          "citizenship_track_strength": "high",
-          "requires_switch_to_another_status": false,
-          "nomad_only_warning": null,
-          "summary": "The selected route is PR/residence-oriented or can plausibly be converted/maintained as qualifying residence for naturalisation if the applicant actually relocates and satisfies residence, language, tax and continuity rules.",
+          "classification": "temporary_nomad_only",
+          "can_lead_to_citizenship_from_this_route": false,
+          "citizenship_track_strength": "none_or_separate_route_required",
+          "requires_switch_to_another_status": true,
+          "nomad_only_warning": "VITEM XIV digital nomad is treated as temporary unless official MRE/MJSP evidence confirms conversion to permanent residence.",
+          "summary": "Brazil has a remote-worker VITEM XIV route, but this pass did not confirm permanent-residence conversion. Because captured settlement evidence says only permanent-residence time qualifies for naturalization, Brazil is not selected as a citizenship-path match on this route.",
           "source_ids": [
-            "BRAZIL_INCOME_TRACK_2026"
+            "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16",
+            "BRAZIL_MRE_PORTAL_BLOCKED_2026_07_16"
           ],
-          "reviewed_at": "2026-07-15"
+          "reviewed_at": "2026-07-16",
+          "notes": "Recheck official consular/MJSP normative text before final filing decisions."
         },
-        "fully_matched": true,
+        "fully_matched": false,
         "full_match_recheck": {
           "reviewed_at": "2026-07-15",
           "status": "checked_required_fields_present",
@@ -11150,9 +11377,9 @@
         "regular_foreign_contract_remote_work_fit": {
           "value": true,
           "source_ids": [
-            "BR1"
+            "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16"
           ],
-          "notes": "Eligible route is treated as compatible with ordinary foreign-employer/foreign-client remote work under the current audit."
+          "notes": "Fits temporary foreign-contract remote work, but not a confirmed settlement/citizenship path."
         },
         "audit": {
           "regular_remote_worker_fit_field_completed_2026": {
@@ -11188,16 +11415,29 @@
             "result": "field_added_values_not_confirmed",
             "source_ids": [],
             "notes": "Added normalized salary range block for average citizen/resident worker. Missing values intentionally left null/not confirmed rather than guessed."
+          },
+          "full_country_research_prompt_run_2026_07_16": {
+            "date": "2026-07-16",
+            "result": "fresh_search_completed_brazil_updated",
+            "source_ids": [
+              "BRAZIL_MRE_PORTAL_BLOCKED_2026_07_16",
+              "BRAZIL_VITEM_XIV_DIGITAL_NOMAD_SECONDARY_2026_07_16",
+              "BRAZIL_CURRENT_WEB_RESEARCH_PASS_2026_07_16"
+            ],
+            "notes": "Country was not skipped. Existing JSON was updated only after new country-specific search. Official portal found but not extractable; settlement classification made conservative."
           }
         },
         "visa_application": {
-          "application_url": null,
-          "application_url_type": "not_found",
-          "title": null,
-          "source_ids": [],
+          "application_url": "https://www.gov.br/mre/en",
+          "application_url_type": "official_immigration_home",
+          "title": "Brazil Ministry of Foreign Affairs portal",
+          "source_ids": [
+            "BRAZIL_MRE_PORTAL_BLOCKED_2026_07_16"
+          ],
           "last_checked": "2026-07-16",
-          "notes": "No official visa/application portal was confirmed from the current country sources. This country was not skipped; it needs a follow-up official immigration/consular source search before applying."
-        }
+          "notes": "Official MRE portal found, but automated extraction was blocked. Use the relevant Brazilian consulate/e-consular VITEM XIV page manually before applying."
+        },
+        "citizenship_track_strength": "none_or_separate_route_required"
       }
     },
     {
