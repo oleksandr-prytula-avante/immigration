@@ -14,7 +14,6 @@ const elements = {
   language: document.querySelector("#languageFilter"),
   prCit: document.querySelector("#prCitFilter"),
   jusSoli: document.querySelector("#jusSoliFilter"),
-  matches: document.querySelector("#matchesFilter"),
   incomeMax: document.querySelector("#incomeMax"),
   taxMax: document.querySelector("#taxMax"),
   citizenshipMax: document.querySelector("#citizenshipMax"),
@@ -66,18 +65,9 @@ function bindEvents() {
 
   resettableFilters.forEach((input) => {
     input.addEventListener(filterEventName(input), () => {
-      elements.matches.checked = false;
       state.selectedCountry = null;
       render();
     });
-  });
-
-  elements.matches.addEventListener("change", () => {
-    if (elements.matches.checked) {
-      resetStandardFilters();
-    }
-    state.selectedCountry = null;
-    render();
   });
 
   document.querySelectorAll("th[data-sort]").forEach((header) => {
@@ -107,7 +97,7 @@ function normalizeResults(json) {
 
   return results.map((item) => {
     const data = item.data ?? item;
-    const bestRoute = data.best_routes?.[0] ?? null;
+    const bestRoute = data.best_routes?.find((route) => route.valid_for_selection === true) ?? null;
     const nomadTransition = normalizeNomadStatus(data.nomad_status) ?? buildNomadTransition(data, bestRoute);
     return {
       country: item.country ?? data.country ?? "UNKNOWN",
@@ -129,13 +119,16 @@ function normalizeResults(json) {
         data.taxes?.digital_nomad_taxation?.top_or_screening_pit_rate_percent,
         data.taxes?.income_tax_rate_percent
       ),
-      citizenshipYears: firstNumberValue(
-        data.timeline?.total_years_to_citizenship,
-        data.timeline?.years_to_citizenship,
-        data.citizenship?.years_to_citizenship,
-        data.citizenship?.ordinary_naturalization_years,
-        data.settlement_track?.years_to_citizenship
-      ),
+      taxText: taxTextValue(data),
+      citizenshipYears: nomadTransition.status === "direct"
+        ? firstNumberValue(
+          data.timeline?.total_years_to_citizenship,
+          data.timeline?.years_to_citizenship,
+          data.citizenship?.years_to_citizenship,
+          data.citizenship?.ordinary_naturalization_years,
+          data.settlement_track?.years_to_citizenship
+        )
+        : null,
       sourceCount: data.sources?.length ?? 0,
       error: item.error ?? null
     };
@@ -155,11 +148,10 @@ function readUrlState() {
   const params = new URLSearchParams(window.location.search);
   return {
     search: params.get("q"),
-    status: params.get("status"),
+    status: params.get("dnv") ?? params.get("status"),
     language: params.get("language"),
     prCit: params.get("prCit") ?? params.get("nomadTransition"),
     jusSoli: params.get("jusSoli"),
-    matches: params.get("matches") ?? params.get("interesting") ?? params.get("fullyMatched"),
     incomeMax: params.get("incomeMax"),
     taxMax: params.get("taxMax"),
     citizenshipMax: params.get("citizenshipMax"),
@@ -174,9 +166,6 @@ function applyUrlStateBeforeData() {
   if (!urlState) return;
 
   state.isRestoringUrlState = true;
-  const hasStandardFilters = hasStandardUrlFilters(urlState);
-  const matchesFromUrl = urlState.matches === "true";
-  elements.matches.checked = matchesFromUrl;
   setInputValue(elements.search, urlState.search);
   setSelectValue(elements.valid, urlState.status);
   setSelectValue(elements.prCit, urlState.prCit);
@@ -184,9 +173,6 @@ function applyUrlStateBeforeData() {
   setInputValue(elements.incomeMax, urlState.incomeMax);
   setInputValue(elements.taxMax, urlState.taxMax);
   setInputValue(elements.citizenshipMax, urlState.citizenshipMax);
-  if (elements.matches.checked) {
-    resetStandardFilters();
-  }
   if (isValidSortKey(urlState.sort)) {
     state.sort.key = urlState.sort;
   }
@@ -212,26 +198,12 @@ function applyUrlStateAfterData() {
   state.pendingUrlState = null;
 }
 
-function resetStandardFilters() {
-  elements.search.value = "";
-  elements.valid.value = "all";
-  elements.language.value = "all";
-  elements.prCit.value = "all";
-  elements.jusSoli.value = "all";
-  elements.incomeMax.value = "";
-  elements.taxMax.value = "";
-  elements.citizenshipMax.value = "";
-}
-
 function updateUrlState() {
   if (state.isRestoringUrlState) return;
 
   const params = new URLSearchParams();
-  if (elements.matches.checked) {
-    params.set("matches", "true");
-  }
   setUrlParam(params, "q", elements.search.value.trim());
-  setUrlParam(params, "status", elements.valid.value, "all");
+  setUrlParam(params, "dnv", elements.valid.value, "all");
   setUrlParam(params, "language", elements.language.value, "all");
   setUrlParam(params, "prCit", elements.prCit.value, "all");
   setUrlParam(params, "jusSoli", elements.jusSoli.value, "all");
@@ -263,19 +235,6 @@ function normalizeStatusFilterValue(value) {
   return value;
 }
 
-function hasStandardUrlFilters(urlState) {
-  return Boolean(
-    urlState.search ||
-    (urlState.status && normalizeStatusFilterValue(urlState.status) !== "all") ||
-    (urlState.language && urlState.language !== "all") ||
-    (urlState.prCit && urlState.prCit !== "all") ||
-    (urlState.jusSoli && urlState.jusSoli !== "all") ||
-    urlState.incomeMax ||
-    urlState.taxMax ||
-    urlState.citizenshipMax
-  );
-}
-
 function setUrlParam(params, key, value, defaultValue = "") {
   if (value !== null && value !== undefined && value !== "" && value !== defaultValue) {
     params.set(key, value);
@@ -292,7 +251,6 @@ function filteredRows() {
   const language = elements.language.value;
   const prCit = elements.prCit.value;
   const jusSoli = elements.jusSoli.value;
-  const matches = elements.matches.checked;
   const incomeMax = parseOptionalNumber(elements.incomeMax.value);
   const taxMax = parseOptionalNumber(elements.taxMax.value);
   const citizenshipMax = parseOptionalNumber(elements.citizenshipMax.value);
@@ -317,7 +275,6 @@ function filteredRows() {
     if (language !== "all" && !matchesLanguage(row, language)) return false;
     if (prCit !== "all" && row.nomadTransition.status !== prCit) return false;
     if (jusSoli !== "all" && jusSoliFilterValue(row.jusSoli) !== jusSoli) return false;
-    if (matches && !isMatchesRow(row)) return false;
     if (incomeMax !== null && row.income !== null && row.income > incomeMax) return false;
     if (taxMax !== null && row.tax !== null && row.tax > taxMax) return false;
     if (citizenshipMax !== null && row.citizenshipYears !== null && row.citizenshipYears > citizenshipMax) return false;
@@ -403,22 +360,20 @@ function sortValue(row, key) {
 }
 
 function renderMetrics() {
-  const okRows = state.rows.filter((row) => row.status === "ok");
-  const validRows = okRows.filter((row) => row.valid === true);
-  const matchRows = state.rows.filter(isMatchesRow);
+  const validRows = state.rows.filter((row) => row.valid === true);
   const incomes = validRows.map((row) => row.income).filter((value) => value !== null);
   const avgIncome = incomes.length
     ? Math.round(incomes.reduce((sum, value) => sum + value, 0) / incomes.length)
     : null;
 
   elements.metricTotal.textContent = state.rows.length;
-  elements.metricValid.textContent = matchRows.length;
+  elements.metricValid.textContent = validRows.length;
   elements.metricAvgIncome.textContent = avgIncome === null ? "NOT FOUND" : money(avgIncome);
 }
 
 function renderTable(rows) {
   if (!rows.length) {
-    elements.rows.innerHTML = '<tr><td colspan="8">NO COUNTRIES MATCH THE SELECTED FILTERS.</td></tr>';
+    elements.rows.innerHTML = '<tr><td colspan="7">NO COUNTRIES MATCH THE SELECTED FILTERS.</td></tr>';
     return;
   }
 
@@ -428,13 +383,12 @@ function renderTable(rows) {
         <span class="country-name">${escapeHtml(row.country)}</span>
         <span class="language-chip-row">${formatLanguageChips(row.languages)}</span>
       </td>
-      <td class="status-col">${statusPill(row)}</td>
       <td class="route-col">
         ${escapeHtml(row.bestRouteName ?? "NOT FOUND")}
         <span class="subtext">${escapeHtml(row.bestRouteType ?? "")}</span>
       </td>
       <td class="income-col">${escapeHtml(formatIncome(row))}</td>
-      <td>${formatNullable(row.tax, (value) => `${value}%`)}</td>
+      <td>${escapeHtml(formatTax(row))}</td>
       <td class="nomad-col">${nomadTransitionPill(row.nomadTransition)}</td>
       <td>${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</td>
       <td>${jusSoliPill(row.jusSoli)}</td>
@@ -481,7 +435,7 @@ function renderDetails(visibleRows) {
   }
 
   const data = row.data;
-  const route = data.best_routes?.[0];
+  const route = data.best_routes?.find((item) => item.valid_for_selection === true) ?? null;
   const sources = data.sources ?? [];
 
   elements.details.innerHTML = `
@@ -494,8 +448,7 @@ function renderDetails(visibleRows) {
     <div class="detail-block">
       <h3>COUNTRY OVERVIEW</h3>
       <ul class="detail-list">
-        <li>VALID FOR SELECTION: ${escapeHtml(formatBooleanish(data.valid_for_selection))}</li>
-        <li>FULLY MATCHED: ${escapeHtml(formatBooleanish(data.fully_matched))}</li>
+        <li>DIGITAL NOMAD VISA: ${escapeHtml(formatBooleanish(data.dnv_available?.value))}</li>
         <li>REMOTE WORK FIT: ${formatRemoteWorkFit(data.regular_foreign_contract_remote_work_fit)}</li>
         <li>CITIZENSHIP: ${nomadTransitionPill(row.nomadTransition)}<span class="subtext">${escapeHtml(row.nomadTransition.description)}</span></li>
         <li>CONFIDENCE: ${escapeHtml((data.confidence ?? "NOT FOUND").toUpperCase())}</li>
@@ -525,7 +478,7 @@ function renderDetails(visibleRows) {
       <ul class="detail-list">
         <li>INCOME: ${escapeHtml(formatIncome(row))}</li>
         <li>INCOME PROOF: ${escapeHtml(formatIncomeProof(route))}</li>
-        <li>TAX: ${formatNullable(row.tax, (value) => `${value}%`)}</li>
+        <li>TAX: ${escapeHtml(formatTax(row))}</li>
         <li>CITIZENSHIP TIMELINE: ${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</li>
       </ul>
     </div>
@@ -645,8 +598,8 @@ function renderDetails(visibleRows) {
 }
 
 function statusPill(row) {
-  if (row.valid === true) return '<span class="pill good">ELIGIBLE</span>';
-  return '<span class="pill bad">NOT ELIGIBLE</span>';
+  if (row.valid === true) return '<span class="pill good">DIGITAL NOMAD VISA: YES</span>';
+  return '<span class="pill bad">DIGITAL NOMAD VISA: NO</span>';
 }
 
 function matchesStatus(row, selected) {
@@ -695,10 +648,6 @@ function matchesLanguage(row, selected) {
   return row.languages.some((language) => language.toLowerCase() === selected.toLowerCase());
 }
 
-function isMatchesRow(row) {
-  return row.valid === true && row.nomadTransition.status !== "no_nomad_route";
-}
-
 function citizenshipTrackRank(value) {
   if (value === "strong_citizenship_track") return 1;
   if (value === "possible_with_conversion") return 2;
@@ -745,21 +694,14 @@ function buildNomadTransition(data, route) {
   const canLead = settlement.can_lead_to_citizenship_from_this_route;
   const requiresSwitch = settlement.requires_switch_to_another_status;
 
-  if (canLead === true && requiresSwitch !== true) {
+  if (canLead === true) {
     return {
       status: "direct",
       label: "YES",
       tone: "good",
-      description: "Captured nomad or equivalent status can plausibly lead onward without a separate status switch."
-    };
-  }
-
-  if (requiresSwitch === true && data.valid_for_selection === true && !classification.startsWith("not_valid")) {
-    return {
-      status: "switch_needed",
-      label: "SWITCH",
-      tone: "info",
-      description: "The nomad or equivalent status fits, and long-term residence depends on switching or converting to another qualifying status."
+      description: requiresSwitch
+        ? "A citizenship path is recorded, but it requires switching to another qualifying residence status."
+        : "The researched route is recorded as capable of leading to citizenship without a required status switch."
     };
   }
 
@@ -769,15 +711,6 @@ function buildNomadTransition(data, route) {
       label: "NO",
       tone: "bad",
       description: "Captured nomad or equivalent status is temporary-only, with no confirmed onward switch or conversion path."
-    };
-  }
-
-  if (requiresSwitch === true && !classification.startsWith("not_valid")) {
-    return {
-      status: "switch_needed",
-      label: "SWITCH",
-      tone: "info",
-      description: "The nomad or equivalent status may help, but long-term residence needs conversion or another qualifying status."
     };
   }
 
@@ -811,8 +744,7 @@ function normalizeNomadStatus(status) {
   if (!status || typeof status !== "object" || !status.status) return null;
 
   const normalizedStatus =
-    status.status === "direct" ? "direct" :
-    status.status === "switch_needed" ? "switch_needed" :
+    ["direct", "switch_needed"].includes(status.status) ? "direct" :
     "no_nomad_route";
 
   return {
@@ -825,14 +757,12 @@ function normalizeNomadStatus(status) {
 
 function nomadStatusLabel(status) {
   if (status === "direct") return "YES";
-  if (status === "switch_needed") return "SWITCH";
   if (status === "no_nomad_route") return "NO";
   return "UNKNOWN";
 }
 
 function nomadStatusTone(status) {
   if (status === "direct") return "good";
-  if (status === "switch_needed") return "info";
   if (status === "no_nomad_route") return "bad";
   return "neutral";
 }
@@ -886,9 +816,8 @@ function isNomadEquivalentRoute(data, route) {
 
 function nomadTransitionRank(value) {
   if (value === "direct") return 1;
-  if (value === "switch_needed") return 2;
-  if (value === "no_nomad_route") return 3;
-  return 4;
+  if (value === "no_nomad_route") return 2;
+  return 3;
 }
 
 function nomadTransitionPill(transition) {
@@ -944,6 +873,27 @@ function formatIncome(row) {
   return row.incomeText || "NOT FOUND";
 }
 
+function formatTax(row) {
+  if (row.tax !== null && row.tax !== undefined) return `${row.tax}%`;
+  return row.taxText || "NOT FOUND";
+}
+
+function taxTextValue(data) {
+  const display = data.taxes?.digital_nomad_taxation?.income_tax_display;
+  if (typeof display === "string" && display.trim()) return display;
+
+  const system = data.taxes?.taxation_system;
+  if (typeof system?.value === "string" && system.value.trim()) return system.value;
+
+  if (typeof system?.rate_type === "string" && system.rate_type.trim()) {
+    const label = system.rate_type.replaceAll("_", " ").toUpperCase();
+    return `${label} — RATE NOT CONFIRMED`;
+  }
+
+  const legacy = data.taxes?.income_tax_rate_percent?.value;
+  return typeof legacy === "string" && legacy.trim() ? legacy : null;
+}
+
 function formatIncomeProof(route) {
   const months = numberValue(route?.income_proof_months);
   if (months !== null) return `${months} MO`;
@@ -975,9 +925,9 @@ function formatResearchQuality(row) {
 
 function formatStatusMeaning(row) {
   if (row.valid === true) {
-    return "Eligible means a current digital-nomad or dedicated foreign-remote-worker visa/status is available in the captured sources. Settlement and citizenship are evaluated separately.";
+    return "YES means a current dedicated digital-nomad or foreign-remote-worker visa/status is confirmed. CITIZENSHIP is YES only when that route has a confirmed path to permanent or long-term residence.";
   }
-  return "Not eligible means no current digital-nomad or dedicated foreign-remote-worker visa/status is confirmed. Other skilled, business, investor, visitor, or residence routes do not change this status.";
+  return "NO means no current dedicated digital-nomad or foreign-remote-worker visa/status is confirmed. Other skilled, business, investor, visitor, or ordinary residence routes are excluded.";
 }
 
 function formatRouteFacts(route) {
@@ -1004,7 +954,7 @@ function formatRouteRequirements(route) {
       <li>MINIMUM INCOME LOCAL: ${formatSourcedInline(route.minimum_income_local_currency)}</li>
       <li>INCOME PROOF MONTHS: ${formatSourcedInline(route.income_proof_months, (value) => `${value} MO`)}</li>
       <li>INITIAL VALIDITY: ${formatSourcedInline(route.initial_validity)}</li>
-      <li>EXTENSION: ${formatSourcedInline(route.extension_rules)}</li>
+      <li>EXTENSION: ${formatSourcedInline(route.extension_rules ?? route.initial_validity)}</li>
       <li>TEMPORARY PATH: ${formatSourcedInline(route.path_to_temporary_residence)}</li>
       <li>PERMANENT PATH: ${formatSourcedInline(route.path_to_permanent_residence)}</li>
       <li>CITIZENSHIP PATH: ${formatSourcedInline(route.path_to_citizenship)}</li>

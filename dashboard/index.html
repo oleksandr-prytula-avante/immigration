@@ -26,7 +26,7 @@
         </article>
         <article>
           <span id="metricValid">0</span>
-          <p>MATCHES</p>
+          <p>DIGITAL NOMAD VISAS</p>
         </article>
         <article>
           <span id="metricAvgIncome">NOT FOUND</span>
@@ -40,11 +40,11 @@
           <input id="searchInput" type="search" placeholder="PORTUGAL, NOMAD, PR...">
         </label>
         <label>
-          STATUS
+          DIGITAL NOMAD VISA
           <select id="validFilter">
-            <option value="all" selected>ALL</option>
-            <option value="true">ELIGIBLE</option>
-            <option value="false">NOT ELIGIBLE</option>
+            <option value="all">ALL</option>
+            <option value="true" selected>YES</option>
+            <option value="false">NO</option>
           </select>
         </label>
         <label>
@@ -78,13 +78,8 @@
           <select id="prCitFilter">
             <option value="all">ALL</option>
             <option value="direct">YES</option>
-            <option value="switch_needed">SWITCH</option>
             <option value="no_nomad_route">NO</option>
           </select>
-        </label>
-        <label class="checkbox-filter">
-          <input id="matchesFilter" type="checkbox">
-          <span>MATCHES</span>
         </label>
       </section>
 
@@ -99,12 +94,11 @@
             <thead>
               <tr>
                 <th data-sort="country">COUNTRY</th>
-                <th class="status-col" data-sort="valid">STATUS</th>
-                <th class="route-col">ROUTE</th>
+                <th class="route-col">DIGITAL NOMAD VISA</th>
                 <th class="income-col" data-sort="income">INCOME</th>
                 <th data-sort="tax">TAX</th>
-                <th class="nomad-col" data-sort="nomadTransition">CITIZENSHIP</th>
-                <th data-sort="citizenship">CIT</th>
+                <th class="nomad-col" data-sort="nomadTransition">CIT</th>
+                <th data-sort="citizenship">YEARS</th>
                 <th data-sort="jusSoli">JUS SOLI</th>
               </tr>
             </thead>
