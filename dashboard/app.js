@@ -113,7 +113,7 @@ function normalizeResults(json) {
       country: item.country ?? data.country ?? "UNKNOWN",
       status: item.status ?? "ok",
       data,
-      valid: data.valid_for_selection ?? "uncertain",
+      valid: data.valid_for_selection === true,
       confidence: data.confidence ?? null,
       summary: data.selection_summary ?? "",
       bestRouteName: bestRoute?.route_name ?? null,
@@ -645,23 +645,17 @@ function renderDetails(visibleRows) {
 }
 
 function statusPill(row) {
-  const value = String(row.valid);
   if (row.status === "error") return '<span class="pill bad">ERROR</span>';
   if (row.valid === true) return '<span class="pill good">ELIGIBLE</span>';
-  if (value.startsWith("partial") || row.valid === "uncertain") return '<span class="pill warn">REVIEW</span>';
   return '<span class="pill bad">NOT ELIGIBLE</span>';
 }
 
 function matchesStatus(row, selected) {
-  const value = String(row.valid);
-  if (selected === "review") return value.startsWith("partial") || row.valid === "uncertain";
   return String(row.valid) === selected || row.status === selected;
 }
 
 function statusRank(row) {
-  const value = String(row.valid);
   if (row.valid === true) return 1;
-  if (value.startsWith("partial") || row.valid === "uncertain") return 2;
   if (row.valid === false) return 4;
   if (row.status === "error") return 5;
   return 6;
@@ -1016,17 +1010,9 @@ function formatResearchQuality(row) {
 
 function formatStatusMeaning(row) {
   if (row.valid === true) {
-    return row.data?.fully_matched
-      ? "Eligible means the selected route fits the foreign-contract remote-worker profile and has a credible residence-to-citizenship path in the captured sources."
-      : "Eligible but not fully matched means the route can work, but one or more filing, tax, or settlement details still need review.";
+    return "Eligible means a current digital-nomad or dedicated foreign-remote-worker visa/status is available in the captured sources. Settlement and citizenship are evaluated separately.";
   }
-  if (row.valid === "partial") {
-    return "Partial means the country has a potential independent skilled or residence route, but it is not a clean ordinary remote-work match.";
-  }
-  if (row.valid === "uncertain") {
-    return "Review means the route may fit, but official filing or settlement evidence is incomplete, contradictory, or still needs manual verification.";
-  }
-  return "Not eligible means the captured routes are visitor-only, employer-sponsored, investment/startup/elite based, pending, temporary-only, or otherwise not a fit for this profile.";
+  return "Not eligible means no current digital-nomad or dedicated foreign-remote-worker visa/status is confirmed. Other skilled, business, investor, visitor, or residence routes do not change this status.";
 }
 
 function formatRouteFacts(route) {
