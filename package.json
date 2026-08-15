@@ -5,10 +5,15 @@
   "type": "module",
   "scripts": {
     "dashboard": "node serve-dashboard.mjs",
+    "data:validate": "node scripts/validate-dataset.mjs",
+    "db:migrate": "node scripts/apply-supabase-migration.mjs",
+    "db:import": "node scripts/import-to-supabase.mjs",
+    "db:setup": "npm run db:migrate && npm run db:import",
     "research": "node immigration_research.mjs",
     "research:test-one": "node immigration_research.mjs --country Estonia --out data/test-estonia.json"
   },
   "dependencies": {
-    "openai": "^6.0.0"
+    "openai": "^6.0.0",
+    "pg": "^8.22.0"
   }
 }

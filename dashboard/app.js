@@ -98,7 +98,10 @@ function normalizeResults(json) {
   return results.map((item) => {
     const data = item.data ?? item;
     const bestRoute = data.best_routes?.find((route) => route.valid_for_selection === true) ?? null;
-    const nomadTransition = normalizeNomadStatus(data.nomad_status) ?? buildNomadTransition(data, bestRoute);
+    const canonicalNomadTransition = buildNomadTransition(data, bestRoute);
+    const nomadTransition = hasCanonicalSettlementTrack(data)
+      ? canonicalNomadTransition
+      : normalizeNomadStatus(data.nomad_status) ?? canonicalNomadTransition;
     return {
       country: item.country ?? data.country ?? "UNKNOWN",
       status: item.status ?? "ok",
@@ -111,7 +114,7 @@ function normalizeResults(json) {
       citizenshipTrack: data.settlement_track?.classification ?? "missing",
       nomadTransition,
       languages: Array.isArray(data.languages?.official_languages) ? data.languages.official_languages : [],
-      jusSoli: data.child_citizenship?.jus_soli?.value === true,
+      jusSoli: normalizeJusSoli(data.child_citizenship),
       income: numberValue(bestRoute?.minimum_monthly_income_usd),
       incomeText: bestRoute?.income_requirement_display?.value ?? null,
       tax: firstNumberValue(
@@ -740,6 +743,13 @@ function buildNomadTransition(data, route) {
   };
 }
 
+function hasCanonicalSettlementTrack(data) {
+  const settlement = data?.settlement_track;
+  return settlement &&
+    typeof settlement.classification === "string" &&
+    settlement.can_lead_to_citizenship_from_this_route !== undefined;
+}
+
 function normalizeNomadStatus(status) {
   if (!status || typeof status !== "object" || !status.status) return null;
 
@@ -825,23 +835,48 @@ function nomadTransitionPill(transition) {
 }
 
 function jusSoliRank(value) {
-  return value === true ? 1 : 2;
+  if (value === true) return 1;
+  if (value === false) return 2;
+  return 3;
 }
 
 function jusSoliLabel(value) {
-  return value === true ? "YES" : "NO";
+  if (value === true) return "YES";
+  if (value === false) return "NO";
+  return "UNCERTAIN";
 }
 
 function jusSoliFilterValue(value) {
-  return value === true ? "yes" : "no";
+  if (value === true) return "yes";
+  if (value === false) return "no";
+  return "uncertain";
 }
 
 function jusSoliTone(value) {
-  return value === true ? "good" : "bad";
+  if (value === true) return "good";
+  if (value === false) return "bad";
+  return "warn";
 }
 
 function jusSoliPill(value) {
   return `<span class="pill ${jusSoliTone(value)}">${escapeHtml(jusSoliLabel(value))}</span>`;
+}
+
+function normalizeJusSoli(childCitizenship) {
+  const classification = childCitizenship?.birthright_citizenship?.value;
+
+  if (classification === "unconditional_jus_soli") return true;
+  if ([
+    "conditional_jus_soli",
+    "restricted_jus_soli",
+    "mostly_jus_sanguinis_or_conditional",
+    "jus_sanguinis_limited",
+    "restricted_jus_sanguinis"
+  ].includes(classification)) return false;
+  if (classification === "uncertain") return null;
+
+  const legacyValue = childCitizenship?.jus_soli?.value;
+  return typeof legacyValue === "boolean" ? legacyValue : null;
 }
 
 function numberValue(sourcedValue) {

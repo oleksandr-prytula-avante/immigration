@@ -25,6 +25,14 @@ async function main() {
   const countries = JSON.parse(await fs.readFile(countriesPath, "utf8"));
   promptTemplate = await fs.readFile(promptPath, "utf8");
 
+  if (args.schemaOut) {
+    const schemaOutputPath = path.resolve(root, args.schemaOut);
+    await fs.mkdir(path.dirname(schemaOutputPath), { recursive: true });
+    await fs.writeFile(schemaOutputPath, `${JSON.stringify(countryResearchSchema, null, 2)}\n`);
+    console.log(`saved ${schemaOutputPath}`);
+    return;
+  }
+
   if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === "replace_with_your_openai_api_key") {
     throw new Error("Missing OPENAI_API_KEY. Add your OpenAI API key to .env before running this script.");
   }
@@ -37,7 +45,9 @@ async function main() {
   const state = await loadState(outputPath);
 
   for (const country of selectedCountries) {
-    if (state.results.some((item) => item.country === country && item.status === "ok") && !args.force) {
+    const previousItem = state.results.find((item) => item.country === country && item.status === "ok");
+
+    if (previousItem && !args.force) {
       console.log(`skip ${country}`);
       continue;
     }
@@ -46,7 +56,7 @@ async function main() {
     const startedAt = new Date().toISOString();
 
     try {
-      const result = await researchCountry(country);
+      const result = await researchCountry(country, previousItem?.data || null);
       upsertResult(state, {
         country,
         status: "ok",
@@ -55,13 +65,22 @@ async function main() {
         data: result
       });
     } catch (error) {
-      upsertResult(state, {
-        country,
-        status: "error",
-        started_at: startedAt,
-        finished_at: new Date().toISOString(),
-        error: serializeError(error)
-      });
+      if (previousItem) {
+        upsertResult(state, {
+          ...previousItem,
+          refresh_attempted_at: startedAt,
+          refresh_finished_at: new Date().toISOString(),
+          refresh_error: serializeError(error)
+        });
+      } else {
+        upsertResult(state, {
+          country,
+          status: "error",
+          started_at: startedAt,
+          finished_at: new Date().toISOString(),
+          error: serializeError(error)
+        });
+      }
     }
 
     state.meta.updated_at = new Date().toISOString();
@@ -72,10 +91,54 @@ async function main() {
   console.log(`saved ${outputPath}`);
 }
 
-async function researchCountry(country) {
-  const prompt = promptTemplate
+async function researchCountry(country, previousData) {
+  const basePrompt = promptTemplate
     .replaceAll("{{COUNTRY}}", country)
     .replaceAll("{{TODAY}}", today);
+
+  const comparisonContext = previousData
+    ? [
+        "\nPREVIOUS COUNTRY RESULT TO AUDIT AND IMPROVE:",
+        JSON.stringify(previousData)
+      ].join("\n")
+    : "\nNo previous country result exists. Build the complete record from current sources.";
+
+  let result = await requestCountryResearch(`${basePrompt}${comparisonContext}`);
+  const firstPassUrls = uniqueSourceUrls(result);
+  const unresolved = findUnresolvedPaths(result);
+  let validationOptions = { minimumSources: 10 };
+
+  if (firstPassUrls.length < 10 || unresolved.length > 0) {
+    const requiredTotal = unresolved.length > 0 ? 15 : 10;
+    const auditPrompt = [
+      basePrompt,
+      "\nFOCUSED SECOND-PASS AUDIT:",
+      `The first-pass draft has ${firstPassUrls.length} distinct source URLs.`,
+      unresolved.length > 0
+        ? `Unresolved paths detected (showing up to 80): ${unresolved.slice(0, 80).join(", ")}`
+        : "No unresolved marker was detected, but source coverage is below the required minimum.",
+      "Search specifically for the unresolved facts and compare the draft with the previous result.",
+      "Use at least 5 additional distinct relevant URLs not already present when unresolved fields exist.",
+      `Return a complete replacement JSON object with at least ${requiredTotal} distinct source URLs.`,
+      "Do not invent facts. A genuinely unresolved field may remain only with a precise explanation and citations to the additional sources checked.",
+      `\nFIRST-PASS SOURCE URLS:\n${firstPassUrls.join("\n")}`,
+      `\nFIRST-PASS DRAFT:\n${JSON.stringify(result)}`,
+      previousData ? `\nPREVIOUS RESULT:\n${JSON.stringify(previousData)}` : ""
+    ].join("\n");
+
+    result = await requestCountryResearch(auditPrompt);
+    validationOptions = {
+      minimumSources: requiredTotal,
+      priorSourceUrls: firstPassUrls,
+      minimumAdditionalSources: unresolved.length > 0 ? 5 : 0
+    };
+  }
+
+  validateResearchResult(country, result, validationOptions);
+  return result;
+}
+
+async function requestCountryResearch(prompt) {
 
   const response = await withRetries(() =>
     client.responses.create({
@@ -109,6 +172,71 @@ async function researchCountry(country) {
   );
 
   return JSON.parse(response.output_text);
+}
+
+function uniqueSourceUrls(result) {
+  const urls = Array.isArray(result?.sources)
+    ? result.sources.map((source) => source?.url).filter(Boolean)
+    : [];
+
+  return [...new Set(urls.map((url) => normalizeSourceUrl(url)))];
+}
+
+function normalizeSourceUrl(value) {
+  try {
+    const url = new URL(value);
+    url.hash = "";
+    for (const key of [...url.searchParams.keys()]) {
+      if (/^(utm_|fbclid$|gclid$)/i.test(key)) url.searchParams.delete(key);
+    }
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return String(value).trim().replace(/\/$/, "");
+  }
+}
+
+function findUnresolvedPaths(value, currentPath = "", found = []) {
+  const unresolvedPattern = /\b(not[ _-]?found|not[ _-]?confirmed|no data|not researched|not_confirmed_in_dataset)\b/i;
+
+  if (typeof value === "string" && unresolvedPattern.test(value)) {
+    found.push(currentPath || "$");
+  } else if (Array.isArray(value)) {
+    value.forEach((item, index) => findUnresolvedPaths(item, `${currentPath}[${index}]`, found));
+  } else if (value && typeof value === "object") {
+    for (const [key, item] of Object.entries(value)) {
+      findUnresolvedPaths(item, currentPath ? `${currentPath}.${key}` : key, found);
+    }
+  }
+
+  return found;
+}
+
+function validateResearchResult(country, result, options = {}) {
+  const urls = uniqueSourceUrls(result);
+  const sourceCount = urls.length;
+  const unresolvedCount = findUnresolvedPaths(result).length;
+  const requiredSources = Math.max(
+    Number(options.minimumSources || 10),
+    unresolvedCount > 0 ? 15 : 10
+  );
+
+  if (sourceCount < requiredSources) {
+    throw new Error(
+      `${country}: ${sourceCount} distinct source URLs returned; ${requiredSources} required` +
+        (unresolvedCount > 0 ? ` because ${unresolvedCount} unresolved fields remain` : "")
+    );
+  }
+
+  if (options.minimumAdditionalSources > 0) {
+    const previousUrls = new Set(options.priorSourceUrls || []);
+    const additionalCount = urls.filter((url) => !previousUrls.has(url)).length;
+    if (additionalCount < options.minimumAdditionalSources) {
+      throw new Error(
+        `${country}: second pass returned ${additionalCount} additional source URLs; ` +
+          `${options.minimumAdditionalSources} required`
+      );
+    }
+  }
 }
 
 async function loadState(file) {

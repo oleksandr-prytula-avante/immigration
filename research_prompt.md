@@ -2,6 +2,13 @@ You are doing current immigration research for this country: {{COUNTRY}}.
 
 Research date: {{TODAY}}. Use the freshest available information. Use web search and verify primary or official sources whenever possible: immigration authority websites, consulates, tax authorities, official government portals, laws, and international passport indexes. If you use a non-official source, mark that in `notes` and lower confidence.
 
+Source coverage and comparison rules:
+- Use at least 10 distinct, directly relevant web-source URLs for this country. Do not count search-result pages or duplicate/canonical variants as separate sources.
+- Compare every field with the supplied previous country result when one is provided. Preserve a previous value when it remains better supported; replace or expand it when current sources are fresher, more official, or fill a gap.
+- Treat `Not found`, `not_found`, `Not confirmed`, `not_confirmed_in_dataset`, `No data`, `not researched`, empty strings, empty required arrays, and unexplained `null` values as unresolved fields.
+- If any unresolved field remains after the first research pass, perform a focused additional search using at least 5 additional distinct URLs beyond the initial source set. The final `sources` array must then contain at least 15 distinct URLs.
+- Do not replace an unresolved value with a guess merely to remove the marker. If the fact genuinely cannot be established after the extra search, keep the cautious unresolved value, list the additional sources checked, and explain precisely what could not be confirmed.
+
 Applicant context:
 - Profession: software engineer.
 - Has a relevant university degree.
