@@ -4,10 +4,13 @@ Research date: {{TODAY}}. Use the freshest available information. Use web search
 
 Source coverage and comparison rules:
 - Use at least 10 distinct, directly relevant web-source URLs for this country. Do not count search-result pages or duplicate/canonical variants as separate sources.
+- Every source must have a unique `id` and a unique canonical HTTP(S) URL. Remove fragments and tracking parameters when comparing URLs. Every value in every `source_ids` array must match exactly one `sources[].id`; never emit dangling or duplicate source IDs.
 - Compare every field with the supplied previous country result when one is provided. Preserve a previous value when it remains better supported; replace or expand it when current sources are fresher, more official, or fill a gap.
 - Treat `Not found`, `not_found`, `Not confirmed`, `not_confirmed_in_dataset`, `No data`, `not researched`, empty strings, empty required arrays, and unexplained `null` values as unresolved fields.
 - If any unresolved field remains after the first research pass, perform a focused additional search using at least 5 additional distinct URLs beyond the initial source set. The final `sources` array must then contain at least 15 distinct URLs.
-- Do not replace an unresolved value with a guess merely to remove the marker. If the fact genuinely cannot be established after the extra search, keep the cautious unresolved value, list the additional sources checked, and explain precisely what could not be confirmed.
+- Do not replace an unresolved value with a guess merely to remove the marker. If the fact genuinely cannot be established after the extra search, keep the numeric/boolean `value` as `null`, cite the relevant sources checked, and explain precisely that the measure is unpublished, inapplicable, discretionary, or unavailable from those named current sources. Do not leave vague display text such as `Not found`, `Not confirmed`, `not_confirmed_in_dataset`, `No data`, or `not researched` after the focused pass.
+- Every sourced object whose `value` is `null` must still have non-empty explanatory `notes` and at least one valid `source_id`. A `null` without both explanation and citation fails validation.
+- `visa_application.application_url_type="not_found"` is the only permitted literal `not_found` marker, and only when focused research confirms that no public official application, route-information, general-visa, or immigration-authority page exists. Explain the documented offline/embassy process in `visa_application.notes` without repeating vague unresolved markers.
 
 Applicant context:
 - Profession: software engineer.
@@ -138,10 +141,11 @@ Final country audit before returning JSON:
 - Re-check `child_citizenship.birthright_citizenship.value`: if the country has broad birthright citizenship, including Canada, United States, Mexico, most of Central/South America, and other unrestricted jus soli jurisdictions, do not return `not found` or `not researched`. If the rule is conditional, state the condition.
 - Use `rejected_routes` for attractive but non-fitting options, including visitor remote-work permission, closed/legacy programs, temporary-only digital nomad visas, passive-income-only routes, investor routes, and employer-sponsored routes.
 - Use `best_routes` for an independent skilled/points/degree route when it is the reason for `valid_for_selection="partial"`. Keep `fully_matched=false` and make `regular_foreign_contract_remote_work_fit.value=false`.
-- Do not keep empty fields as `No data`; use `Not found` or `not_confirmed_in_dataset` consistently with notes and source IDs.
+- Do not keep empty fields as `No data`, `Not found`, or `not_confirmed_in_dataset`. Preserve `null` where required by the schema, cite the sources checked, and state specifically that the value is unpublished, inapplicable, discretionary, or unavailable from those sources.
 
 Response requirements:
 - Return only valid JSON matching the given schema.
+- Return only the country data object. Do not add result wrappers, timestamps outside the schema, `audit`, `metadata`, research-progress, cleanup-history, or other undeclared bookkeeping blocks.
 - Use human-readable wording in all `value`, `notes`, and `summary` fields. The dashboard displays these fields directly; avoid cryptic fragments like "OK", "N/A", or "see source" without explanation.
 - All USD amounts should be approximately converted as of the research date. If the exchange rate is approximate, say so in `notes`.
 - If the official income threshold is published only in local currency, do not leave the field empty: include the local currency amount and `income_requirement_display`. USD may be approximate or `null` if conversion is unreliable.
@@ -175,7 +179,7 @@ Response requirements:
   - `min_salary_local_currency`, `average_salary_local_currency`, `median_salary_local_currency`, `max_salary_local_currency`;
   - `currency`, `salary_basis`, `period`, `confidence`, `source_ids`, and `notes`.
   - Use official statistics offices, labor ministries, social-security/wage agencies, ILO/OECD/World Bank, or reputable salary datasets. Prefer official statistics for average citizens over expat/job-board numbers.
-  - Do not guess min/max. If not found, use `null` for numeric USD values and `Not confirmed in dataset` in local-currency text, with notes explaining what is missing.
+  - Do not guess min/max. If an official maximum or median is not published, use `null` for numeric values and a precise human-readable local-currency value such as `Official national maximum is not published`; cite the wage/statistics sources checked in both `source_ids` and `notes`. Do not use `Not confirmed in dataset` as display text.
   - Salary is not the immigration income threshold. In `notes`, explicitly say whether the salary data is average citizen/resident worker salary, statutory minimum wage, formal-sector wage, household-survey wage, or job-board salary.
 - Always fill country-level `visa_application`:
   - `application_url`: the direct official application URL if found; otherwise an official route/visa information URL; use `null` only if no official/current application or visa authority page was found.
