@@ -1,4 +1,5 @@
 import {
+  digitalNomadCitizenshipCategory,
   digitalNomadCitizenshipStatus,
   digitalNomadVisaRoute
 } from "./route-semantics.js";
@@ -119,6 +120,7 @@ function normalizeResults(json) {
       bestRouteType: nomadRoute?.route_type ?? null,
       nomadRoute,
       citizenshipTrack: data.settlement_track?.classification ?? "missing",
+      citizenshipCategory: digitalNomadCitizenshipCategory(data),
       nomadTransition,
       languages: Array.isArray(data.languages?.official_languages) ? data.languages.official_languages : [],
       jusSoli: normalizeJusSoli(data.child_citizenship),
@@ -161,6 +163,7 @@ function readUrlState() {
     status: params.get("dnv") ?? params.get("status"),
     language: params.get("language"),
     prCit: params.get("prCit") ?? params.get("nomadTransition"),
+    citCategory: params.get("citCategory"),
     jusSoli: params.get("jusSoli"),
     incomeMax: params.get("incomeMax"),
     taxMax: params.get("taxMax"),
@@ -178,7 +181,10 @@ function applyUrlStateBeforeData() {
   state.isRestoringUrlState = true;
   setInputValue(elements.search, urlState.search);
   setSelectValue(elements.valid, urlState.status);
-  setSelectValue(elements.prCit, urlState.prCit);
+  const citizenshipFilter = urlState.citCategory && urlState.citCategory !== "all"
+    ? `category:${urlState.citCategory}`
+    : urlState.prCit;
+  setSelectValue(elements.prCit, citizenshipFilter);
   setSelectValue(elements.jusSoli, urlState.jusSoli);
   setInputValue(elements.incomeMax, urlState.incomeMax);
   setInputValue(elements.taxMax, urlState.taxMax);
@@ -278,6 +284,7 @@ function filteredRows() {
       row.citizenshipTrack,
       citizenshipTrackLabel(row.citizenshipTrack),
       row.nomadTransition.label,
+      citizenshipCategoryLabel(row.citizenshipCategory),
       row.jusSoli,
       jusSoliLabel(row.jusSoli),
       row.languages.join(" "),
@@ -287,7 +294,7 @@ function filteredRows() {
     if (query && !haystack.includes(query)) return false;
     if (valid !== "all" && !matchesStatus(row, valid)) return false;
     if (language !== "all" && !matchesLanguage(row, language)) return false;
-    if (prCit !== "all" && row.nomadTransition.status !== prCit) return false;
+    if (prCit !== "all" && !matchesCitizenshipFilter(row, prCit)) return false;
     if (jusSoli !== "all" && jusSoliFilterValue(row.jusSoli) !== jusSoli) return false;
     if (incomeMax !== null && row.income !== null && row.income > incomeMax) return false;
     if (taxMax !== null && row.tax !== null && row.tax > taxMax) return false;
@@ -465,6 +472,7 @@ function renderDetails(visibleRows) {
         <li>DIGITAL NOMAD VISA: ${escapeHtml(row.valid ? "YES" : "NO")}</li>
         <li>REMOTE WORK FIT: ${formatRemoteWorkFit(data.regular_foreign_contract_remote_work_fit)}</li>
         <li>CITIZENSHIP: ${nomadTransitionPill(row.nomadTransition)}<span class="subtext">${escapeHtml(row.nomadTransition.description)}</span></li>
+        <li>CITIZENSHIP CATEGORY: ${escapeHtml(citizenshipCategoryLabel(row.citizenshipCategory))}</li>
         <li>CONFIDENCE: ${escapeHtml((data.confidence ?? "NOT FOUND").toUpperCase())}</li>
         <li>RESEARCHED AT: ${escapeHtml(data.researched_at ?? "NOT FOUND")}</li>
         <li>SOURCE COUNT: ${escapeHtml(String(row.sourceCount ?? sources.length ?? 0))}</li>
@@ -620,6 +628,13 @@ function matchesStatus(row, selected) {
   return String(row.valid) === selected;
 }
 
+function matchesCitizenshipFilter(row, selected) {
+  if (selected.startsWith("category:")) {
+    return row.citizenshipCategory === selected.slice("category:".length);
+  }
+  return row.nomadTransition.status === selected;
+}
+
 function statusRank(row) {
   if (row.valid === true) return 1;
   if (row.valid === false) return 4;
@@ -691,6 +706,15 @@ function citizenshipTrackTone(value) {
 
 function citizenshipTrackPill(value) {
   return `<span class="pill ${citizenshipTrackTone(value)}">${escapeHtml(citizenshipTrackLabel(value))}</span>`;
+}
+
+function citizenshipCategoryLabel(value) {
+  if (value === "confirmed") return "CONFIRMED TRACK";
+  if (value === "temporary_only") return "TEMPORARY / NON-COUNTING";
+  if (value === "separate_profile_route") return "SEPARATE / PROFILE-CHANGING ROUTE";
+  if (value === "unconfirmed") return "UNCONFIRMED";
+  if (value === "no_visa") return "NO NOMAD VISA";
+  return "UNKNOWN";
 }
 
 function buildNomadTransition(data, route) {

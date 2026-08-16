@@ -69,6 +69,7 @@ What to research:
    - Verify whether time spent on the route counts toward permanent residence or citizenship. If official sources do not confirm that it counts, do not mark it as a fully matched citizenship path.
 - Important for UI: `settlement_track.summary` must explain in one or two sentences why the route is `strong_citizenship_track`, `possible_with_conversion`, `weak_or_uncertain_citizenship_track`, `temporary_nomad_only`, or not valid.
 - Dashboard citizenship is binary. Show `YES` when the nomad route itself has a confirmed citizenship track, or when the same ordinary foreign-contract profile has a confirmed independent switch into direct permanent residence without a local employer. Do not count an unrelated skilled, employer-sponsored, investor, founder, or locally restructured self-employment route merely because it exists in the country. Treat `false`, `"uncertain"`, missing confirmation, and speculative conversion as `NO`; preserve the uncertainty and reasoning in route notes rather than exposing a third filter status.
+- Dashboard citizenship filter categories are `confirmed`, `temporary_only`, `separate_profile_route`, `unconfirmed`, and `no_visa`. Keep route and settlement notes precise enough to distinguish an expressly temporary/non-counting status from an unrelated profile-changing alternative and from a genuinely unresolved legal issue.
 6. Marriage:
    - whether citizenship or permanent residence is accelerated by marriage to a citizen;
    - whether an already existing marriage matters;

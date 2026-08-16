@@ -53,3 +53,16 @@ export function digitalNomadCitizenshipRoute(data) {
       candidate?.local_employer_required !== true
     ) ?? null;
 }
+
+export function digitalNomadCitizenshipCategory(data) {
+  const route = digitalNomadVisaRoute(data);
+  if (!route) return "no_visa";
+  if (digitalNomadCitizenshipStatus(data) === "yes") return "confirmed";
+
+  const canLead = data?.settlement_track?.can_lead_to_citizenship_from_this_route;
+  if (route.valid_for_selection === "uncertain" || canLead === "uncertain") {
+    return "unconfirmed";
+  }
+  if (canLead === true) return "separate_profile_route";
+  return "temporary_only";
+}

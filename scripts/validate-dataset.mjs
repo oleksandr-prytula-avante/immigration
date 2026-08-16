@@ -3,8 +3,10 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
+  digitalNomadCitizenshipCategory,
   digitalNomadCitizenshipRoute,
   digitalNomadCitizenshipStatus,
+  digitalNomadVisaRoute,
   hasDigitalNomadVisa
 } from "../dashboard/route-semantics.js";
 
@@ -37,6 +39,11 @@ export function validateDatasetDocument(document, expectedCountries, options = {
     counts[status] = (counts[status] || 0) + 1;
     return counts;
   }, {});
+  const citizenshipCategories = results.reduce((counts, item) => {
+    const category = digitalNomadCitizenshipCategory(item?.data);
+    counts[category] = (counts[category] || 0) + 1;
+    return counts;
+  }, {});
 
   return {
     valid: errors.length === 0,
@@ -52,7 +59,8 @@ export function validateDatasetDocument(document, expectedCountries, options = {
       minimum_sources: minimumSources,
       digital_nomad_visas: digitalNomadVisas.length,
       digital_nomad_visas_with_citizenship: citizenshipStatuses.yes || 0,
-      digital_nomad_visas_without_citizenship: citizenshipStatuses.no || 0
+      digital_nomad_visas_without_citizenship: citizenshipStatuses.no || 0,
+      citizenship_categories: citizenshipCategories
     }
   };
 }
@@ -115,6 +123,21 @@ function validateCountry(item, minimumSources, errors) {
     }
     if (!Array.isArray(citizenshipPath?.source_ids) || citizenshipPath.source_ids.length === 0) {
       errors.push(`${country}: dashboard citizenship YES requires cited route citizenship evidence`);
+    }
+  }
+
+  if (digitalNomadCitizenshipStatus(data) === "no") {
+    const nomadRoute = digitalNomadVisaRoute(data);
+    for (const fieldName of ["path_to_permanent_residence", "path_to_citizenship"]) {
+      const field = nomadRoute?.[fieldName];
+      const explanation = [field?.value, field?.notes]
+        .some((value) => typeof value === "string" && value.trim());
+      if (!explanation) {
+        errors.push(`${country}: dashboard citizenship NO requires an explained ${fieldName}`);
+      }
+      if (!Array.isArray(field?.source_ids) || field.source_ids.length === 0) {
+        errors.push(`${country}: dashboard citizenship NO requires cited ${fieldName} evidence`);
+      }
     }
   }
 
@@ -194,7 +217,12 @@ async function main() {
     `${summary.routes} routes; ${summary.source_links} source links; minimum ${summary.minimum_sources} sources/country; ` +
     `${summary.digital_nomad_visas} digital-nomad visas ` +
     `(${summary.digital_nomad_visas_with_citizenship} citizenship yes, ` +
-    `${summary.digital_nomad_visas_without_citizenship} no)`
+    `${summary.digital_nomad_visas_without_citizenship} no); categories: ` +
+    `${summary.citizenship_categories.confirmed || 0} confirmed, ` +
+    `${summary.citizenship_categories.temporary_only || 0} temporary, ` +
+    `${summary.citizenship_categories.separate_profile_route || 0} separate-profile, ` +
+    `${summary.citizenship_categories.unconfirmed || 0} unconfirmed, ` +
+    `${summary.citizenship_categories.no_visa || 0} no-visa`
   );
 }
 
