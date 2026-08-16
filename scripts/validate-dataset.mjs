@@ -2,6 +2,10 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  digitalNomadCitizenshipStatus,
+  hasDigitalNomadVisa
+} from "../dashboard/route-semantics.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -26,6 +30,13 @@ export function validateDatasetDocument(document, expectedCountries, options = {
 
   for (const item of results) validateCountry(item, minimumSources, errors);
 
+  const digitalNomadVisas = results.filter((item) => hasDigitalNomadVisa(item?.data));
+  const citizenshipStatuses = digitalNomadVisas.reduce((counts, item) => {
+    const status = digitalNomadCitizenshipStatus(item?.data);
+    counts[status] = (counts[status] || 0) + 1;
+    return counts;
+  }, {});
+
   return {
     valid: errors.length === 0,
     errors,
@@ -37,7 +48,10 @@ export function validateDatasetDocument(document, expectedCountries, options = {
         0
       ),
       source_links: results.reduce((sum, item) => sum + (item?.data?.sources?.length || 0), 0),
-      minimum_sources: minimumSources
+      minimum_sources: minimumSources,
+      digital_nomad_visas: digitalNomadVisas.length,
+      digital_nomad_visas_with_citizenship: citizenshipStatuses.yes || 0,
+      digital_nomad_visas_without_citizenship: citizenshipStatuses.no || 0
     }
   };
 }
@@ -165,7 +179,10 @@ async function main() {
   const summary = validation.summary;
   console.log(
     `valid dataset: ${summary.countries} countries; ${summary.ok} ok; ` +
-    `${summary.routes} routes; ${summary.source_links} source links; minimum ${summary.minimum_sources} sources/country`
+    `${summary.routes} routes; ${summary.source_links} source links; minimum ${summary.minimum_sources} sources/country; ` +
+    `${summary.digital_nomad_visas} digital-nomad visas ` +
+    `(${summary.digital_nomad_visas_with_citizenship} citizenship yes, ` +
+    `${summary.digital_nomad_visas_without_citizenship} no)`
   );
 }
 

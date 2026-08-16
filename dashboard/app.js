@@ -1,3 +1,8 @@
+import {
+  digitalNomadCitizenshipStatus,
+  digitalNomadVisaRoute
+} from "./route-semantics.js";
+
 const state = {
   raw: null,
   rows: [],
@@ -97,8 +102,8 @@ function normalizeResults(json) {
 
   return results.map((item) => {
     const data = item.data ?? item;
-    const bestRoute = data.best_routes?.find((route) => route.valid_for_selection === true) ?? null;
-    const canonicalNomadTransition = buildNomadTransition(data, bestRoute);
+    const nomadRoute = digitalNomadVisaRoute(data);
+    const canonicalNomadTransition = buildNomadTransition(data, nomadRoute);
     const nomadTransition = hasCanonicalSettlementTrack(data)
       ? canonicalNomadTransition
       : normalizeNomadStatus(data.nomad_status) ?? canonicalNomadTransition;
@@ -106,17 +111,19 @@ function normalizeResults(json) {
       country: item.country ?? data.country ?? "UNKNOWN",
       status: item.status ?? "ok",
       data,
-      valid: data.valid_for_selection === true,
+      valid: nomadRoute !== null,
+      selectionValid: data.valid_for_selection === true,
       confidence: data.confidence ?? null,
       summary: data.selection_summary ?? "",
-      bestRouteName: bestRoute?.route_name ?? null,
-      bestRouteType: bestRoute?.route_type ?? null,
+      bestRouteName: nomadRoute?.route_name ?? null,
+      bestRouteType: nomadRoute?.route_type ?? null,
+      nomadRoute,
       citizenshipTrack: data.settlement_track?.classification ?? "missing",
       nomadTransition,
       languages: Array.isArray(data.languages?.official_languages) ? data.languages.official_languages : [],
       jusSoli: normalizeJusSoli(data.child_citizenship),
-      income: numberValue(bestRoute?.minimum_monthly_income_usd),
-      incomeText: bestRoute?.income_requirement_display?.value ?? null,
+      income: numberValue(nomadRoute?.minimum_monthly_income_usd),
+      incomeText: nomadRoute?.income_requirement_display?.value ?? null,
       tax: firstNumberValue(
         data.taxes?.taxation_system?.top_personal_income_tax_rate_percent,
         data.taxes?.digital_nomad_taxation?.top_or_screening_pit_rate_percent,
@@ -227,7 +234,11 @@ function setInputValue(input, value) {
 }
 
 function setSelectValue(select, value) {
-  const normalizedValue = select === elements.valid ? normalizeStatusFilterValue(value) : value;
+  const normalizedValue = select === elements.valid
+    ? normalizeStatusFilterValue(value)
+    : select === elements.prCit && (value === "no_nomad_route" || value === "uncertain")
+      ? "no_citizenship_path"
+      : value;
   if (normalizedValue !== null && Array.from(select.options).some((option) => option.value === normalizedValue)) {
     select.value = normalizedValue;
   }
@@ -387,7 +398,7 @@ function renderTable(rows) {
         <span class="language-chip-row">${formatLanguageChips(row.languages)}</span>
       </td>
       <td class="route-col">
-        ${escapeHtml(row.bestRouteName ?? "NOT FOUND")}
+        ${escapeHtml(row.bestRouteName ?? "NO")}
         <span class="subtext">${escapeHtml(row.bestRouteType ?? "")}</span>
       </td>
       <td class="income-col">${escapeHtml(formatIncome(row))}</td>
@@ -438,7 +449,7 @@ function renderDetails(visibleRows) {
   }
 
   const data = row.data;
-  const route = data.best_routes?.find((item) => item.valid_for_selection === true) ?? null;
+  const route = row.nomadRoute;
   const sources = data.sources ?? [];
 
   elements.details.innerHTML = `
@@ -451,7 +462,7 @@ function renderDetails(visibleRows) {
     <div class="detail-block">
       <h3>COUNTRY OVERVIEW</h3>
       <ul class="detail-list">
-        <li>DIGITAL NOMAD VISA: ${escapeHtml(formatBooleanish(data.dnv_available?.value))}</li>
+        <li>DIGITAL NOMAD VISA: ${escapeHtml(row.valid ? "YES" : "NO")}</li>
         <li>REMOTE WORK FIT: ${formatRemoteWorkFit(data.regular_foreign_contract_remote_work_fit)}</li>
         <li>CITIZENSHIP: ${nomadTransitionPill(row.nomadTransition)}<span class="subtext">${escapeHtml(row.nomadTransition.description)}</span></li>
         <li>CONFIDENCE: ${escapeHtml((data.confidence ?? "NOT FOUND").toUpperCase())}</li>
@@ -686,18 +697,17 @@ function buildNomadTransition(data, route) {
   if (!isNomadEquivalentRoute(data, route)) {
     return {
       status: "no_nomad_route",
-      label: "NO",
+      label: "N/A",
       tone: "neutral",
-      description: "No digital-nomad or equivalent remote-work residence route is captured for the selected route."
+      description: "No current digital-nomad or equivalent remote-work visa is captured, so citizenship from that route is not applicable."
     };
   }
 
   const settlement = data.settlement_track ?? {};
-  const classification = String(settlement.classification ?? "").toLowerCase();
-  const canLead = settlement.can_lead_to_citizenship_from_this_route;
   const requiresSwitch = settlement.requires_switch_to_another_status;
+  const citizenshipStatus = digitalNomadCitizenshipStatus(data);
 
-  if (canLead === true) {
+  if (citizenshipStatus === "yes") {
     return {
       status: "direct",
       label: "YES",
@@ -708,38 +718,20 @@ function buildNomadTransition(data, route) {
     };
   }
 
-  if (classification.includes("temporary_nomad_only") || String(route?.route_type ?? "").includes("temporary_only") || canLead === false) {
+  if (citizenshipStatus === "no") {
     return {
-      status: "no_nomad_route",
+      status: "no_citizenship_path",
       label: "NO",
       tone: "bad",
-      description: "Captured nomad or equivalent status is temporary-only, with no confirmed onward switch or conversion path."
-    };
-  }
-
-  if (String(canLead).toLowerCase().includes("possible") || classification.includes("possible")) {
-    return {
-      status: "no_nomad_route",
-      label: "NO",
-      tone: "bad",
-      description: "Dataset suggests the nomad or equivalent status may have an onward path, but it needs manual confirmation."
-    };
-  }
-
-  if (canLead === "uncertain" || requiresSwitch === "uncertain" || classification.includes("uncertain")) {
-    return {
-      status: "no_nomad_route",
-      label: "NO",
-      tone: "bad",
-      description: "The onward effect of time on this nomad or equivalent status is not confirmed."
+      description: "The digital-nomad visa exists, but this route has no confirmed path to citizenship."
     };
   }
 
   return {
-    status: "no_nomad_route",
+    status: "no_citizenship_path",
     label: "NO",
     tone: "bad",
-    description: "The dataset does not clearly answer whether this nomad or equivalent status can lead onward."
+    description: "No confirmed citizenship path from this digital-nomad visa is recorded."
   };
 }
 
@@ -826,8 +818,9 @@ function isNomadEquivalentRoute(data, route) {
 
 function nomadTransitionRank(value) {
   if (value === "direct") return 1;
-  if (value === "no_nomad_route") return 2;
-  return 3;
+  if (value === "no_citizenship_path") return 2;
+  if (value === "no_nomad_route") return 3;
+  return 4;
 }
 
 function nomadTransitionPill(transition) {

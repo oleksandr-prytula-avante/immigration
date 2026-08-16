@@ -3,6 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import pg from "pg";
+import { digitalNomadVisaRoute, hasDigitalNomadVisa } from "../dashboard/route-semantics.js";
 import { databaseUrl, loadLocalEnv } from "./db-env.mjs";
 import { validateDatasetDocument } from "./validate-dataset.mjs";
 
@@ -43,6 +44,14 @@ if (args.validateOnly) {
       if (expected !== parameters.length) {
         throw new Error(`SQL parameter mismatch: query expects ${expected}, received ${parameters.length}`);
       }
+      if (/returning id, url/i.test(sql)) {
+        return {
+          rows: Array.from({ length: parameters.length / 6 }, (_, index) => ({
+            id: index + 1,
+            url: parameters[index * 6]
+          }))
+        };
+      }
       return { rows: [{ id: 1 }] };
     }
   };
@@ -63,7 +72,12 @@ if (args.validateOnly) {
       item
     );
   }
-  console.log(`valid dataset: ${results.length} countries; ${okCount} ok; ${routeCount} routes; ${sourceCount} source links`);
+  console.log(
+    `valid dataset: ${results.length} countries; ${okCount} ok; ${routeCount} routes; ` +
+    `${sourceCount} source links; ${validation.summary.digital_nomad_visas} digital-nomad visas ` +
+    `(${validation.summary.digital_nomad_visas_with_citizenship} citizenship yes, ` +
+    `${validation.summary.digital_nomad_visas_without_citizenship} no)`
+  );
   process.exit(0);
 }
 
@@ -103,7 +117,8 @@ try {
     countries: results.length,
     routes: routeCount,
     sourceLinks: sourceLinkCount,
-    snapshots: results.length
+    snapshots: results.length,
+    digitalNomadVisas: validation.summary.digital_nomad_visas
   });
   await client.query("commit");
 
@@ -125,7 +140,9 @@ async function verifyImport(db, runId, expected) {
           join public.countries c on c.id = r.country_id
          where c.last_run_id = $1) as routes,
        (select count(*)::integer from public.country_sources where run_id = $1) as source_links,
-       (select count(*)::integer from public.country_snapshots where run_id = $1) as snapshots`,
+       (select count(*)::integer from public.country_snapshots where run_id = $1) as snapshots,
+       (select count(*)::integer from public.countries
+         where last_run_id = $1 and dnv_available is true) as digital_nomad_visas`,
     [runId]
   );
   const actual = result.rows[0];
@@ -133,7 +150,8 @@ async function verifyImport(db, runId, expected) {
     ["countries", Number(actual.countries), expected.countries],
     ["routes", Number(actual.routes), expected.routes],
     ["source links", Number(actual.source_links), expected.sourceLinks],
-    ["snapshots", Number(actual.snapshots), expected.snapshots]
+    ["snapshots", Number(actual.snapshots), expected.snapshots],
+    ["digital-nomad visas", Number(actual.digital_nomad_visas), expected.digitalNomadVisas]
   ].filter(([, value, expectedValue]) => value !== expectedValue);
 
   if (mismatches.length) {
@@ -145,7 +163,8 @@ async function verifyImport(db, runId, expected) {
   }
   console.log(
     `verified database: ${actual.countries} countries; ${actual.routes} routes; ` +
-    `${actual.source_links} source links; ${actual.snapshots} snapshots`
+    `${actual.source_links} source links; ${actual.snapshots} snapshots; ` +
+    `${actual.digital_nomad_visas} digital-nomad visas`
   );
 }
 
@@ -168,7 +187,8 @@ async function createRun(db, input, sourceFile, expectedCount) {
 
 async function upsertCountry(db, item, runId) {
   const data = item.data || {};
-  const bestRoute = (data.best_routes || []).find((route) => route?.valid_for_selection === true)
+  const bestRoute = digitalNomadVisaRoute(data)
+    || (data.best_routes || []).find((route) => route?.valid_for_selection === true)
     || data.best_routes?.[0]
     || null;
   const sourceCount = Array.isArray(data.sources) ? data.sources.length : 0;
@@ -178,7 +198,7 @@ async function upsertCountry(db, item, runId) {
     validDate(data.researched_at),
     selectionValue(data.valid_for_selection),
     data.fully_matched === true,
-    booleanValue(data.dnv_available),
+    hasDigitalNomadVisa(data),
     jusSoliValue(data.child_citizenship),
     textValue(data.citizenship_track_strength),
     textValue(data.settlement_track?.classification),
@@ -248,73 +268,101 @@ async function upsertCountry(db, item, runId) {
 }
 
 async function replaceRoutes(db, countryId, data) {
-  let count = 0;
+  const routeRows = [];
   for (const [kind, routes] of [
     ["best", data?.best_routes || []],
     ["rejected", data?.rejected_routes || []]
   ]) {
     for (const [ordinal, route] of routes.entries()) {
-      await db.query(
-        `insert into public.routes (
-           country_id, route_kind, ordinal, route_name, route_type, valid_for_selection,
-           independent_application_possible, local_employer_required,
-           minimum_income_usd_monthly, application_url, application_url_type, confidence, data
-         ) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13::jsonb)`,
-        [
-          countryId,
-          kind,
-          ordinal,
-          textValue(route?.route_name),
-          textValue(route?.route_type || route?.status_type),
-          selectionValue(route?.valid_for_selection, true),
-          booleanValue(route?.independent_application_possible),
-          booleanValue(route?.local_employer_required),
-          numberValue(route?.minimum_monthly_income_usd),
-          textValue(route?.application_url),
-          textValue(route?.application_url_type),
-          textValue(route?.confidence),
-          JSON.stringify(route || {})
-        ]
-      );
-      count += 1;
+      routeRows.push([
+        countryId,
+        kind,
+        ordinal,
+        textValue(route?.route_name),
+        textValue(route?.route_type || route?.status_type),
+        selectionValue(route?.valid_for_selection, true),
+        booleanValue(route?.independent_application_possible),
+        booleanValue(route?.local_employer_required),
+        numberValue(route?.minimum_monthly_income_usd),
+        textValue(route?.application_url),
+        textValue(route?.application_url_type),
+        textValue(route?.confidence),
+        JSON.stringify(route || {})
+      ]);
     }
   }
-  return count;
+  if (!routeRows.length) return 0;
+
+  const { placeholders, values } = batchValues(routeRows, { jsonColumns: [12] });
+  await db.query(
+    `insert into public.routes (
+       country_id, route_kind, ordinal, route_name, route_type, valid_for_selection,
+       independent_application_possible, local_employer_required,
+       minimum_income_usd_monthly, application_url, application_url_type, confidence, data
+     ) values ${placeholders}`,
+    values
+  );
+  return routeRows.length;
 }
 
 async function replaceSources(db, countryId, runId, sources) {
-  let count = 0;
+  const sourceRows = [];
+  const sourceKeys = [];
   for (const [index, source] of (Array.isArray(sources) ? sources : []).entries()) {
     const url = textValue(source?.url);
     if (!url) continue;
-    const result = await db.query(
-      `insert into public.sources (url, title, publisher, source_type, accessed_at, data)
-       values ($1, $2, $3, $4, $5, $6::jsonb)
-       on conflict (url) do update set
-         title = excluded.title,
-         publisher = coalesce(excluded.publisher, public.sources.publisher),
-         source_type = coalesce(excluded.source_type, public.sources.source_type),
-         accessed_at = coalesce(excluded.accessed_at, public.sources.accessed_at),
-         data = excluded.data
-       returning id`,
-      [
-        url,
-        textValue(source?.title) || url,
-        textValue(source?.publisher),
-        textValue(source?.source_type),
-        validDate(source?.accessed_at || source?.access_date || source?.date_accessed || source?.last_accessed || source?.date),
-        JSON.stringify(source || {})
-      ]
-    );
-    await db.query(
-      `insert into public.country_sources (country_id, source_id, source_key, run_id)
-       values ($1, $2, $3, $4)
-       on conflict (country_id, source_id, source_key) do update set run_id = excluded.run_id`,
-      [countryId, result.rows[0].id, textValue(source?.id) || `source-${index + 1}`, runId]
-    );
-    count += 1;
+    sourceRows.push([
+      url,
+      textValue(source?.title) || url,
+      textValue(source?.publisher),
+      textValue(source?.source_type),
+      validDate(source?.accessed_at || source?.access_date || source?.date_accessed || source?.last_accessed || source?.date),
+      JSON.stringify(source || {})
+    ]);
+    sourceKeys.push([url, textValue(source?.id) || `source-${index + 1}`]);
   }
-  return count;
+  if (!sourceRows.length) return 0;
+
+  const { placeholders, values } = batchValues(sourceRows, { jsonColumns: [5] });
+  const result = await db.query(
+    `insert into public.sources (url, title, publisher, source_type, accessed_at, data)
+     values ${placeholders}
+     on conflict (url) do update set
+       title = excluded.title,
+       publisher = coalesce(excluded.publisher, public.sources.publisher),
+       source_type = coalesce(excluded.source_type, public.sources.source_type),
+       accessed_at = coalesce(excluded.accessed_at, public.sources.accessed_at),
+       data = excluded.data
+     returning id, url`,
+    values
+  );
+  const sourceIds = new Map(result.rows.map((row) => [row.url, row.id]));
+  const linkRows = sourceKeys.map(([url, sourceKey]) => [countryId, sourceIds.get(url), sourceKey, runId]);
+  if (linkRows.some((row) => row[1] === undefined)) {
+    throw new Error("Source upsert did not return every requested URL");
+  }
+  const links = batchValues(linkRows);
+  await db.query(
+    `insert into public.country_sources (country_id, source_id, source_key, run_id)
+     values ${links.placeholders}
+     on conflict (country_id, source_id, source_key) do update set run_id = excluded.run_id`,
+    links.values
+  );
+  return sourceRows.length;
+}
+
+function batchValues(rows, options = {}) {
+  const jsonColumns = new Set(options.jsonColumns || []);
+  const values = rows.flat();
+  const width = rows[0]?.length || 0;
+  const placeholders = rows.map((_, rowIndex) => {
+    const columns = Array.from({ length: width }, (__, columnIndex) => {
+      const position = rowIndex * width + columnIndex + 1;
+      return `$${position}${jsonColumns.has(columnIndex) ? "::jsonb" : ""}`;
+    });
+    return `(${columns.join(", ")})`;
+  }).join(", ");
+  return { placeholders, values };
 }
 
 async function insertSnapshot(db, countryId, runId, item) {
