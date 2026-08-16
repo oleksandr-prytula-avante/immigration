@@ -68,7 +68,7 @@ What to research:
    - Always separate the right to live temporarily on a digital nomad / remote worker visa from a real path to permanent residence or citizenship. If the route is temporary only and does not lead to settlement, explicitly classify it as `temporary_nomad_only`.
    - Verify whether time spent on the route counts toward permanent residence or citizenship. If official sources do not confirm that it counts, do not mark it as a fully matched citizenship path.
 - Important for UI: `settlement_track.summary` must explain in one or two sentences why the route is `strong_citizenship_track`, `possible_with_conversion`, `weak_or_uncertain_citizenship_track`, `temporary_nomad_only`, or not valid.
-- Dashboard citizenship is binary: show `YES` only when `settlement_track.can_lead_to_citizenship_from_this_route=true`. Treat `false`, `"uncertain"`, missing confirmation, and speculative conversion as `NO`; preserve the uncertainty and reasoning in route notes rather than exposing a third filter status.
+- Dashboard citizenship is binary. Show `YES` when the nomad route itself has a confirmed citizenship track, or when the same ordinary foreign-contract profile has a confirmed independent switch into direct permanent residence without a local employer. Do not count an unrelated skilled, employer-sponsored, investor, founder, or locally restructured self-employment route merely because it exists in the country. Treat `false`, `"uncertain"`, missing confirmation, and speculative conversion as `NO`; preserve the uncertainty and reasoning in route notes rather than exposing a third filter status.
 6. Marriage:
    - whether citizenship or permanent residence is accelerated by marriage to a citizen;
    - whether an already existing marriage matters;

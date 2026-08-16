@@ -34,11 +34,22 @@ export function hasDigitalNomadVisa(data) {
 }
 
 export function digitalNomadCitizenshipStatus(data) {
+  if (!digitalNomadVisaRoute(data)) return "not_applicable";
+  return digitalNomadCitizenshipRoute(data) ? "yes" : "no";
+}
+
+export function digitalNomadCitizenshipRoute(data) {
   const route = digitalNomadVisaRoute(data);
-  if (!route) return "not_applicable";
-  if (route.valid_for_selection === false) return "no";
+  if (!route) return null;
 
   const canLead = data?.settlement_track?.can_lead_to_citizenship_from_this_route;
-  if (canLead === true) return "yes";
-  return "no";
+  if (canLead !== true) return null;
+  if (route.valid_for_selection === true) return route;
+
+  if (data?.regular_foreign_contract_remote_work_fit?.value !== true) return null;
+  return (data?.best_routes || []).find((candidate) =>
+      candidate?.valid_for_selection === true &&
+      candidate?.direct_permanent_residence_possible === true &&
+      candidate?.local_employer_required !== true
+    ) ?? null;
 }

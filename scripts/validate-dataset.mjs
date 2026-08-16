@@ -3,6 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
+  digitalNomadCitizenshipRoute,
   digitalNomadCitizenshipStatus,
   hasDigitalNomadVisa
 } from "../dashboard/route-semantics.js";
@@ -104,6 +105,17 @@ function validateCountry(item, minimumSources, errors) {
   }
   if (data.fully_matched === true && data.valid_for_selection !== true) {
     errors.push(`${country}: fully_matched=true requires valid_for_selection=true`);
+  }
+
+  if (digitalNomadCitizenshipStatus(data) === "yes") {
+    const citizenshipRoute = digitalNomadCitizenshipRoute(data);
+    const citizenshipPath = citizenshipRoute?.path_to_citizenship;
+    if (typeof citizenshipPath?.value !== "string" || !citizenshipPath.value.trim()) {
+      errors.push(`${country}: dashboard citizenship YES requires a non-empty route citizenship path`);
+    }
+    if (!Array.isArray(citizenshipPath?.source_ids) || citizenshipPath.source_ids.length === 0) {
+      errors.push(`${country}: dashboard citizenship YES requires cited route citizenship evidence`);
+    }
   }
 
   collectSourcedNulls(data, "", (value, propertyPath) => {
