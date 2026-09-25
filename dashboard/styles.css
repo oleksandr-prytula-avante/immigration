@@ -587,13 +587,13 @@ th[aria-sort="descending"] button::after { content: " ↓"; }
   padding: 4px;
   border: 0;
   border-radius: 50%;
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: #eeeeee;
+  color: #6b6b6b;
   cursor: pointer;
 }
 
 .timeline-note-icon:hover {
-  background: #d6e9e1;
+  background: #e2e2e2;
 }
 
 .timeline-note {
