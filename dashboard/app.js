@@ -462,7 +462,7 @@ function renderDetails(visibleRows) {
 
     <div class="detail-block">
       <h3>KEY NUMBERS</h3>
-      <p class="explain">Income is the route threshold, tax is the top or screening personal rate, and citizenship is the estimated minimum timeline where captured.</p>
+      <p class="explain">Income is the route threshold, tax is the top or screening personal rate, and citizenship years are the recorded country timeline, independent of the CIT status.</p>
       <ul class="detail-list">
         <li>INCOME: ${escapeHtml(formatIncome(row))}</li>
         <li>INCOME PROOF: ${escapeHtml(formatIncomeProof(route))}</li>
@@ -519,7 +519,7 @@ function renderDetails(visibleRows) {
 
     <div class="detail-block">
       <h3>COUNTRY CITIZENSHIP TIMELINE</h3>
-      <p class="explain">General or alternative-route timelines are preserved here; they are shown in the table only for a confirmed nomad / remote-work citizenship path.</p>
+      <p class="explain">YEARS shows the recorded country timeline regardless of CIT status. These notes explain the relevant route and conditions.</p>
       <ul class="detail-list">
         <li>TOTAL YEARS: ${formatSourcedInline(data.timeline?.total_years_to_citizenship, (value) => `${value} YRS`)}</li>
         <li>PERMANENT RESIDENCE YEARS: ${formatSourcedInline(data.timeline?.permanent_residence_years, (value) => `${value} YRS`)}</li>

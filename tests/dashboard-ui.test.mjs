@@ -65,6 +65,35 @@ test('numeric filter and descending sort produce consistent rendered rows', asyn
   ui.dom.window.close();
 });
 
+test('YEARS displays captured timelines with unchanged CIT labels and uses them for filtering and sorting', async () => {
+  const ui = await dashboard('?dnv=all');
+  for (const [country, years, citizenship] of [['Estonia', '8 YRS', 'NO'], ['Uruguay', '5 YRS', 'NO'], ['Austria', '10 YRS', 'N/A'], ['Argentina', 'NOT FOUND', 'NO']]) {
+    const row = ui.el(`tr[data-country="${country}"]`);
+    assert.equal(row.cells[4].textContent.trim(), citizenship, country);
+    assert.equal(row.cells[5].textContent.trim(), years, country);
+  }
+  ui.change('#citizenshipMax', '5');
+  assert.ok(ui.el('tr[data-country="Uruguay"]'));
+  assert.equal(ui.el('tr[data-country="Estonia"]'), null);
+  assert.equal(ui.el('tr[data-country="Argentina"]'), null);
+  for (const row of ui.dom.window.document.querySelectorAll('#countryRows tr')) {
+    assert.ok(Number.parseFloat(row.cells[5].textContent) <= 5);
+  }
+  ui.change('#citizenshipMax', '');
+  for (const direction of ['ascending', 'descending']) {
+    assert.equal(ui.el('th[data-sort="citizenship"]').getAttribute('aria-sort'), direction);
+    const values = [...ui.dom.window.document.querySelectorAll('#countryRows tr')].map(row => Number.parseFloat(row.cells[5].textContent));
+    const firstMissing = values.findIndex(Number.isNaN);
+    assert.ok(firstMissing > 0);
+    assert.ok(values.slice(firstMissing).every(Number.isNaN));
+    const numbers = values.slice(0, firstMissing);
+    assert.deepEqual(numbers, [...numbers].sort((a, b) => direction === 'ascending' ? a - b : b - a));
+    ui.el('th[data-sort="citizenship"] button').click();
+  }
+  assert.deepEqual(ui.errors, []);
+  ui.dom.window.close();
+});
+
 test('every country detail renders without errors and table/card route statuses agree', async () => {
   const ui = await dashboard('?dnv=all');
   for (const item of dataset.results) {

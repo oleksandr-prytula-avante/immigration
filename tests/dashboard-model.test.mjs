@@ -13,17 +13,29 @@ test('every table row agrees with canonical citizenship classification', () => {
     const confirmed = digitalNomadCitizenshipStatus(row.data) === 'yes';
     assert.equal(row.nomadTransition.status === 'direct', confirmed, row.country);
     assert.equal(row.citizenshipCategory, digitalNomadCitizenshipCategory(row.data), row.country);
-    if (!confirmed) assert.equal(row.citizenshipYears, null, row.country);
   }
-  assert.equal(rows.find(row => row.country === 'Uruguay').citizenshipYears, null);
 });
 
-test('maximum filters exclude missing and non-applicable values, including actual dataset', () => {
+test('citizenship years retain captured values independently of visa and citizenship status', () => {
+  for (const [country, years, citizenshipLabel] of [['Estonia', 8, 'NO'], ['Uruguay', 5, 'NO'], ['Austria', 10, 'N/A']]) {
+    const row = rows.find(row => row.country === country);
+    assert.equal(row.citizenshipYears, years, country);
+    assert.equal(row.nomadTransition.label, citizenshipLabel, country);
+  }
+  assert.equal(rows.find(row => row.country === 'Argentina').citizenshipYears, null);
+  const [failed] = normalizeResults([{country:'Failed', status:'error', timeline:{total_years_to_citizenship:{value:5}}}]);
+  assert.equal(failed.citizenshipYears, null);
+});
+
+test('maximum filters exclude missing values and include captured timelines regardless of citizenship status', () => {
   assert.equal(matchesMaximum(null, null), true);
   assert.equal(matchesMaximum(null, 1), false);
   assert.equal(matchesMaximum(0, 0), true);
   assert.equal(matchesMaximum(1, 0), false);
   assert.equal(rows.filter(row => matchesMaximum(row.citizenshipYears, 1)).length, 0);
+  const withinFiveYears = rows.filter(row => matchesMaximum(row.citizenshipYears, 5));
+  assert.ok(withinFiveYears.some(row => row.country === 'Uruguay'));
+  assert.ok(!withinFiveYears.some(row => row.country === 'Estonia' || row.country === 'Argentina'));
   assert.ok(rows.filter(row => matchesMaximum(row.income, 3500)).every(row => Number.isFinite(row.income)));
 });
 

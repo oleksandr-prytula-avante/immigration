@@ -75,7 +75,9 @@ Maximum filters exclude unknown values. Numeric sorting keeps unknown values las
 in both directions. Summary cards describe the entire loaded dataset. TOP TAX is a
 screening rate, not an effective tax estimate. Citizenship YES requires a cited path
 for the displayed route; a separate residence route does not qualify that visa.
-Country-level alternative timelines remain available in the details panel.
+YEARS displays the recorded country timeline regardless of CIT status, including
+general or alternative-route timelines. The details panel preserves their notes
+and conditions. Missing numeric timelines remain NOT FOUND.
 
 Run the full checks before publishing:
 

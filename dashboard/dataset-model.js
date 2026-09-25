@@ -73,15 +73,13 @@ function normalizeResults(json) {
         data.taxes?.income_tax_rate_percent
       ),
       taxText: taxTextValue(data),
-      citizenshipYears: nomadTransition.status === "direct"
-        ? firstNumberValue(
-          data.timeline?.total_years_to_citizenship,
-          data.timeline?.years_to_citizenship,
-          data.citizenship?.years_to_citizenship,
-          data.citizenship?.ordinary_naturalization_years,
-          data.settlement_track?.years_to_citizenship
-        )
-        : null,
+      citizenshipYears: failed ? null : firstNumberValue(
+        data.timeline?.total_years_to_citizenship,
+        data.timeline?.years_to_citizenship,
+        data.citizenship?.years_to_citizenship,
+        data.citizenship?.ordinary_naturalization_years,
+        data.settlement_track?.years_to_citizenship
+      ),
       sourceCount: data.sources?.length ?? 0,
       error: item.error ?? null
     };
