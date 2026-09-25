@@ -1,10 +1,46 @@
-import { digitalNomadCitizenshipCategory, digitalNomadCitizenshipStatus, digitalNomadVisaRoute } from "./route-semantics.js";
+import { digitalNomadCitizenshipCategory, digitalNomadVisaRoute, nomadRouteAvailability } from "./route-semantics.js";
 import { nomadPrTransition } from "./pr-transition.js";
+import { nomadCitizenshipReview } from "./citizenship-review.js";
 
 // Validate before replacing the displayed dataset, including partial research exports.
 function datasetResults(json) {
   const results = Array.isArray(json) ? json : json?.results;
   if (!Array.isArray(results)) throw new Error("Expected an array or an object with a results array.");
+  const dateFields = new Set(["researched_at", "accessed_at", "reviewed_at", "last_checked", "last_full_research_date"]);
+  const integerFields = new Set(["rank", "visa_free_destinations", "visa_required_destinations", "visa_on_arrival_or_eta_destinations", "mobility_score"]);
+  function validDate(value) {
+    if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const parsed = new Date(`${value}T00:00:00Z`);
+    return Number.isFinite(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+  }
+  function validateValues(value, path) {
+    if (!value || typeof value !== "object") return;
+    for (const [key, child] of Object.entries(value)) {
+      const childPath = `${path}.${key}`;
+      if (dateFields.has(key) && child !== null && !validDate(child)) {
+        throw new Error(`${childPath} must be a valid YYYY-MM-DD date.`);
+      }
+      const number = typeof child === "number" ? child : child?.value;
+      if (typeof number === "number") {
+        if (!Number.isFinite(number) || number < 0) throw new Error(`${childPath} must be a finite, non-negative number.`);
+        if ((key.endsWith("_percent") || key === "rate_percent") && number > 100) {
+          throw new Error(`${childPath} must not exceed 100 percent.`);
+        }
+        if (integerFields.has(key) && !Number.isInteger(number)) throw new Error(`${childPath} must be an integer.`);
+        if (key === "rank" && number === 0) throw new Error(`${childPath} must be greater than zero.`);
+      }
+      validateValues(child, childPath);
+    }
+  }
+  if (!Array.isArray(json) && json?.meta !== undefined) {
+    if (!json.meta || typeof json.meta !== "object" || Array.isArray(json.meta)) throw new Error("Dataset metadata must be an object.");
+    validateValues(json.meta, "meta");
+    const updated = json.meta.updated_at;
+    if (updated !== undefined && (typeof updated !== "string" || !/^\d{4}-\d{2}-\d{2}T/.test(updated) ||
+      !validDate(updated.slice(0, 10)) || !Number.isFinite(Date.parse(updated)))) {
+      throw new Error("meta.updated_at must be a valid ISO timestamp.");
+    }
+  }
   const countries = new Set();
   for (const item of results) {
     if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("Every result must be a country record.");
@@ -19,6 +55,7 @@ function datasetResults(json) {
     countries.add(key);
     if (item.status !== undefined && !["ok", "error"].includes(item.status)) throw new Error(`${country}: unsupported result status.`);
     if (item.status === "ok" && Object.hasOwn(item, "data") && !item.data) throw new Error(`${country}: successful result has no data.`);
+    validateValues(data, country);
     for (const name of ["best_routes", "rejected_routes", "sources"]) {
       if (data[name] !== undefined && (!Array.isArray(data[name]) || data[name].some((value) => !value || typeof value !== "object" || Array.isArray(value)))) {
         throw new Error(`${country}: ${name} must be an array of records.`);
@@ -48,8 +85,8 @@ function normalizeResults(json) {
     const failed = item.status === "error";
     const nomadRoute = failed ? null : digitalNomadVisaRoute(data);
     const nomadTransition = failed
-      ? { status: "research_error", label: "UNKNOWN", tone: "warn", description: "Research failed; route availability and citizenship are unknown." }
-      : buildNomadTransition(data, nomadRoute);
+      ? { status: "research_error", label: "ERR", fullLabel: "Research failed", tone: "warn", rank: 6, description: "Research failed; route availability and citizenship are unknown.", review: null }
+      : nomadCitizenshipReview(data);
     const citizenshipTimelines = failed ? [] : [
       data.timeline?.total_years_to_citizenship,
       data.timeline?.years_to_citizenship,
@@ -57,11 +94,14 @@ function normalizeResults(json) {
       data.citizenship?.ordinary_naturalization_years,
       data.settlement_track?.years_to_citizenship
     ];
+    // An explicitly recorded unknown is authoritative. Only absent legacy fields fall back.
+    const citizenshipTimeline = citizenshipTimelines.find(value => value !== undefined);
     return {
       country: item.country ?? data.country ?? "UNKNOWN",
       status: item.status ?? "ok",
       data,
-      valid: item.status === "error" ? null : nomadRoute !== null,
+      availability: failed ? "research_error" : nomadRouteAvailability(data),
+      valid: failed || nomadRouteAvailability(data) === "unconfirmed" ? null : nomadRouteAvailability(data) === "current",
       selectionValid: data.valid_for_selection === true,
       confidence: data.confidence ?? null,
       summary: data.selection_summary ?? "",
@@ -78,60 +118,18 @@ function normalizeResults(json) {
       jusSoli: failed ? null : normalizeJusSoli(data.child_citizenship),
       income: numberValue(nomadRoute?.minimum_monthly_income_usd),
       incomeText: nomadRoute?.income_requirement_display?.value ?? null,
-      tax: failed ? null : firstNumberValue(
+      tax: failed ? null : numberValue([
         data.taxes?.taxation_system?.top_personal_income_tax_rate_percent,
         data.taxes?.digital_nomad_taxation?.top_or_screening_pit_rate_percent,
         data.taxes?.income_tax_rate_percent
-      ),
+      ].find(value => value !== undefined)),
       taxText: taxTextValue(data),
-      citizenshipYears: firstNumberValue(...citizenshipTimelines),
-      citizenshipYearsText: citizenshipTimelines.map(recordedPeriodText).find(Boolean) ?? null,
+      citizenshipYears: numberValue(citizenshipTimeline),
+      citizenshipYearsText: recordedPeriodText(citizenshipTimeline),
       sourceCount: data.sources?.length ?? 0,
       error: item.error ?? null
     };
   });
-}
-
-function buildNomadTransition(data, route) {
-  if (!route) {
-    return {
-      status: "no_nomad_route",
-      label: "N/A",
-      tone: "neutral",
-      description: "No current digital-nomad or equivalent remote-work visa is captured, so citizenship from that route is not applicable."
-    };
-  }
-
-  const settlement = data.settlement_track ?? {};
-  const requiresSwitch = settlement.requires_switch_to_another_status;
-  const citizenshipStatus = digitalNomadCitizenshipStatus(data);
-
-  if (citizenshipStatus === "yes") {
-    return {
-      status: "direct",
-      label: "YES",
-      tone: "good",
-      description: requiresSwitch === true
-        ? "A citizenship path is recorded, but it requires switching to another qualifying residence status."
-        : "The researched route is recorded as capable of leading to citizenship without a required status switch."
-    };
-  }
-
-  if (citizenshipStatus === "no") {
-    return {
-      status: "no_citizenship_path",
-      label: "NO",
-      tone: "bad",
-      description: "The digital-nomad visa exists, but this route has no confirmed path to citizenship."
-    };
-  }
-
-  return {
-    status: "no_citizenship_path",
-    label: "NO",
-    tone: "bad",
-    description: "No confirmed citizenship path from this digital-nomad visa is recorded."
-  };
 }
 
 function normalizeJusSoli(childCitizenship) {
@@ -154,14 +152,6 @@ function normalizeJusSoli(childCitizenship) {
 function numberValue(sourcedValue) {
   if (typeof sourcedValue === "number" && Number.isFinite(sourcedValue)) return sourcedValue;
   if (typeof sourcedValue?.value === "number" && Number.isFinite(sourcedValue.value)) return sourcedValue.value;
-  return null;
-}
-
-function firstNumberValue(...values) {
-  for (const value of values) {
-    const number = numberValue(value);
-    if (number !== null) return number;
-  }
   return null;
 }
 
@@ -211,4 +201,4 @@ export function languageKey(value) {
   return new Map([["Castilian", "Spanish"], ["Standard Chinese", "Mandarin Chinese"]]).get(name) ?? name;
 }
 
-export { normalizeResults, numberValue, firstNumberValue };
+export { normalizeResults, numberValue };

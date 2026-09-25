@@ -45,6 +45,7 @@
             <option value="all">ALL</option>
             <option value="true" selected>YES</option>
             <option value="false">NO</option>
+            <option value="uncertain">UNCERTAIN AVAILABILITY</option>
             <option value="error">RESEARCH ERROR</option>
           </select>
         </label>
@@ -63,7 +64,7 @@
           <input id="taxMax" type="number" min="0" max="100" step="1" placeholder="E.G. 20">
         </label>
         <label>
-          CITIZENSHIP WITHIN, YRS
+          MAX RECORDED YEARS
           <input id="citizenshipMax" type="number" min="0" step="1" placeholder="E.G. 7">
         </label>
         <label>
@@ -79,12 +80,13 @@
           CITIZENSHIP
           <select id="prCitFilter">
             <option value="all">ALL</option>
-            <option value="direct">YES — CONFIRMED TRACK</option>
-            <option value="no_citizenship_path">NO — ALL</option>
-            <option value="category:temporary_only">NO — TEMPORARY / NON-COUNTING</option>
-            <option value="category:separate_profile_route">NO — SEPARATE / PROFILE-CHANGING</option>
-            <option value="category:unconfirmed">NO — UNCONFIRMED</option>
-            <option value="category:no_visa">N/A — NO NOMAD VISA</option>
+            <option value="confirmed">YES — CONFIRMED PATH</option>
+            <option value="conditional">CND — EXTRA ELIGIBILITY</option>
+            <option value="unconfirmed">UNK — NOT ESTABLISHED</option>
+            <option value="not_available">NO — NO SUPPORTED PATH</option>
+            <option value="not_confirmed">NOT CONFIRMED — ALL</option>
+            <option value="not_applicable">N/A — NO NOMAD VISA</option>
+            <option value="research_error">RESEARCH ERROR</option>
           </select>
         </label>
         <label>
@@ -95,11 +97,13 @@
             <option value="conditional">CONDITIONAL — EXTRA ELIGIBILITY</option>
             <option value="unconfirmed">UNCONFIRMED</option>
             <option value="not_available">NO — NOT AVAILABLE</option>
+            <option value="not_applicable">N/A — NO NOMAD VISA</option>
+            <option value="research_error">RESEARCH ERROR</option>
           </select>
         </label>
       </section>
 
-      <p class="filter-help">PR PATH: YES means a documented path while keeping foreign remote work, without a local employer, marriage or large investment. Separate applications and exit are allowed; nomad time need not count. CND = conditional, additional eligibility required; UNK = unconfirmed, insufficient evidence. CIT evaluates the recorded citizenship path. YEARS shows the recorded citizenship timeline independently of CIT; when no number is recorded, it shows the original explanation. Maximum filters include known values only. TOP TAX is the country screening rate, not your effective or nomad-specific rate. JUS SOLI means unconditional birthright citizenship. Summary cards cover the whole dataset.</p>
+      <p class="filter-help">Nomad availability is separate from settlement: YES means a current programme; uncertain availability means operation is not established. PR PATH and CIT: YES requires a complete documented path keeping foreign remote work, without a local employer, marriage or large investment. Separate applications, status changes and exit are allowed; nomad time need not count. YES = confirmed; CND = additional eligibility required, potentially outside this profile; UNK = evidence incomplete; NO = no supported path. PR does not automatically imply citizenship. LANGUAGE lists official languages, not practical proficiency. YEARS shows the recorded citizenship timeline independently of CIT; when no number is recorded, it shows the original explanation. Maximum filters include known values only. TOP TAX is the country screening rate, not your effective or nomad-specific rate. JUS SOLI means unconditional birthright citizenship. Summary cards cover the whole dataset.</p>
 
       <section class="status-row">
         <p id="fileStatus" role="status">LOADING RESEARCH DATA…</p>

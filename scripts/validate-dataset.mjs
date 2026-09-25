@@ -7,8 +7,9 @@ import {
   digitalNomadCitizenshipCategory,
   digitalNomadCitizenshipStatus,
   digitalNomadVisaRoute,
-  hasDigitalNomadVisa
+  hasDigitalNomadVisa, hasRecordedNomadRoute, nomadRouteAvailability
 } from "../dashboard/route-semantics.js";
+import { citizenshipReviewIssues, nomadCitizenshipReview } from "../dashboard/citizenship-review.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const countrySchema = JSON.parse(readFileSync(path.join(root, "scripts/country-research.schema.json"), "utf8"));
@@ -41,8 +42,25 @@ export function validateDatasetDocument(document, expectedCountries, options = {
   validateMetadata(document?.meta, results, expectedCountries, errors);
   // Invalid shapes must be reported before route helpers or the importer consume them.
   const structurallyValidResults = results.filter((item) => validateCountry(item, minimumSources, errors));
+  if (options.requireNomadAvailability || document?.meta?.digital_nomad_availability_review) {
+    for (const item of structurallyValidResults) {
+      for (const route of [...item.data.best_routes, ...item.data.rejected_routes]) {
+        if (["digital_nomad", "remote_worker"].includes(route.route_type) && !route.availability) errors.push(`${item.country}: ${route.route_name} requires a cited availability review`);
+      }
+    }
+  }
+  const availabilityMeta = document?.meta?.digital_nomad_availability_review;
+  if (availabilityMeta !== undefined) {
+    if (!validISODate(availabilityMeta?.reviewed_at)) errors.push("meta.digital_nomad_availability_review requires a valid reviewed_at date");
+    const typedRoutes = structurallyValidResults.flatMap(item => [...item.data.best_routes, ...item.data.rejected_routes]
+      .filter(route => ["digital_nomad", "remote_worker"].includes(route.route_type)).map(route => ({country:item.country, route})));
+    const countries = [...new Set(typedRoutes.map(item => item.country))];
+    if (!options.allowPartial && (availabilityMeta?.route_count !== typedRoutes.length || !Array.isArray(availabilityMeta?.countries) ||
+      availabilityMeta.countries.length !== countries.length || duplicates(availabilityMeta.countries).length ||
+      countries.some(country => !availabilityMeta.countries.includes(country)))) errors.push("meta.digital_nomad_availability_review must match every typed nomad route and country");
+  }
 
-  const digitalNomadVisas = structurallyValidResults.filter((item) => hasDigitalNomadVisa(item.data));
+  const digitalNomadVisas = structurallyValidResults.filter((item) => hasRecordedNomadRoute(item.data));
   const prReviews = digitalNomadVisas.filter(item => item.data.digital_nomad_pr_transition);
   const prStatuses = prReviews.reduce((counts, item) => {
     const status = item.data.digital_nomad_pr_transition.status;
@@ -66,14 +84,26 @@ export function validateDatasetDocument(document, expectedCountries, options = {
       duplicates(reviewMeta.countries).length ||
       reviewMeta.countries.length !== digitalNomadVisas.length ||
       digitalNomadVisas.some(item => !reviewMeta.countries.includes(item.country)))) {
-      errors.push("meta.digital_nomad_pr_review.countries must match all current nomad countries");
+      errors.push("meta.digital_nomad_pr_review.countries must match all recorded current or unconfirmed nomad countries");
     }
   }
   const citizenshipStatuses = digitalNomadVisas.reduce((counts, item) => {
-    const status = digitalNomadCitizenshipStatus(item?.data);
+    const status = nomadCitizenshipReview(item?.data).status;
     counts[status] = (counts[status] || 0) + 1;
     return counts;
   }, {});
+  const citizenshipReviewMeta = document?.meta?.digital_nomad_citizenship_review;
+  if (citizenshipReviewMeta !== undefined || options.requireNomadCitizenshipReview) {
+    for (const item of digitalNomadVisas) {
+      if (!item.data.digital_nomad_citizenship_review) errors.push(`${item.country}: current nomad research requires a citizenship review`);
+    }
+  }
+  if (citizenshipReviewMeta !== undefined) {
+    if (!validISODate(citizenshipReviewMeta?.reviewed_at)) errors.push("meta.digital_nomad_citizenship_review requires a valid reviewed_at date");
+    if (!options.allowPartial && (!Array.isArray(citizenshipReviewMeta?.countries) ||
+      duplicates(citizenshipReviewMeta.countries).length || citizenshipReviewMeta.countries.length !== digitalNomadVisas.length ||
+      digitalNomadVisas.some(item => !citizenshipReviewMeta.countries.includes(item.country)))) errors.push("meta.digital_nomad_citizenship_review.countries must match all recorded current or unconfirmed nomad countries");
+  }
   const citizenshipCategories = structurallyValidResults.reduce((counts, item) => {
     const category = digitalNomadCitizenshipCategory(item?.data);
     counts[category] = (counts[category] || 0) + 1;
@@ -92,11 +122,14 @@ export function validateDatasetDocument(document, expectedCountries, options = {
       ),
       source_links: results.reduce((sum, item) => sum + arrayLength(item?.data?.sources), 0),
       minimum_sources: minimumSources,
-      digital_nomad_visas: digitalNomadVisas.length,
+      digital_nomad_visas: digitalNomadVisas.filter(item => hasDigitalNomadVisa(item.data)).length,
+      digital_nomad_candidates: digitalNomadVisas.length,
+      digital_nomad_availability_uncertain: digitalNomadVisas.filter(item => nomadRouteAvailability(item.data) === "unconfirmed").length,
       digital_nomad_pr_reviews: prReviews.length,
       digital_nomad_pr_statuses: prStatuses,
-      digital_nomad_visas_with_citizenship: citizenshipStatuses.yes || 0,
-      digital_nomad_visas_without_citizenship: citizenshipStatuses.no || 0,
+      digital_nomad_citizenship_statuses: citizenshipStatuses,
+      digital_nomad_visas_with_citizenship: citizenshipStatuses.confirmed || 0,
+      digital_nomad_visas_without_citizenship: citizenshipStatuses.not_available || 0,
       citizenship_categories: citizenshipCategories
     }
   };
@@ -158,6 +191,16 @@ function validateCountry(item, minimumSources, errors) {
 
   const citizenshipRoute = digitalNomadVisaRoute(data);
   validatePrTransition(data, citizenshipRoute, country, errors);
+  if (data.digital_nomad_citizenship_review) {
+    for (const issue of citizenshipReviewIssues(data, citizenshipRoute)) errors.push(`${country}: digital_nomad_citizenship_review ${issue}`);
+    const review = data.digital_nomad_citizenship_review;
+    const expectedCanLead = review.status === "confirmed" ? true : review.status === "not_available" ? false : "uncertain";
+    if (data.settlement_track.can_lead_to_citizenship_from_this_route !== expectedCanLead) errors.push(`${country}: settlement_track must agree with the full citizenship review`);
+    if (data.digital_nomad_pr_transition) {
+      const expectedSelection = {confirmed:true, conditional:"partial", unconfirmed:"uncertain", not_available:false}[data.digital_nomad_pr_transition.status];
+      if (data.valid_for_selection !== expectedSelection) errors.push(`${country}: selection must agree with the primary PR review`);
+    }
+  }
   if (citizenshipRoute?.valid_for_selection === true && data.settlement_track?.can_lead_to_citizenship_from_this_route === true) {
     const citizenshipPath = citizenshipRoute?.path_to_citizenship;
     if (typeof citizenshipPath?.value !== "string" || !citizenshipPath.value.trim()) {
@@ -217,6 +260,7 @@ function validatePrTransition(data, route, country, errors) {
     !review.qualifying_status?.trim() || ["uncertain", "no_permanent_residence"].includes(review.pathway_type))) {
     errors.push(`${prefix}: confirmed requires an identified pathway supporting the remote-work profile`);
   }
+  if (review.status === "confirmed" && nomadRouteAvailability(data) !== "current") errors.push(`${prefix}: confirmed requires a current initial nomad route`);
   if (review.pathway_type === "direct_residence_clock" && review.nomad_time_counts_toward_pr !== true) {
     errors.push(`${prefix}: direct_residence_clock requires confirmed nomad residence credit`);
   }
@@ -386,8 +430,8 @@ async function main() {
     `(${summary.digital_nomad_visas_with_citizenship} citizenship yes, ` +
     `${summary.digital_nomad_visas_without_citizenship} no); categories: ` +
     `${summary.citizenship_categories.confirmed || 0} confirmed, ` +
-    `${summary.citizenship_categories.temporary_only || 0} temporary, ` +
-    `${summary.citizenship_categories.separate_profile_route || 0} separate-profile, ` +
+    `${summary.citizenship_categories.conditional || 0} conditional, ` +
+    `${summary.citizenship_categories.not_available || 0} unavailable, ` +
     `${summary.citizenship_categories.unconfirmed || 0} unconfirmed, ` +
     `${summary.citizenship_categories.no_visa || 0} no-visa; ` +
     `${summary.digital_nomad_pr_reviews} nomad-to-PR reviews: ` +

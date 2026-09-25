@@ -4,6 +4,8 @@ import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { prTransitionSchema } from "./scripts/pr-transition-schema.mjs";
+import { routeAvailabilitySchema } from "./scripts/route-availability-schema.mjs";
+import { citizenshipReviewSchema } from "./scripts/citizenship-review-schema.mjs";
 import { normalizeUrl, validateDatasetDocument } from "./scripts/validate-dataset.mjs";
 import { assertResearchState, refreshResearchMetadata, saveResearchState } from "./scripts/research-state.mjs";
 
@@ -240,7 +242,9 @@ export function validateResearchResult(country, result, options = {}) {
   }
   const validation = validateDatasetDocument({ results: [{ country, status: "ok", data: result }] }, [country], {
     minimumSources: requiredSources,
-    requireNomadPrReview: true
+    requireNomadPrReview: true,
+    requireNomadCitizenshipReview: true,
+    requireNomadAvailability: true
   });
   if (!validation.valid) throw new Error(validation.errors.join("\n"));
   if (options.researchDate && result.researched_at !== options.researchDate) {
@@ -514,6 +518,7 @@ const routeSchema = {
         "other"
       ]
     },
+    availability: routeAvailabilitySchema,
     valid_for_selection: { type: ["boolean", "string"], enum: [true, false, "uncertain", "partial"] },
     independent_application_possible: nullableBoolean,
     local_employer_required: nullableBoolean,
@@ -548,6 +553,7 @@ const routeSchema = {
     "route_name",
     "route_type",
     "valid_for_selection",
+    "availability",
     "independent_application_possible",
     "local_employer_required",
     "foreign_contract_or_income_required",
@@ -1014,6 +1020,7 @@ const countryResearchSchema = {
     },
     settlement_track: settlementTrackSchema,
     digital_nomad_pr_transition: prTransitionSchema,
+    digital_nomad_citizenship_review: citizenshipReviewSchema,
     citizenship_track_strength: {
       type: "string",
       enum: ["strong", "possible_with_conversion", "weak_or_uncertain", "none_or_separate_route_required", "none"]
@@ -1042,6 +1049,7 @@ const countryResearchSchema = {
     "sources",
     "settlement_track",
     "digital_nomad_pr_transition",
+    "digital_nomad_citizenship_review",
     "citizenship_track_strength",
     "regular_foreign_contract_remote_work_fit",
     "fully_matched",

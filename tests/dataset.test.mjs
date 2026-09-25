@@ -138,12 +138,13 @@ test("complete PR review metadata requires coverage of every recorded nomad coun
   delete input.results.find(item => item.country === "Uruguay").data.digital_nomad_pr_transition;
   assert.match(validateDatasetDocument(input, countries).errors.join("\n"), /Uruguay: digital nomad PR review is missing/);
   input.meta.digital_nomad_pr_review.countries.pop();
-  assert.match(validateDatasetDocument(input, countries).errors.join("\n"), /countries must match all current nomad countries/);
+  assert.match(validateDatasetDocument(input, countries).errors.join("\n"), /countries must match all recorded current or unconfirmed nomad countries/);
 });
 
 test("older exports without PR reviews remain valid, without claiming a completed review", () => {
   const { input, item } = prFixture();
   delete item.data.digital_nomad_pr_transition;
+  delete item.data.digital_nomad_citizenship_review;
   const result = validateDatasetDocument(input, [item.country]);
   assert.equal(result.valid, true, result.errors.join("\n"));
   assert.equal(result.summary.digital_nomad_pr_reviews, 0);
@@ -164,6 +165,7 @@ test("cited values and duplicate citizenship classifications cannot silently dis
 test("new nomad research requires PR review while historical imports remain compatible", () => {
   const { input, item } = prFixture();
   delete item.data.digital_nomad_pr_transition;
+  delete item.data.digital_nomad_citizenship_review;
   assert.equal(validateDatasetDocument(input, [item.country]).valid, true);
   assert.match(validateDatasetDocument(input, [item.country], { requireNomadPrReview: true }).errors.join("\n"), /requires a PR review/);
 });
@@ -180,7 +182,7 @@ test("combined passport scores retain their original amounts without masqueradin
 test("reviewed settlement and numeric corrections preserve their distinct legal meanings", () => {
   const data = country => document.results.find(item => item.country === country).data;
   const indonesia = data("Indonesia");
-  assert.equal(digitalNomadCitizenshipStatus(indonesia), "no");
+  assert.equal(digitalNomadCitizenshipStatus(indonesia), "conditional");
   assert.equal(indonesia.digital_nomad_pr_transition.status, "conditional");
   assert.equal(indonesia.timeline.years_to_permanent_residence_after_temporary.value, null);
   assert.equal(indonesia.timeline.total_years_to_citizenship.value, 5);

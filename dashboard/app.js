@@ -1,4 +1,5 @@
-import { normalizeResults, numberValue, recordedPeriodText, compareNullableNumbers, matchesMaximum, safeHttpUrl, languageKey } from "./dataset-model.js";
+import { normalizeResults, numberValue, recordedPeriodText, safeHttpUrl, languageKey } from "./dataset-model.js";
+import { filterDashboardRows, compareDashboardRows, normalizeCitizenshipFilter } from "./filter-model.js";
 
 const state = {
   raw: null,
@@ -41,7 +42,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const data = await response.json();
     if (state.hasUploadedDataset) return;
     const prReviewDate = data.meta?.digital_nomad_pr_review?.reviewed_at;
-    loadDataset(data, `RESEARCH DATA LOADED · FULL RESEARCH ${data.meta?.last_full_research_date ?? "DATE NOT RECORDED"}${prReviewDate ? ` · NOMAD → PR REVIEW ${prReviewDate}` : ""}`);
+    const citReviewDate = data.meta?.digital_nomad_citizenship_review?.reviewed_at;
+    loadDataset(data, `RESEARCH DATA LOADED · FULL RESEARCH ${data.meta?.last_full_research_date ?? "DATE NOT RECORDED"}${prReviewDate ? ` · NOMAD → PR REVIEW ${prReviewDate}` : ""}${citReviewDate ? ` · CIT CHAIN REVIEW ${citReviewDate}` : ""}`);
   } catch (error) {
     if (state.hasUploadedDataset) return;
     elements.fileStatus.textContent = `COULD NOT LOAD DEFAULT DATA: ${error.message}. UPLOAD A RESULT JSON FILE.`;
@@ -81,8 +83,13 @@ function bindEvents() {
 
   resettableFilters.forEach((input) => {
     input.addEventListener(filterEventName(input), () => {
-      if (input === elements.prCit && input.value === "category:no_visa") elements.valid.value = "all";
-      if (input === elements.valid && input.value === "true" && elements.prCit.value === "category:no_visa") elements.prCit.value = "all";
+      if ([elements.prCit, elements.prPath].includes(input) && ["not_applicable", "research_error"].includes(input.value)) elements.valid.value = "all";
+      if (input === elements.valid && input.value !== "all") {
+        for (const filter of [elements.prCit, elements.prPath]) {
+          if ((filter.value === "not_applicable" && input.value !== "false") ||
+              (filter.value === "research_error" && input.value !== "error")) filter.value = "all";
+        }
+      }
       state.selectedCountry = null;
       render();
     });
@@ -154,7 +161,7 @@ function applyUrlStateBeforeData() {
     : urlState.prCit;
   setSelectValue(elements.prCit, citizenshipFilter);
   setSelectValue(elements.prPath, urlState.prPath);
-  if (elements.prCit.value === "category:no_visa" && urlState.status === null) elements.valid.value = "all";
+  if ([elements.prCit, elements.prPath].some(filter => ["not_applicable", "research_error"].includes(filter.value)) && urlState.status === null) elements.valid.value = "all";
   setSelectValue(elements.jusSoli, urlState.jusSoli);
   setInputValue(elements.incomeMax, urlState.incomeMax);
   setInputValue(elements.taxMax, urlState.taxMax);
@@ -211,20 +218,8 @@ function setInputValue(input, value) {
 }
 
 function setSelectValue(select, value) {
-  const normalizedValue = select === elements.valid
-    ? normalizeStatusFilterValue(value)
-    : select === elements.prCit && (value === "no_nomad_route" || value === "uncertain")
-      ? (value === "no_nomad_route" ? "category:no_visa" : "category:unconfirmed")
-      : select === elements.prCit && value === "category:confirmed" ? "direct"
-    : value;
-  if (normalizedValue !== null && Array.from(select.options).some((option) => option.value === normalizedValue)) {
-    select.value = normalizedValue;
-  }
-}
-
-function normalizeStatusFilterValue(value) {
-  if (value === "partial" || value === "uncertain") return "review";
-  return value;
+  const normalized = select === elements.prCit ? normalizeCitizenshipFilter(value) : value;
+  if (normalized !== null && Array.from(select.options).some(option => option.value === normalized)) select.value = normalized;
 }
 
 function setUrlParam(params, key, value, defaultValue = "") {
@@ -238,122 +233,15 @@ function isValidSortKey(key) {
 }
 
 function filteredRows() {
-  const query = elements.search.value.trim().toLowerCase();
-  const valid = elements.valid.value;
-  const language = elements.language.value;
-  const prCit = elements.prCit.value;
-  const prPath = elements.prPath.value;
-  const jusSoli = elements.jusSoli.value;
-  const incomeMax = parseOptionalNumber(elements.incomeMax.value);
-  const taxMax = parseOptionalNumber(elements.taxMax.value);
-  const citizenshipMax = parseOptionalNumber(elements.citizenshipMax.value);
-
-  return state.rows.filter((row) => {
-    const haystack = [
-      row.country,
-      row.summary,
-      row.bestRouteName,
-      row.bestRouteType,
-      row.citizenshipTrack,
-      citizenshipTrackLabel(row.citizenshipTrack),
-      row.nomadTransition.label,
-      row.prTransition.label,
-      row.prTransition.summary,
-      row.citizenshipYearsText,
-      citizenshipCategoryLabel(row.citizenshipCategory),
-      row.jusSoli,
-      jusSoliLabel(row.jusSoli),
-      row.languages.join(" "),
-      row.data.notes
-    ].join(" ").toLowerCase();
-
-    if (query && !haystack.includes(query)) return false;
-    if (valid !== "all" && !matchesStatus(row, valid)) return false;
-    if (language !== "all" && !matchesLanguage(row, language)) return false;
-    if (prCit !== "all" && !matchesCitizenshipFilter(row, prCit)) return false;
-    if (prPath !== "all" && row.prTransition.status !== prPath) return false;
-    if (jusSoli !== "all" && jusSoliFilterValue(row.jusSoli) !== jusSoli) return false;
-    if (!matchesMaximum(row.income, incomeMax)) return false;
-    if (!matchesMaximum(row.tax, taxMax)) return false;
-    if (!matchesMaximum(row.citizenshipYears, citizenshipMax)) return false;
-    return true;
+  return filterDashboardRows(state.rows, {
+    search: elements.search.value, visa: elements.valid.value, language: elements.language.value,
+    citizenship: elements.prCit.value, pr: elements.prPath.value, jusSoli: elements.jusSoli.value,
+    incomeMax: elements.incomeMax.value, taxMax: elements.taxMax.value, citizenshipMax: elements.citizenshipMax.value
   });
 }
 
 function compareRows(a, b) {
-  const direction = state.sort.direction === "asc" ? 1 : -1;
-  const key = state.sort.key;
-  const primaryResult = ["income", "tax", "citizenship"].includes(key)
-    ? compareNullableNumbers(sortValue(a, key), sortValue(b, key), direction)
-    : compareBySortKey(a, b, key) * direction;
-  return primaryResult || compareDefaultOrder(a, b, key);
-}
-
-function compareBySortKey(a, b, key) {
-  if (key === "prPath") return a.prTransition.rank - b.prTransition.rank;
-  if (key === "country") return compareCountries(a, b);
-  if (key === "valid") return compareStatuses(a, b);
-  if (key === "citizenshipTrack") return compareCitizenshipTracks(a, b);
-  if (key === "nomadTransition") return compareNomadTransitions(a, b);
-  const valueA = sortValue(a, key);
-  const valueB = sortValue(b, key);
-
-  if (typeof valueA === "number" || typeof valueB === "number") {
-    return compareNullableNumbers(valueA, valueB);
-  }
-
-  return String(valueA ?? "").localeCompare(String(valueB ?? ""), "en");
-}
-
-function compareDefaultOrder(a, b, primaryKey) {
-  const comparisons = [
-    ["citizenship", compareCitizenshipYears],
-    ["citizenshipTrack", compareCitizenshipTracks],
-    ["nomadTransition", compareNomadTransitions],
-    ["country", compareCountries],
-    ["tax", compareTaxRates],
-    ["valid", compareStatuses]
-  ];
-
-  for (const [key, compare] of comparisons) {
-    if (key === primaryKey) continue;
-    const result = compare(a, b);
-    if (result !== 0) return result;
-  }
-
-  return 0;
-}
-
-function compareCountries(a, b) {
-  return a.country.localeCompare(b.country, "en");
-}
-
-function compareCitizenshipYears(a, b) {
-  return compareNullableNumbers(a.citizenshipYears, b.citizenshipYears);
-}
-
-function compareTaxRates(a, b) {
-  return compareNullableNumbers(a.tax, b.tax);
-}
-
-function compareStatuses(a, b) {
-  return statusRank(a) - statusRank(b);
-}
-
-function compareCitizenshipTracks(a, b) {
-  return citizenshipTrackRank(a.citizenshipTrack) - citizenshipTrackRank(b.citizenshipTrack);
-}
-
-function compareNomadTransitions(a, b) {
-  return nomadTransitionRank(a.nomadTransition.status) - nomadTransitionRank(b.nomadTransition.status);
-}
-
-function sortValue(row, key) {
-  if (key === "income") return row.income;
-  if (key === "tax") return row.tax;
-  if (key === "citizenship") return row.citizenshipYears;
-  if (key === "jusSoli") return jusSoliRank(row.jusSoli);
-  return row.country;
+  return compareDashboardRows(a, b, state.sort);
 }
 
 function renderMetrics() {
@@ -386,7 +274,7 @@ function renderTable(rows) {
       </td>
       <td class="income-col">${escapeHtml(formatIncome(row))}</td>
       <td>${escapeHtml(formatTax(row))}</td>
-      <td class="nomad-col">${nomadTransitionPill(row.nomadTransition)}</td>
+      <td class="nomad-col" title="${escapeAttr(row.nomadTransition.description)}">${nomadTransitionPill(row.nomadTransition)}</td>
       <td class="years-col" data-years="${row.citizenshipYears ?? ""}">${formatCitizenshipYears(row, true)}</td>
       <td class="pr-col" title="${escapeAttr(row.prTransition.summary)}">${nomadTransitionPill(row.prTransition)}</td>
       <td>${jusSoliPill(row.jusSoli)}</td>
@@ -446,11 +334,12 @@ function renderDetails(visibleRows) {
     <p class="explain">${escapeHtml(formatStatusMeaning(row))}</p>
 
     ${formatPrReview(row.prTransition)}
+    ${formatCitizenshipReview(row.nomadTransition)}
 
     <div class="detail-block">
       <h3>COUNTRY OVERVIEW</h3>
       <ul class="detail-list">
-        <li>NOMAD / REMOTE-WORK ROUTE: ${escapeHtml(row.valid ? "YES" : "NO")}</li>
+        <li>NOMAD / REMOTE-WORK ROUTE: ${escapeHtml(row.valid === true ? "YES" : row.availability === "unconfirmed" ? "UNCONFIRMED" : "NO")}</li>
         <li>REMOTE WORK FIT: ${formatRemoteWorkFit(data.regular_foreign_contract_remote_work_fit)}</li>
         <li>CITIZENSHIP: ${nomadTransitionPill(row.nomadTransition)}<span class="subtext">${escapeHtml(row.nomadTransition.description)}</span></li>
         <li>CITIZENSHIP CATEGORY: ${escapeHtml(citizenshipCategoryLabel(row.citizenshipCategory))}</li>
@@ -518,7 +407,7 @@ function renderDetails(visibleRows) {
 
     <div class="detail-block">
       <h3>COUNTRY SETTLEMENT CONTEXT</h3>
-      <p class="explain">These country-level findings can describe another route. The CIT column above applies only to the displayed nomad / remote-work route.</p>
+      <p class="explain">These broader country findings may describe a different route or earlier research. The dated citizenship-chain review above determines CIT and includes eligible successor statuses.</p>
       <p class="explain">${escapeHtml(citizenshipTrackDescription(row.citizenshipTrack))}</p>
       <ul class="detail-list">
         <li>TRACK: ${citizenshipTrackPill(row.citizenshipTrack)}</li>
@@ -604,27 +493,8 @@ function renderDetails(visibleRows) {
 function statusPill(row) {
   if (row.status === "error") return '<span class="pill warn">RESEARCH ERROR</span>';
   if (row.valid === true) return '<span class="pill good">NOMAD / REMOTE-WORK ROUTE: YES</span>';
+  if (row.availability === "unconfirmed") return '<span class="pill warn">NOMAD ROUTE AVAILABILITY: UNCONFIRMED</span>';
   return '<span class="pill bad">NOMAD / REMOTE-WORK ROUTE: NO</span>';
-}
-
-function matchesStatus(row, selected) {
-  if (selected === "error") return row.status === "error";
-  return String(row.valid) === selected;
-}
-
-function matchesCitizenshipFilter(row, selected) {
-  if (selected.startsWith("category:")) {
-    return row.citizenshipCategory === selected.slice("category:".length);
-  }
-  return row.nomadTransition.status === selected;
-}
-
-function statusRank(row) {
-  if (row.status === "error") return 5;
-  if (row.valid === true) return 1;
-  if (row.valid === false) return 4;
-  if (row.status === "error") return 5;
-  return 6;
 }
 
 function syncLanguageFilterOptions() {
@@ -650,16 +520,6 @@ function syncLanguageFilterOptions() {
 
 function filterEventName(input) {
   return input.tagName === "SELECT" ? "change" : "input";
-}
-
-function matchesCitizenshipTrack(actual, selected) {
-  if (selected === "not_valid") return String(actual).startsWith("not_valid");
-  return actual === selected;
-}
-
-function matchesLanguage(row, selected) {
-  if (selected === "missing") return row.languages.length === 0;
-  return row.languages.some((language) => languageKey(language).toLowerCase() === languageKey(selected).toLowerCase());
 }
 
 function citizenshipTrackRank(value) {
@@ -696,18 +556,11 @@ function citizenshipTrackPill(value) {
 function citizenshipCategoryLabel(value) {
   if (value === "research_error") return "RESEARCH ERROR";
   if (value === "confirmed") return "CONFIRMED TRACK";
-  if (value === "temporary_only") return "TEMPORARY / NON-COUNTING";
-  if (value === "separate_profile_route") return "SEPARATE / PROFILE-CHANGING ROUTE";
+  if (value === "conditional") return "CONDITIONAL — ADDITIONAL ELIGIBILITY";
+  if (value === "not_available") return "NO SUPPORTED PATH";
   if (value === "unconfirmed") return "UNCONFIRMED";
   if (value === "no_visa") return "NO NOMAD VISA";
   return "UNKNOWN";
-}
-
-function nomadTransitionRank(value) {
-  if (value === "direct") return 1;
-  if (value === "no_citizenship_path") return 2;
-  if (value === "no_nomad_route") return 3;
-  return 4;
 }
 
 function nomadTransitionPill(transition) {
@@ -741,12 +594,6 @@ function jusSoliTone(value) {
 
 function jusSoliPill(value) {
   return `<span class="pill ${jusSoliTone(value)}">${escapeHtml(jusSoliLabel(value))}</span>`;
-}
-
-function parseOptionalNumber(value) {
-  if (value.trim() === "") return null;
-  const number = Number(value);
-  return Number.isFinite(number) && number >= 0 ? number : null;
 }
 
 function formatNullable(value, formatter) {
@@ -807,8 +654,9 @@ function formatResearchQuality(row) {
 }
 
 function formatStatusMeaning(row) {
+  if (row.availability === "unconfirmed") return "A legal or announced nomad framework is recorded, but current programme operation or the application channel is not established. This does not confirm availability.";
   if (row.valid === true) {
-    return "YES means a recorded digital-nomad or equivalent foreign-remote-worker visa/status is confirmed. CITIZENSHIP is YES only when that same route has a confirmed, cited citizenship path; conditions and any required status switch still apply.";
+    return "YES means a recorded digital-nomad or equivalent foreign-remote-worker visa/status is confirmed. PR PATH and CIT review the complete sequence, including a separate application or status switch that preserves foreign remote work. Citizenship requires its own evidence; PR alone is insufficient.";
   }
   return "NO means no recorded digital-nomad or equivalent foreign-remote-worker visa/status is confirmed. Other skilled, business, investor, visitor, or ordinary residence routes are excluded.";
 }
@@ -819,11 +667,12 @@ function formatRouteFacts(route) {
   return `
     <ul class="detail-list compact">
       <li>TYPE: ${escapeHtml(route.route_type ?? "NOT FOUND")}</li>
+      ${route.availability ? `<li>PROGRAMME AVAILABILITY: ${formatSourcedInline(route.availability)}</li>` : ""}
       <li>INDEPENDENT APPLICATION: ${escapeHtml(formatBooleanish(route.independent_application_possible))}</li>
       <li>LOCAL EMPLOYER REQUIRED: ${escapeHtml(formatBooleanish(route.local_employer_required))}</li>
       <li>FOREIGN CONTRACT / INCOME: ${escapeHtml(formatBooleanish(route.foreign_contract_or_income_required))}</li>
-      <li>TEMPORARY RESIDENCE: ${escapeHtml(formatBooleanish(route.direct_temporary_residence_possible))}</li>
-      <li>PERMANENT RESIDENCE: ${escapeHtml(formatBooleanish(route.direct_permanent_residence_possible))}</li>
+      <li>TEMPORARY RESIDENCE GRANTED BY INITIAL ROUTE: ${escapeHtml(formatBooleanish(route.direct_temporary_residence_possible))}</li>
+      <li>PR GRANTED BY INITIAL ROUTE: ${escapeHtml(formatBooleanish(route.direct_permanent_residence_possible))}</li>
     </ul>
   `;
 }
@@ -900,7 +749,7 @@ function formatRemoteWorkFit(fit) {
 
 function citizenshipTrackDescription(value) {
   if (value === "strong_citizenship_track") {
-    return "Strong means the selected independent route is itself residence-oriented and can realistically support PR or citizenship if requirements are met.";
+    return "Strong means the full citizenship chain is confirmed for the assessed profile, subject to its residence, language and other conditions.";
   }
   if (value === "possible_with_conversion") {
     return "Conversion needed means the route can be useful, but long-term settlement depends on renewal, ordinary residence rules, or switching/maintaining a qualifying status.";
@@ -1027,7 +876,7 @@ function formatBracketUsd(value) {
 
 function formatCitizenshipTrack(value) {
   if (value === true) return "YES, IF CONDITIONS ARE MET";
-  if (value === false) return "NO, ANOTHER STATUS IS REQUIRED";
+  if (value === false) return "NO CONFIRMED PATH IN THIS COUNTRY-LEVEL ASSESSMENT";
   if (value === "uncertain") return "UNCLEAR / CONVERSION NEEDED";
   return "NOT FOUND";
 }
@@ -1075,6 +924,29 @@ function formatPrReview(transition) {
     </ul>
     <ul class="detail-list compact">${(Array.isArray(review.requirements) ? review.requirements : []).map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
     ${review.years_to_pr !== null ? `<p class="summary">${escapeHtml(review.notes)}</p>` : ""}
+    ${formatSourceIds(review.source_ids)}` : ""}
+  </div>`;
+}
+
+function formatCitizenshipReview(transition) {
+  const review = transition.review;
+  return `<div class="detail-block">
+    <h3>CITIZENSHIP AFTER NOMAD</h3>
+    ${nomadTransitionPill(transition)}
+    <p class="summary">${escapeHtml(transition.description)}</p>
+    ${review ? `<ul class="detail-list">
+      <li>QUALIFYING STATUS: ${escapeHtml(review.qualifying_status ?? "NOT ESTABLISHED")}</li>
+      <li>REMOTE-WORK PROFILE: ${escapeHtml(formatBooleanish(review.remote_work_profile_supported))}</li>
+      <li>STATUS SWITCH: ${escapeHtml(formatBooleanish(review.requires_status_switch))}</li>
+      <li>EXIT REQUIRED: ${escapeHtml(formatBooleanish(review.requires_exit))}</li>
+      <li>PR REQUIRED FOR CITIZENSHIP: ${escapeHtml(formatBooleanish(review.requires_permanent_residence))}</li>
+      <li>NOMAD TIME COUNTS TOWARD CITIZENSHIP: ${escapeHtml(formatBooleanish(review.nomad_time_counts_toward_citizenship))}</li>
+      <li>MINIMUM QUALIFYING YEARS IN THIS CHAIN: ${formatRecordedPeriod({value: review.years_to_citizenship, notes: review.years_to_citizenship === null ? review.notes : null})}</li>
+      <li>REVIEWED: ${escapeHtml(review.reviewed_at)}</li>
+    </ul>
+    <p class="explain">Qualifying residence excludes application processing and any optional initial stay. The separate YEARS column preserves the recorded country timeline, which may describe another route.</p>
+    <ul class="detail-list compact">${review.requirements.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    ${review.years_to_citizenship !== null ? `<p class="summary">${escapeHtml(review.notes)}</p>` : ""}
     ${formatSourceIds(review.source_ids)}` : ""}
   </div>`;
 }

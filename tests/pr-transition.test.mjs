@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 import { nomadPrTransition } from "../dashboard/pr-transition.js";
-import { digitalNomadCitizenshipStatus, digitalNomadVisaRoute } from "../dashboard/route-semantics.js";
+import { digitalNomadCitizenshipStatus, digitalNomadVisaRoute, hasDigitalNomadVisa, hasRecordedNomadRoute, nomadRouteAvailability } from "../dashboard/route-semantics.js";
 import { prTransitionSchema } from "../scripts/pr-transition-schema.mjs";
 import { validISODate, validateDatasetDocument } from "../scripts/validate-dataset.mjs";
 
@@ -35,7 +35,7 @@ function fixture(reviewOverrides = {}) {
   };
 }
 
-test("a separate remote-work PR application is YES even when nomad time does not count and citizenship is NO", () => {
+test("a separate remote-work PR application is YES while missing citizenship evidence remains unknown", () => {
   const data = fixture();
   const transition = nomadPrTransition(data);
   assert.equal(transition.status, "confirmed");
@@ -43,7 +43,7 @@ test("a separate remote-work PR application is YES even when nomad time does not
   assert.equal(transition.review, data.digital_nomad_pr_transition);
   assert.equal(transition.review.nomad_time_counts_toward_pr, false);
   assert.equal(transition.review.requires_exit, true);
-  assert.equal(digitalNomadCitizenshipStatus(data), "no");
+  assert.equal(digitalNomadCitizenshipStatus(data), "unconfirmed");
 });
 
 test("conditional and unconfirmed PR paths retain their distinctions from YES and NO", () => {
@@ -104,21 +104,39 @@ test("contradictory confirmed PR claims cannot become YES in an uploaded dataset
   }
 });
 
+test("an unconfirmed initial programme cannot turn a confirmed PR claim into YES", () => {
+  const data = fixture();
+  data.best_routes[0].availability = {
+    value: "unconfirmed", source_ids: ["PR_LAW"], notes: "The legal route exists but the application channel is unverified."
+  };
+  assert.equal(hasRecordedNomadRoute(data), true);
+  assert.equal(hasDigitalNomadVisa(data), false);
+  assert.equal(nomadPrTransition(data).label, "UNK");
+  assert.equal(nomadPrTransition(data).review, null);
+  data.digital_nomad_pr_transition.status = "conditional";
+  assert.equal(nomadPrTransition(data).label, "CND");
+  assert.equal(nomadPrTransition(data).review, data.digital_nomad_pr_transition);
+});
+
 test("the research schema uses the same PR review definition as generated requests", () => {
   assert.deepEqual(countrySchema.properties.digital_nomad_pr_transition, prTransitionSchema);
 });
 
-test("every one of the 49 current nomad countries has a dated, cited review of its displayed route", () => {
-  const nomadCountries = dataset.results.filter(item => digitalNomadVisaRoute(item.data));
-  assert.equal(nomadCountries.length, 49);
-  assert.equal(dataset.results.filter(item => item.data.digital_nomad_pr_transition).length, 49);
+test("all 50 nomad candidates, including 48 current programmes, have dated and cited PR reviews", () => {
+  const nomadCountries = dataset.results.filter(item => hasRecordedNomadRoute(item.data));
+  assert.equal(nomadCountries.length, 50);
+  assert.equal(nomadCountries.filter(item => hasDigitalNomadVisa(item.data)).length, 48);
+  assert.equal(dataset.results.filter(item => item.data.digital_nomad_pr_transition).length, 50);
   for (const { country, data } of nomadCountries) {
     const review = data.digital_nomad_pr_transition;
     assert.ok(review, country);
     assert.equal(nomadPrTransition(data).review, review, `${country}: review must be usable without a fallback`);
     assert.ok(validISODate(review.reviewed_at), `${country}: review date`);
     assert.ok(review.reviewed_route_names.includes(digitalNomadVisaRoute(data).route_name), country);
-    if (review.status === "confirmed") assert.equal(review.remote_work_profile_supported, true, country);
+    if (review.status === "confirmed") {
+      assert.equal(review.remote_work_profile_supported, true, country);
+      assert.equal(nomadRouteAvailability(data), "current", country);
+    }
     for (const id of review.source_ids) {
       const source = data.sources.find(source => source.id === id);
       assert.ok(source, `${country}: ${id}`);
@@ -127,14 +145,24 @@ test("every one of the 49 current nomad countries has a dated, cited review of i
   }
 });
 
-test("Uruguay has a confirmed separate PR application while its nomad citizenship label stays NO", () => {
+test("uncertain Cabo Verde and Saint Kitts retain their reviewed PR decisions", () => {
+  for (const [name, label] of [["Cabo Verde", "CND"], ["Saint Kitts and Nevis", "UNK"]]) {
+    const { data } = dataset.results.find(item => item.country === name);
+    assert.equal(nomadRouteAvailability(data), "unconfirmed", name);
+    assert.equal(hasDigitalNomadVisa(data), false, name);
+    assert.equal(nomadPrTransition(data).label, label, name);
+    assert.equal(nomadPrTransition(data).review, data.digital_nomad_pr_transition, name);
+  }
+});
+
+test("Uruguay has both PR and citizenship through a confirmed separate application", () => {
   const { data } = dataset.results.find(item => item.country === "Uruguay");
   const transition = nomadPrTransition(data);
   assert.equal(transition.label, "YES");
   assert.equal(transition.review.pathway_type, "separate_application");
   assert.equal(transition.review.nomad_time_counts_toward_pr, false);
   assert.equal(transition.review.remote_work_profile_supported, true);
-  assert.equal(digitalNomadCitizenshipStatus(data), "no");
+  assert.equal(digitalNomadCitizenshipStatus(data), "yes");
 });
 
 test("the dataset validator rejects malformed and contradictory PR review fields", () => {

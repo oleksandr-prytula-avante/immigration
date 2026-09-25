@@ -458,6 +458,38 @@
             "items": {
               "type": "string"
             }
+          },
+          "availability": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "type": "string",
+                "enum": [
+                  "current",
+                  "pending",
+                  "not_available",
+                  "unconfirmed"
+                ]
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "notes": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "value",
+              "source_ids",
+              "notes"
+            ]
           }
         },
         "required": [
@@ -865,6 +897,38 @@
             "items": {
               "type": "string"
             }
+          },
+          "availability": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "value": {
+                "type": "string",
+                "enum": [
+                  "current",
+                  "pending",
+                  "not_available",
+                  "unconfirmed"
+                ]
+              },
+              "source_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "notes": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "value",
+              "source_ids",
+              "notes"
+            ]
           }
         },
         "required": [
@@ -2913,6 +2977,141 @@
         "summary",
         "requirements",
         "source_ids",
+        "reviewed_at",
+        "notes"
+      ]
+    },
+    "digital_nomad_citizenship_review": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "reviewed_route_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "conditional",
+            "unconfirmed",
+            "not_available"
+          ]
+        },
+        "qualifying_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "remote_work_profile_supported": {
+          "type": [
+            "boolean",
+            "string"
+          ],
+          "enum": [
+            true,
+            false,
+            "uncertain"
+          ]
+        },
+        "requires_status_switch": {
+          "type": [
+            "boolean",
+            "string"
+          ],
+          "enum": [
+            true,
+            false,
+            "uncertain"
+          ]
+        },
+        "requires_exit": {
+          "type": [
+            "boolean",
+            "string"
+          ],
+          "enum": [
+            true,
+            false,
+            "uncertain"
+          ]
+        },
+        "requires_permanent_residence": {
+          "type": [
+            "boolean",
+            "string"
+          ],
+          "enum": [
+            true,
+            false,
+            "uncertain"
+          ]
+        },
+        "nomad_time_counts_toward_citizenship": {
+          "type": [
+            "boolean",
+            "string"
+          ],
+          "enum": [
+            true,
+            false,
+            "uncertain"
+          ]
+        },
+        "years_to_citizenship": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "summary": {
+          "type": "string"
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "citizenship_source_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reviewed_at": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "reviewed_route_names",
+        "status",
+        "qualifying_status",
+        "remote_work_profile_supported",
+        "requires_status_switch",
+        "requires_exit",
+        "requires_permanent_residence",
+        "nomad_time_counts_toward_citizenship",
+        "years_to_citizenship",
+        "summary",
+        "requirements",
+        "source_ids",
+        "citizenship_source_ids",
         "reviewed_at",
         "notes"
       ]

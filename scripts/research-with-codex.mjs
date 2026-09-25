@@ -222,7 +222,9 @@ export async function readValidCheckpoint(file, country, minimumModifiedAt = 0) 
 export function validateCountryResult(country, result, options = {}) {
   const validation = validateDatasetDocument({ results: [{ country, status: "ok", data: result }] }, [country], {
     minimumSources: options.minimumSources ?? minimumSources,
-    requireNomadPrReview: true
+    requireNomadPrReview: true,
+    requireNomadCitizenshipReview: true,
+    requireNomadAvailability: true
   });
   if (!validation.valid) throw new Error(validation.errors.join("\n"));
   if (result.researched_at !== (options.researchDate ?? today)) {

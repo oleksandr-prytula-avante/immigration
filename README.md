@@ -36,7 +36,7 @@ node immigration_research.mjs --model gpt-5.6
 
 The script saves results after each country, so it is safe to stop and restart.
 With `--force`, each country is researched again and compared with its existing
-record. Every country must have at least 10 distinct source URLs; records that
+record. The current dataset requires at least 15 distinct source URLs per country; records that
 still contain unresolved markers receive a focused second pass with at least 5
 additional sources and must finish with at least 15 distinct source URLs.
 
@@ -65,7 +65,11 @@ Click `UPLOAD JSON` and select the result file, for example:
 data/immigration-research.json
 ```
 
-The dashboard defaults to recorded digital-nomad or equivalent remote-work routes.
+The dashboard defaults to currently available digital-nomad or equivalent remote-work routes.
+Every typed nomad route has a sourced `availability` assessment: current, pending,
+not_available or unconfirmed. The uncertain-availability filter keeps recorded
+programmes with unresolved operation separate from unavailable routes and research
+errors. Availability is independent of PR and CIT.
 It supports country/text search, official-language filtering, citizenship categories,
 unconditional jus soli, maximum income/tax/citizenship-year limits, and sortable
 columns. Filters, sorting, and selected country are preserved in the URL; uploaded
@@ -73,12 +77,18 @@ files remain local to the current page and are not embedded in that URL.
 
 Maximum filters exclude unknown values. Numeric sorting keeps unknown values last
 in both directions. Summary cards describe the entire loaded dataset. TOP TAX is a
-screening rate, not an effective tax estimate. Citizenship YES requires a cited path
-for the displayed route; a separate residence route does not qualify that visa.
+screening rate, not an effective tax estimate. PR PATH and CIT evaluate complete
+chains for foreign remote work, including independently eligible successor statuses,
+separate applications and exit/reentry. The initial nomad period need not count.
+CIT has its own final nationality-law evidence; PR alone never implies citizenship.
+Both use YES / CND / UNK / NO, plus N/A for no current or availability-unconfirmed nomad candidate and ERR for failed
+research. Citizenship filters do not turn uncertainty into a negative legal claim.
+The canonical CIT field is `digital_nomad_citizenship_review`; old exports without
+a complete cited chain display UNK. Legacy URLs are mapped to the new filters.
 PR PATH separately shows whether a recorded nomad/remote-worker route can be followed
 by permanent residence while keeping foreign remote work. A separate application or
 exit is acceptable; nomad time need not count. YES requires a sourced pathway for
-that profile. CND needs additional eligibility, UNK lacks sufficient evidence, and
+that profile. CND needs additional eligibility, potentially outside the requested profile; UNK lacks sufficient evidence, and
 NO means no supported PR pathway; hover over a label for its full meaning. The country details show the successor,
 conditions, residence clock, exit requirement, sources and review date. The JSON field
 is `digital_nomad_pr_transition`; older exports without it display UNK.
@@ -101,9 +111,11 @@ checks too.
 
 ## Supabase database
 
-The migration creates normalized country, route, and source tables, an immutable
+Ordered, tracked migrations create normalized country, route, and source tables, an immutable
 snapshot history, and a read-only `country_dashboard` view. The complete country
-record is also retained in `countries.data` as `jsonb`.
+record is also retained in `countries.data` as `jsonb`. Canonical PR/CIT decisions and
+chain-specific citizenship years have separate database columns; recorded country
+years remain independent. `npm run db:migrate` applies pending migrations once.
 
 Copy the Postgres connection string from Supabase (`Connect` > `Session pooler`)
 and save it in `.env`. Keep this value server-side and never add it to dashboard

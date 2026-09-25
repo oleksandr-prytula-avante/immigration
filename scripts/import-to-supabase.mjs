@@ -25,6 +25,7 @@ async function main() {
   if (!validation.valid) {
     throw new Error(`Dataset validation failed:\n${validation.errors.join("\n")}`);
   }
+  const nomadProjection = currentNomadProjectionSummary(document);
 
   if (args.validateOnly) {
     const okCount = results.filter((item) => item.status === "ok").length;
@@ -67,9 +68,9 @@ async function main() {
     }
     console.log(
       `valid dataset: ${results.length} countries; ${okCount} ok; ${routeCount} routes; ` +
-      `${sourceCount} source links; ${validation.summary.digital_nomad_visas} digital-nomad visas ` +
-      `(${validation.summary.digital_nomad_visas_with_citizenship} citizenship yes, ` +
-      `${validation.summary.digital_nomad_visas_without_citizenship} no)`
+      `${sourceCount} source links; ${nomadProjection.digitalNomadVisas} digital-nomad visas ` +
+      `(citizenship: ${Object.entries(nomadProjection.citizenshipStatuses)
+        .map(([status, count]) => `${count} ${status}`).join(", ") || "none"})`
     );
     return;
   }
@@ -111,7 +112,7 @@ async function main() {
       routes: routeCount,
       sourceLinks: sourceLinkCount,
       snapshots: results.length,
-      digitalNomadVisas: validation.summary.digital_nomad_visas
+      ...nomadProjection
     });
     await client.query("commit");
 
@@ -125,7 +126,18 @@ async function main() {
   }
 }
 
-async function verifyImport(db, runId, expected) {
+export function currentNomadProjectionSummary(document) {
+  // Match the verification SQL's dnv_available IS TRUE scope for both reviews.
+  // Candidates whose programme availability is unresolved remain stored as null.
+  const rows = normalizeResults(document).filter(row => row.valid === true);
+  const statuses = key => rows.reduce((counts, row) => {
+    counts[row[key].status] = (counts[row[key].status] || 0) + 1;
+    return counts;
+  }, {});
+  return { digitalNomadVisas: rows.length, citizenshipStatuses: statuses("nomadTransition"), prStatuses: statuses("prTransition") };
+}
+
+export async function verifyImport(db, runId, expected) {
   const result = await db.query(
     `select
        (select count(*)::integer from public.countries where last_run_id = $1) as countries,
@@ -136,7 +148,17 @@ async function verifyImport(db, runId, expected) {
        (select count(*)::integer from public.country_sources where run_id = $1) as source_links,
        (select count(*)::integer from public.country_snapshots where run_id = $1) as snapshots,
        (select count(*)::integer from public.countries
-         where last_run_id = $1 and dnv_available is true) as digital_nomad_visas`,
+         where last_run_id = $1 and dnv_available is true) as digital_nomad_visas,
+       (select coalesce(jsonb_object_agg(status, count), '{}'::jsonb) from (
+         select nomad_citizenship_status as status, count(*)::integer as count
+         from public.countries where last_run_id = $1 and dnv_available is true
+         group by nomad_citizenship_status
+       ) counts) as citizenship_statuses,
+       (select coalesce(jsonb_object_agg(status, count), '{}'::jsonb) from (
+         select nomad_pr_status as status, count(*)::integer as count
+         from public.countries where last_run_id = $1 and dnv_available is true
+         group by nomad_pr_status
+       ) counts) as pr_statuses`,
     [runId]
   );
   const actual = result.rows[0];
@@ -147,6 +169,11 @@ async function verifyImport(db, runId, expected) {
     ["snapshots", Number(actual.snapshots), expected.snapshots],
     ["digital-nomad visas", Number(actual.digital_nomad_visas), expected.digitalNomadVisas]
   ].filter(([, value, expectedValue]) => value !== expectedValue);
+  const orderedCounts = counts => JSON.stringify(Object.entries(counts || {}).sort(([a], [b]) => a.localeCompare(b)));
+  for (const [label, stored, wanted] of [["citizenship statuses", actual.citizenship_statuses, expected.citizenshipStatuses],
+    ["PR statuses", actual.pr_statuses, expected.prStatuses]]) {
+    if (orderedCounts(stored) !== orderedCounts(wanted)) mismatches.push([label, orderedCounts(stored), orderedCounts(wanted)]);
+  }
 
   if (mismatches.length) {
     throw new Error(
@@ -208,7 +235,10 @@ export async function upsertCountry(db, item, runId) {
     countUnresolved(data),
     textValue(data.selection_summary),
     JSON.stringify(data),
-    runId
+    runId,
+    dashboard.nomadTransition.status,
+    dashboard.prTransition.status,
+    numberValue(dashboard.nomadTransition.review?.years_to_citizenship)
   ];
 
   const result = await db.query(
@@ -217,10 +247,11 @@ export async function upsertCountry(db, item, runId) {
        citizenship_track_strength, settlement_classification, regular_remote_work_fit,
        minimum_income_usd_monthly, top_tax_rate_percent, years_to_citizenship,
        passport_rank, visa_free_destinations, average_salary_usd_monthly, confidence,
-       source_count, unresolved_field_count, selection_summary, data, last_run_id
+       source_count, unresolved_field_count, selection_summary, data, last_run_id,
+       nomad_citizenship_status, nomad_pr_status, nomad_citizenship_years
      ) values (
        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
-       $17, $18, $19, $20, $21::jsonb, $22
+       $17, $18, $19, $20, $21::jsonb, $22, $23, $24, $25
      )
      on conflict (name) do update set
        status = excluded.status,
@@ -243,7 +274,10 @@ export async function upsertCountry(db, item, runId) {
        unresolved_field_count = excluded.unresolved_field_count,
        selection_summary = excluded.selection_summary,
        data = excluded.data,
-       last_run_id = excluded.last_run_id
+       last_run_id = excluded.last_run_id,
+       nomad_citizenship_status = excluded.nomad_citizenship_status,
+       nomad_pr_status = excluded.nomad_pr_status,
+       nomad_citizenship_years = excluded.nomad_citizenship_years
      returning id`,
     values
   );
@@ -314,7 +348,7 @@ export async function replaceSources(db, countryId, runId, sources) {
        title = excluded.title,
        publisher = coalesce(excluded.publisher, public.sources.publisher),
        source_type = coalesce(excluded.source_type, public.sources.source_type),
-       accessed_at = coalesce(excluded.accessed_at, public.sources.accessed_at),
+       accessed_at = greatest(excluded.accessed_at, public.sources.accessed_at),
        data = excluded.data
      returning id, url`,
     values

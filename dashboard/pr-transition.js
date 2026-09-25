@@ -1,4 +1,4 @@
-import { digitalNomadVisaRoute } from "./route-semantics.js";
+import { digitalNomadVisaRoute, nomadRouteAvailability } from "./nomad-route.js";
 
 const statuses = new Map([
   ["confirmed", { label: "YES", fullLabel: "Confirmed PR path", tone: "good", rank: 1 }],
@@ -29,7 +29,7 @@ export function nomadPrTransition(data) {
   const routeNames = [...(Array.isArray(data?.best_routes) ? data.best_routes : []),
     ...(Array.isArray(data?.rejected_routes) ? data.rejected_routes : [])].map(item => item?.route_name);
   const valid = validReviewShape(review) && statuses.has(review.status) &&
-    (review.status !== "confirmed" || (review.remote_work_profile_supported === true &&
+    (review.status !== "confirmed" || (nomadRouteAvailability(data) === "current" && review.remote_work_profile_supported === true &&
       typeof review.qualifying_status === "string" && review.qualifying_status.trim() &&
       ["direct_residence_clock", "status_switch", "separate_application"].includes(review.pathway_type))) &&
     (review.pathway_type !== "direct_residence_clock" || review.nomad_time_counts_toward_pr === true) &&

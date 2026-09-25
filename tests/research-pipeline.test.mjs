@@ -25,6 +25,9 @@ test("both research generators reject uncited claims and missing PR evidence bef
     const noReview = fixture();
     delete noReview.digital_nomad_pr_transition;
     assert.throws(() => validate("Uruguay", noReview), /requires a PR review/);
+    const noAvailability = fixture();
+    for (const route of [...noAvailability.best_routes, ...noAvailability.rejected_routes]) delete route.availability;
+    assert.throws(() => validate("Uruguay", noAvailability), /requires a cited availability review/);
   }
 });
 
@@ -38,6 +41,9 @@ test("partial refresh preserves the full research date and recomputes PR coverag
   assert.equal(state.meta.status, "in_progress");
   assert.equal(state.meta.completed_countries, 192);
   assert.ok(!state.meta.digital_nomad_pr_review.countries.includes("Uruguay"));
+  assert.ok(!state.meta.digital_nomad_availability_review.countries.includes("Uruguay"));
+  assert.equal(state.meta.digital_nomad_availability_review.route_count, 78);
+  assert.equal(state.meta.digital_nomad_availability_review.reviewed_at, document.meta.digital_nomad_availability_review.reviewed_at);
   state.results.find(item => item.country === "Spain").data.digital_nomad_pr_transition = null;
   refreshResearchMetadata(state, countries);
   assert.equal(state.meta.digital_nomad_pr_review, undefined);

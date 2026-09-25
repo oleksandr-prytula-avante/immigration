@@ -11,13 +11,13 @@ test('every table row agrees with canonical citizenship classification', () => {
   assert.equal(rows.length, 193);
   for (const row of rows) {
     const confirmed = digitalNomadCitizenshipStatus(row.data) === 'yes';
-    assert.equal(row.nomadTransition.status === 'direct', confirmed, row.country);
+    assert.equal(row.nomadTransition.status === 'confirmed', confirmed, row.country);
     assert.equal(row.citizenshipCategory, digitalNomadCitizenshipCategory(row.data), row.country);
   }
 });
 
 test('citizenship years retain captured values independently of visa and citizenship status', () => {
-  for (const [country, years, citizenshipLabel] of [['Estonia', 8, 'NO'], ['Uruguay', 5, 'NO'], ['Austria', 10, 'N/A']]) {
+  for (const [country, years, citizenshipLabel] of [['Estonia', 8, 'CND'], ['Uruguay', 5, 'YES'], ['Austria', 10, 'N/A']]) {
     const row = rows.find(row => row.country === country);
     assert.equal(row.citizenshipYears, years, country);
     assert.equal(row.nomadTransition.label, citizenshipLabel, country);
@@ -43,6 +43,22 @@ test('maximum filters exclude missing values and include captured timelines rega
   assert.ok(withinFiveYears.some(row => row.country === 'Uruguay'));
   assert.ok(!withinFiveYears.some(row => row.country === 'Estonia' || row.country === 'Argentina'));
   assert.ok(rows.filter(row => matchesMaximum(row.income, 3500)).every(row => Number.isFinite(row.income)));
+});
+
+test('explicit unknown timeline and country tax do not borrow numbers from a different basis', () => {
+  const [row] = normalizeResults([{country:'Example',
+    timeline:{total_years_to_citizenship:{value:null,notes:'A complete total depends on the successor.'}},
+    settlement_track:{years_to_citizenship:5},
+    taxes:{taxation_system:{top_personal_income_tax_rate_percent:{value:null}},digital_nomad_taxation:{top_or_screening_pit_rate_percent:{value:0}}}
+  }]);
+  assert.equal(row.citizenshipYears, null);
+  assert.equal(row.citizenshipYearsText, 'A complete total depends on the successor.');
+  assert.equal(row.tax, null);
+  assert.equal(matchesMaximum(row.citizenshipYears, 5), false);
+  assert.equal(matchesMaximum(row.tax, 0), false);
+  const [legacy] = normalizeResults([{country:'Legacy',settlement_track:{years_to_citizenship:5},taxes:{income_tax_rate_percent:{value:0}}}]);
+  assert.equal(legacy.citizenshipYears, 5);
+  assert.equal(legacy.tax, 0);
 });
 
 test('numeric sorts keep missing values last both ways and compare missing pairs equally', () => {
@@ -72,7 +88,7 @@ test('invalid uploads fail before normalization can replace the dashboard', () =
 test('legacy nomad status cannot contradict canonical visa existence', () => {
   const [row] = normalizeResults([{country:'Example',nomad_status:{status:'direct'}}]);
   assert.equal(row.valid, false);
-  assert.equal(row.nomadTransition.status, 'no_nomad_route');
+  assert.equal(row.nomadTransition.status, 'not_applicable');
 });
 
 test('source and application links permit only credential-free HTTP(S) URLs', () => {

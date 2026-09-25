@@ -36,7 +36,7 @@ async function dashboard(query = '', fetchData = async () => ({ok:true,json:asyn
 
 test('ALL survives a copied URL, selected country and sort are restored', async () => {
   const first = await dashboard();
-  assert.equal(first.el('#visibleCount').textContent, '49');
+  assert.equal(first.el('#visibleCount').textContent, '48');
   first.change('#validFilter','all');
   first.el('th[data-sort="country"] button').click();
   first.el('tr[data-country="Spain"] button').click();
@@ -60,18 +60,38 @@ test('numeric filter and descending sort produce consistent rendered rows', asyn
   ui.el('th[data-sort="income"] button').click();
   assert.equal(ui.el('#countryRows tr').dataset.country, 'Thailand');
   assert.equal(ui.el('th[data-sort="income"]').getAttribute('aria-sort'), 'descending');
-  ui.change('#prCitFilter', 'category:no_visa');
+  ui.change('#prCitFilter', 'not_applicable');
   assert.equal(ui.el('#validFilter').value, 'all');
-  assert.equal(ui.el('#visibleCount').textContent, '144');
+  assert.equal(ui.el('#visibleCount').textContent, '143');
   ui.dom.window.close();
 });
 
-test('PR PATH confirms Uruguay independently of CIT and restores the confirmed filter from its URL', async () => {
+test('uncertain programme availability is separate from NO and survives copied URLs', async () => {
+  const ui = await dashboard();
+  assert.equal(ui.el('tr[data-country="Cabo Verde"]'), null);
+  ui.change('#validFilter', 'uncertain');
+  const names = page => [...page.dom.window.document.querySelectorAll('#countryRows tr[data-country]')].map(row => row.dataset.country).sort();
+  assert.deepEqual(names(ui), ['Cabo Verde', 'Saint Kitts and Nevis']);
+  assert.equal(ui.el('tr[data-country="Cabo Verde"] .nomad-col').textContent.trim(), 'CND');
+  assert.equal(ui.el('tr[data-country="Saint Kitts and Nevis"] .pr-col').textContent.trim(), 'UNK');
+  const query = ui.dom.window.location.search;
+  ui.dom.window.close();
+  const restored = await dashboard(query);
+  assert.equal(restored.el('#validFilter').value, 'uncertain');
+  assert.deepEqual(names(restored), ['Cabo Verde', 'Saint Kitts and Nevis']);
+  restored.change('#validFilter', 'false');
+  assert.equal(restored.el('#visibleCount').textContent, '143');
+  assert.ok(!names(restored).includes('Cabo Verde'));
+  assert.deepEqual(restored.errors, []);
+  restored.dom.window.close();
+});
+
+test('Uruguay PR and CIT include the separate permanent-residence chain and restores the confirmed filter from its URL', async () => {
   const ui = await dashboard();
   assert.equal(ui.el('th[data-sort="prPath"] button').textContent, 'PR PATH');
   const uruguay = ui.el('tr[data-country="Uruguay"]');
   assert.equal(uruguay.querySelector('.pr-col').textContent.trim(), 'YES');
-  assert.equal(uruguay.querySelector('.nomad-col').textContent.trim(), 'NO');
+  assert.equal(uruguay.querySelector('.nomad-col').textContent.trim(), 'YES');
   const conditionalPill = ui.el('tr[data-country="Estonia"] .pr-col .pill');
   assert.equal(conditionalPill.textContent, 'CND');
   assert.match(conditionalPill.title, /Conditional/);
@@ -110,7 +130,7 @@ test('PR PATH confirms Uruguay independently of CIT and restores the confirmed f
 test('YEARS displays captured timelines with unchanged CIT labels and uses them for filtering and sorting', async () => {
   const ui = await dashboard('?dnv=all');
   const argentinaNotes = dataset.results.find(item => item.country === 'Argentina').data.timeline.total_years_to_citizenship.notes;
-  for (const [country, years, citizenship] of [['Estonia', '8 YRS', 'NO'], ['Uruguay', '5 YRS', 'NO'], ['Austria', '10 YRS', 'N/A'], ['Argentina', argentinaNotes, 'NO']]) {
+  for (const [country, years, citizenship] of [['Estonia', '8 YRS', 'CND'], ['Uruguay', '5 YRS', 'YES'], ['Austria', '10 YRS', 'N/A'], ['Argentina', argentinaNotes, 'CND']]) {
     const row = ui.el(`tr[data-country="${country}"]`);
     assert.equal(row.cells[4].textContent.trim(), citizenship, country);
     assert.equal(row.cells[5].textContent.trim(), years, country);
@@ -211,7 +231,7 @@ test('failed upload does not cancel an in-flight valid default dataset', async (
   resolveFetch({ok:true,json:async()=>dataset});
   await tick();
   assert.equal(ui.el('#metricTotal').textContent, '193');
-  assert.equal(ui.el('#visibleCount').textContent, '49');
+  assert.equal(ui.el('#visibleCount').textContent, '48');
   ui.dom.window.close();
 });
 
@@ -219,8 +239,8 @@ test('failed research is unknown and never classified as no visa', async () => {
   const ui = await dashboard('?dnv=all');
   await ui.upload([{country:'Failed',status:'error',error:{message:'Network failure'}}]);
   assert.match(ui.el('#countryRows').textContent, /RESEARCH ERROR/);
-  assert.match(ui.el('#countryRows').textContent, /UNKNOWN/);
-  ui.change('#prCitFilter','category:no_visa');
+  assert.match(ui.el('#countryRows').textContent, /ERR/);
+  ui.change('#prCitFilter','not_applicable');
   assert.equal(ui.el('#visibleCount').textContent, '0');
   ui.change('#prCitFilter','all');
   ui.change('#validFilter','error');
