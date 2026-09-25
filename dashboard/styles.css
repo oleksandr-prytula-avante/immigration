@@ -239,6 +239,10 @@ th {
   max-width: none;
 }
 
+th[data-sort="country"] {
+  width: 14%;
+}
+
 .income-col,
 .route-col {
   width: 20%;
