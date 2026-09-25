@@ -109,3 +109,42 @@ test("missing citizenship citations fail validation even after the UI downgrades
   assert.equal(result.valid, false);
   assert.match(result.errors.join("\n"), /requires cited route citizenship evidence/);
 });
+
+function prFixture() {
+  const item = structuredClone(document.results.find(item => item.country === "Uruguay"));
+  return { input: { results: [item] }, item, review: item.data.digital_nomad_pr_transition };
+}
+
+test("PR review rejects unsupported remote eligibility, credit and route claims", () => {
+  for (const [mutate, pattern] of [
+    [review => { review.remote_work_profile_supported = false; }, /confirmed requires/],
+    [review => { review.pathway_type = "no_permanent_residence"; }, /confirmed requires/],
+    [review => { review.qualifying_status = null; }, /confirmed requires/],
+    [review => { review.pathway_type = "direct_residence_clock"; review.nomad_time_counts_toward_pr = false; }, /requires confirmed nomad residence credit/],
+    [review => { review.reviewed_route_names.push("Unrelated nonexistent route"); }, /reviewed_route_names/],
+    [review => { review.source_ids = []; }, /requires cited PR evidence/],
+    [review => { review.source_ids = ["missing_pr_evidence"]; }, /references missing source ID/],
+    [review => { review.reviewed_at = "2026-02-30"; }, /reviewed_at must be a valid/],
+    [review => { review.notes = {}; }, /notes must be string/]
+  ]) {
+    const { input, item, review } = prFixture();
+    mutate(review);
+    assert.match(validateDatasetDocument(input, [item.country]).errors.join("\n"), pattern);
+  }
+});
+
+test("complete PR review metadata requires coverage of every recorded nomad country", () => {
+  const input = structuredClone(document);
+  delete input.results.find(item => item.country === "Uruguay").data.digital_nomad_pr_transition;
+  assert.match(validateDatasetDocument(input, countries).errors.join("\n"), /Uruguay: digital nomad PR review is missing/);
+  input.meta.digital_nomad_pr_review.countries.pop();
+  assert.match(validateDatasetDocument(input, countries).errors.join("\n"), /countries must match all current nomad countries/);
+});
+
+test("older exports without PR reviews remain valid, without claiming a completed review", () => {
+  const { input, item } = prFixture();
+  delete item.data.digital_nomad_pr_transition;
+  const result = validateDatasetDocument(input, [item.country]);
+  assert.equal(result.valid, true, result.errors.join("\n"));
+  assert.equal(result.summary.digital_nomad_pr_reviews, 0);
+});

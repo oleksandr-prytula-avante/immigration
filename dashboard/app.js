@@ -17,6 +17,7 @@ const elements = {
   valid: document.querySelector("#validFilter"),
   language: document.querySelector("#languageFilter"),
   prCit: document.querySelector("#prCitFilter"),
+  prPath: document.querySelector("#prPathFilter"),
   jusSoli: document.querySelector("#jusSoliFilter"),
   incomeMax: document.querySelector("#incomeMax"),
   taxMax: document.querySelector("#taxMax"),
@@ -39,7 +40,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     if (state.hasUploadedDataset) return;
-    loadDataset(data, `RESEARCH DATA LOADED · UPDATED ${data.meta?.last_full_research_date ?? data.meta?.updated_at ?? "DATE NOT RECORDED"}`);
+    const prReviewDate = data.meta?.digital_nomad_pr_review?.reviewed_at;
+    loadDataset(data, `RESEARCH DATA LOADED · FULL RESEARCH ${data.meta?.last_full_research_date ?? "DATE NOT RECORDED"}${prReviewDate ? ` · NOMAD → PR REVIEW ${prReviewDate}` : ""}`);
   } catch (error) {
     if (state.hasUploadedDataset) return;
     elements.fileStatus.textContent = `COULD NOT LOAD DEFAULT DATA: ${error.message}. UPLOAD A RESULT JSON FILE.`;
@@ -70,6 +72,7 @@ function bindEvents() {
     elements.valid,
     elements.language,
     elements.prCit,
+    elements.prPath,
     elements.jusSoli,
     elements.incomeMax,
     elements.taxMax,
@@ -127,6 +130,7 @@ function readUrlState() {
     status: params.get("dnv") ?? params.get("status"),
     language: params.get("language"),
     prCit: params.get("prCit") ?? params.get("nomadTransition"),
+    prPath: params.get("prPath"),
     citCategory: params.get("citCategory"),
     jusSoli: params.get("jusSoli"),
     incomeMax: params.get("incomeMax"),
@@ -149,6 +153,7 @@ function applyUrlStateBeforeData() {
     ? `category:${urlState.citCategory}`
     : urlState.prCit;
   setSelectValue(elements.prCit, citizenshipFilter);
+  setSelectValue(elements.prPath, urlState.prPath);
   if (elements.prCit.value === "category:no_visa" && urlState.status === null) elements.valid.value = "all";
   setSelectValue(elements.jusSoli, urlState.jusSoli);
   setInputValue(elements.incomeMax, urlState.incomeMax);
@@ -187,6 +192,7 @@ function updateUrlState() {
   setUrlParam(params, "dnv", elements.valid.value, "true");
   setUrlParam(params, "language", elements.language.value, "all");
   setUrlParam(params, "prCit", elements.prCit.value, "all");
+  setUrlParam(params, "prPath", elements.prPath.value, "all");
   setUrlParam(params, "jusSoli", elements.jusSoli.value, "all");
   setUrlParam(params, "incomeMax", elements.incomeMax.value);
   setUrlParam(params, "taxMax", elements.taxMax.value);
@@ -228,7 +234,7 @@ function setUrlParam(params, key, value, defaultValue = "") {
 }
 
 function isValidSortKey(key) {
-  return ["country", "valid", "income", "tax", "citizenship", "jusSoli", "citizenshipTrack", "nomadTransition"].includes(key);
+  return ["country", "valid", "income", "tax", "citizenship", "jusSoli", "citizenshipTrack", "nomadTransition", "prPath"].includes(key);
 }
 
 function filteredRows() {
@@ -236,6 +242,7 @@ function filteredRows() {
   const valid = elements.valid.value;
   const language = elements.language.value;
   const prCit = elements.prCit.value;
+  const prPath = elements.prPath.value;
   const jusSoli = elements.jusSoli.value;
   const incomeMax = parseOptionalNumber(elements.incomeMax.value);
   const taxMax = parseOptionalNumber(elements.taxMax.value);
@@ -250,6 +257,8 @@ function filteredRows() {
       row.citizenshipTrack,
       citizenshipTrackLabel(row.citizenshipTrack),
       row.nomadTransition.label,
+      row.prTransition.label,
+      row.prTransition.summary,
       citizenshipCategoryLabel(row.citizenshipCategory),
       row.jusSoli,
       jusSoliLabel(row.jusSoli),
@@ -261,6 +270,7 @@ function filteredRows() {
     if (valid !== "all" && !matchesStatus(row, valid)) return false;
     if (language !== "all" && !matchesLanguage(row, language)) return false;
     if (prCit !== "all" && !matchesCitizenshipFilter(row, prCit)) return false;
+    if (prPath !== "all" && row.prTransition.status !== prPath) return false;
     if (jusSoli !== "all" && jusSoliFilterValue(row.jusSoli) !== jusSoli) return false;
     if (!matchesMaximum(row.income, incomeMax)) return false;
     if (!matchesMaximum(row.tax, taxMax)) return false;
@@ -279,6 +289,7 @@ function compareRows(a, b) {
 }
 
 function compareBySortKey(a, b, key) {
+  if (key === "prPath") return a.prTransition.rank - b.prTransition.rank;
   if (key === "country") return compareCountries(a, b);
   if (key === "valid") return compareStatuses(a, b);
   if (key === "citizenshipTrack") return compareCitizenshipTracks(a, b);
@@ -358,7 +369,7 @@ function renderMetrics() {
 
 function renderTable(rows) {
   if (!rows.length) {
-    elements.rows.innerHTML = '<tr><td colspan="7">NO COUNTRIES MATCH THE SELECTED FILTERS.</td></tr>';
+    elements.rows.innerHTML = '<tr><td colspan="8">NO COUNTRIES MATCH THE SELECTED FILTERS.</td></tr>';
     return;
   }
 
@@ -376,6 +387,7 @@ function renderTable(rows) {
       <td>${escapeHtml(formatTax(row))}</td>
       <td class="nomad-col">${nomadTransitionPill(row.nomadTransition)}</td>
       <td>${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</td>
+      <td class="pr-col" title="${escapeAttr(row.prTransition.summary)}">${nomadTransitionPill(row.prTransition)}</td>
       <td>${jusSoliPill(row.jusSoli)}</td>
     </tr>
   `).join("");
@@ -431,6 +443,8 @@ function renderDetails(visibleRows) {
     ${statusPill(row)}
     <p class="subtext">${escapeHtml(formatResearchQuality(row))}</p>
     <p class="explain">${escapeHtml(formatStatusMeaning(row))}</p>
+
+    ${formatPrReview(row.prTransition)}
 
     <div class="detail-block">
       <h3>COUNTRY OVERVIEW</h3>
@@ -1025,4 +1039,25 @@ function escapeAttr(value) {
 function formatSourceLink(url, title) {
   const safeUrl = safeHttpUrl(url);
   return safeUrl ? `<a href="${escapeAttr(safeUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>` : `<span>${escapeHtml(title)} (INVALID SOURCE URL)</span>`;
+}
+
+function formatPrReview(transition) {
+  const review = transition.review;
+  return `<div class="detail-block">
+    <h3>PERMANENT RESIDENCE AFTER NOMAD</h3>
+    ${nomadTransitionPill(transition)}
+    <p class="summary">${escapeHtml(transition.summary)}</p>
+    ${review ? `<ul class="detail-list">
+      <li>SUCCESSOR STATUS: ${escapeHtml(review.qualifying_status ?? "NO CONFIRMED STATUS")}</li>
+      <li>REMOTE-WORK PROFILE: ${escapeHtml(formatBooleanish(review.remote_work_profile_supported))}</li>
+      <li>STATUS SWITCH: ${escapeHtml(formatBooleanish(review.requires_status_switch))}</li>
+      <li>EXIT REQUIRED: ${escapeHtml(formatBooleanish(review.requires_exit))}</li>
+      <li>NOMAD TIME COUNTS TOWARD PR: ${escapeHtml(formatBooleanish(review.nomad_time_counts_toward_pr))}</li>
+      <li>QUALIFYING YEARS TO PR: ${formatNullable(numberValue(review.years_to_pr), value => `${value} YRS`)}</li>
+      <li>REVIEWED: ${escapeHtml(review.reviewed_at)}</li>
+    </ul>
+    <ul class="detail-list compact">${(Array.isArray(review.requirements) ? review.requirements : []).map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    <p class="summary">${escapeHtml(review.notes)}</p>
+    ${formatSourceIds(review.source_ids)}` : ""}
+  </div>`;
 }

@@ -87,9 +87,19 @@
             <option value="category:no_visa">N/A — NO NOMAD VISA</option>
           </select>
         </label>
+        <label>
+          PR AFTER NOMAD
+          <select id="prPathFilter">
+            <option value="all">ALL</option>
+            <option value="confirmed">YES — CONFIRMED PATH</option>
+            <option value="conditional">CONDITIONAL — EXTRA ELIGIBILITY</option>
+            <option value="unconfirmed">UNCONFIRMED</option>
+            <option value="not_available">NO — NOT AVAILABLE</option>
+          </select>
+        </label>
       </section>
 
-      <p class="filter-help">Maximum filters include known values only. YEARS shows the recorded country timeline, independently of CIT. TOP TAX is the country screening rate, not your effective or nomad-specific rate. JUS SOLI means unconditional birthright citizenship. Summary cards cover the whole dataset.</p>
+      <p class="filter-help">PR PATH: YES means a documented path while keeping foreign remote work, without a local employer, marriage or large investment. Separate applications and exit are allowed; nomad time need not count. CONDITIONAL requires additional eligibility; UNCONFIRMED means insufficient evidence. CIT evaluates the recorded citizenship path. YEARS shows the recorded citizenship timeline independently of CIT. Maximum filters include known values only. TOP TAX is the country screening rate, not your effective or nomad-specific rate. JUS SOLI means unconditional birthright citizenship. Summary cards cover the whole dataset.</p>
 
       <section class="status-row">
         <p id="fileStatus" role="status">LOADING RESEARCH DATA…</p>
@@ -107,6 +117,7 @@
                 <th data-sort="tax" scope="col" aria-sort="none"><button type="button">TOP TAX</button></th>
                 <th class="nomad-col" data-sort="nomadTransition" scope="col" aria-sort="none"><button type="button">CIT</button></th>
                 <th data-sort="citizenship" scope="col" aria-sort="none"><button type="button">YEARS</button></th>
+                <th class="pr-col" data-sort="prPath" scope="col" aria-sort="none"><button type="button">PR PATH</button></th>
                 <th data-sort="jusSoli" scope="col" aria-sort="none"><button type="button">JUS SOLI</button></th>
               </tr>
             </thead>

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import { JSDOM } from 'jsdom';
+import { nomadPrTransition } from '../dashboard/pr-transition.js';
 
 const html = await fs.readFile(new URL('../dashboard/index.html', import.meta.url), 'utf8');
 const dataset = JSON.parse(await fs.readFile(new URL('../dashboard/data/all-countries.json', import.meta.url)));
@@ -63,6 +64,42 @@ test('numeric filter and descending sort produce consistent rendered rows', asyn
   assert.equal(ui.el('#validFilter').value, 'all');
   assert.equal(ui.el('#visibleCount').textContent, '144');
   ui.dom.window.close();
+});
+
+test('PR PATH confirms Uruguay independently of CIT and restores the confirmed filter from its URL', async () => {
+  const ui = await dashboard();
+  assert.equal(ui.el('th[data-sort="prPath"] button').textContent, 'PR PATH');
+  const uruguay = ui.el('tr[data-country="Uruguay"]');
+  assert.equal(uruguay.querySelector('.pr-col').textContent.trim(), 'YES');
+  assert.equal(uruguay.querySelector('.nomad-col').textContent.trim(), 'NO');
+  uruguay.querySelector('button').click();
+  const prDetail = [...ui.dom.window.document.querySelectorAll('#detailsPanel .detail-block')]
+    .find(block => block.querySelector('h3')?.textContent === 'PERMANENT RESIDENCE AFTER NOMAD');
+  assert.ok(prDetail);
+  assert.match(prDetail.textContent, /REMOTE-WORK PROFILE: YES/);
+  assert.match(prDetail.textContent, /NOMAD TIME COUNTS TOWARD PR: NO/);
+
+  ui.change('#prPathFilter', 'confirmed');
+  const expected = dataset.results.filter(item => nomadPrTransition(item.data).status === 'confirmed').map(item => item.country).sort();
+  assert.ok(expected.length > 0);
+  assert.equal(ui.el('#visibleCount').textContent, String(expected.length));
+  const visibleCountries = current => [...current.dom.window.document.querySelectorAll('#countryRows tr[data-country]')].map(row => {
+    assert.equal(row.querySelector('.pr-col').textContent.trim(), 'YES');
+    return row.dataset.country;
+  }).sort();
+  assert.deepEqual(visibleCountries(ui), expected);
+  ui.el('tr[data-country="Uruguay"] button').click();
+  const query = ui.dom.window.location.search;
+  assert.equal(new URLSearchParams(query).get('prPath'), 'confirmed');
+  assert.deepEqual(ui.errors, []);
+  ui.dom.window.close();
+
+  const restored = await dashboard(query);
+  assert.equal(restored.el('#prPathFilter').value, 'confirmed');
+  assert.deepEqual(visibleCountries(restored), expected);
+  assert.equal(restored.el('#detailsPanel h2').textContent, 'Uruguay');
+  assert.deepEqual(restored.errors, []);
+  restored.dom.window.close();
 });
 
 test('YEARS displays captured timelines with unchanged CIT labels and uses them for filtering and sorting', async () => {

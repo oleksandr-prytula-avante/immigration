@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { prTransitionSchema } from "./scripts/pr-transition-schema.mjs";
 
 await loadDotEnv();
 
@@ -1002,6 +1003,7 @@ const countryResearchSchema = {
       }
     },
     settlement_track: settlementTrackSchema,
+    digital_nomad_pr_transition: prTransitionSchema,
     citizenship_track_strength: {
       type: "string",
       enum: ["strong", "possible_with_conversion", "weak_or_uncertain", "none_or_separate_route_required", "none"]
@@ -1029,6 +1031,7 @@ const countryResearchSchema = {
     "labor_market",
     "sources",
     "settlement_track",
+    "digital_nomad_pr_transition",
     "citizenship_track_strength",
     "regular_foreign_contract_remote_work_fit",
     "fully_matched",

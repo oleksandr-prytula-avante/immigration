@@ -1,4 +1,5 @@
 import { digitalNomadCitizenshipCategory, digitalNomadCitizenshipStatus, digitalNomadVisaRoute } from "./route-semantics.js";
+import { nomadPrTransition } from "./pr-transition.js";
 
 // Validate before replacing the displayed dataset, including partial research exports.
 function datasetResults(json) {
@@ -63,6 +64,9 @@ function normalizeResults(json) {
       citizenshipTrack: data.settlement_track?.classification ?? "missing",
       citizenshipCategory: failed ? "research_error" : digitalNomadCitizenshipCategory(data),
       nomadTransition,
+      prTransition: failed
+        ? { status: "research_error", label: "UNKNOWN", tone: "warn", rank: 6, summary: "Research failed.", review: null }
+        : nomadPrTransition(data),
       languages: data.languages?.official_languages ?? [],
       jusSoli: failed ? null : normalizeJusSoli(data.child_citizenship),
       income: numberValue(nomadRoute?.minimum_monthly_income_usd),

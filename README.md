@@ -75,6 +75,14 @@ Maximum filters exclude unknown values. Numeric sorting keeps unknown values las
 in both directions. Summary cards describe the entire loaded dataset. TOP TAX is a
 screening rate, not an effective tax estimate. Citizenship YES requires a cited path
 for the displayed route; a separate residence route does not qualify that visa.
+PR PATH separately shows whether a recorded nomad/remote-worker route can be followed
+by permanent residence while keeping foreign remote work. A separate application or
+exit is acceptable; nomad time need not count. YES requires a sourced pathway for
+that profile. CONDITIONAL needs additional eligibility, UNCONFIRMED lacks sufficient
+evidence, and NO means no supported PR pathway. The country details show the successor,
+conditions, residence clock, exit requirement, sources and review date. The JSON field
+is `digital_nomad_pr_transition`; older exports without it display UNCONFIRMED.
+
 YEARS displays the recorded country timeline regardless of CIT status, including
 general or alternative-route timelines. The details panel preserves their notes
 and conditions. Missing numeric timelines remain NOT FOUND.
