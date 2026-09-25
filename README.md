@@ -95,8 +95,9 @@ is `digital_nomad_pr_transition`; older exports without it display UNK.
 
 YEARS displays the recorded country timeline regardless of CIT status, including
 general or alternative-route timelines. When a numeric total is absent, YEARS
-shows the original recorded explanation, with the full text in the tooltip and
-country details. Sorting and maximum-year filters continue to use numeric totals
+shows short explanations inline and explanations longer than 60 characters as an
+info icon. Hover over the icon for the full text, or click it to open the country
+details. Sorting and maximum-year filters continue to use numeric totals
 only; they do not extract or invent a number from the explanation.
 
 Run the full checks before publishing:

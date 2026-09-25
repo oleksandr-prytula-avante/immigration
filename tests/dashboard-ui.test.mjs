@@ -130,11 +130,19 @@ test('Uruguay PR and CIT include the separate permanent-residence chain and rest
 test('YEARS displays captured timelines with unchanged CIT labels and uses them for filtering and sorting', async () => {
   const ui = await dashboard('?dnv=all');
   const argentinaNotes = dataset.results.find(item => item.country === 'Argentina').data.timeline.total_years_to_citizenship.notes;
-  for (const [country, years, citizenship] of [['Estonia', '8 YRS', 'CND'], ['Uruguay', '5 YRS', 'YES'], ['Austria', '10 YRS', 'N/A'], ['Argentina', argentinaNotes, 'CND']]) {
+  for (const [country, years, citizenship] of [['Estonia', '8 YRS', 'CND'], ['Uruguay', '5 YRS', 'YES'], ['Austria', '10 YRS', 'N/A'], ['Argentina', '', 'CND']]) {
     const row = ui.el(`tr[data-country="${country}"]`);
     assert.equal(row.cells[4].textContent.trim(), citizenship, country);
     assert.equal(row.cells[5].textContent.trim(), years, country);
   }
+  const timelineIcon = ui.el('tr[data-country="Argentina"] .years-col button.timeline-note-icon');
+  assert.ok(timelineIcon.querySelector('svg'));
+  assert.equal(timelineIcon.title, argentinaNotes);
+  assert.equal(timelineIcon.getAttribute('aria-label'), `Citizenship timeline for Argentina: ${argentinaNotes}`);
+  assert.equal(timelineIcon.getAttribute('aria-controls'), 'detailsPanel');
+  timelineIcon.click();
+  assert.equal(ui.el('#detailsPanel h2').textContent, 'Argentina');
+  assert.ok(ui.el('#detailsPanel').textContent.includes(argentinaNotes));
   ui.change('#citizenshipMax', '5');
   assert.ok(ui.el('tr[data-country="Uruguay"]'));
   assert.equal(ui.el('tr[data-country="Estonia"]'), null);

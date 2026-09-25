@@ -578,6 +578,24 @@ th[aria-sort="descending"] button::after { content: " ↓"; }
 
 .pr-col { width: 86px; }
 .pr-col .pill { white-space: nowrap; }
+.timeline-note-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.timeline-note-icon:hover {
+  background: #d6e9e1;
+}
+
 .timeline-note {
   display: -webkit-box;
   -webkit-box-orient: vertical;

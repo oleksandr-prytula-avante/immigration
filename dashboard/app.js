@@ -603,6 +603,15 @@ function formatNullable(value, formatter) {
 function formatCitizenshipYears(row, compact = false) {
   if (row.citizenshipYears !== null) return `${row.citizenshipYears} YRS`;
   const text = row.citizenshipYearsText ?? (row.status === "error" ? "RESEARCH ERROR" : "NOT RECORDED");
+  if (compact && text.trim().length > 60) {
+    return `<button type="button" class="timeline-note-icon" title="${escapeAttr(text)}" aria-label="${escapeAttr(`Citizenship timeline for ${row.country}: ${text}`)}" aria-controls="detailsPanel">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v6" />
+        <circle cx="12" cy="7.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    </button>`;
+  }
   return compact
     ? `<span class="timeline-note" title="${escapeAttr(text)}">${escapeHtml(text)}</span>`
     : escapeHtml(text);
