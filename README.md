@@ -85,7 +85,7 @@ npm run check
 
 This runs regression tests, dataset schema/consistency validation, and a database
 import dry run without connecting to Supabase. GitHub Pages deployment runs these
-checks too. See [AUDIT.md](AUDIT.md) for the audit scope, findings, and limitations.
+checks too.
 
 ## Supabase database
 
