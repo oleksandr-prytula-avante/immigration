@@ -1,0 +1,148 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import { JSDOM } from 'jsdom';
+
+const html = await fs.readFile(new URL('../dashboard/index.html', import.meta.url), 'utf8');
+const dataset = JSON.parse(await fs.readFile(new URL('../dashboard/data/all-countries.json', import.meta.url)));
+let sequence = 0;
+const tick = () => new Promise(resolve => setImmediate(resolve));
+
+async function dashboard(query = '', fetchData = async () => ({ok:true,json:async()=>dataset})) {
+  const dom = new JSDOM(html, {url:`http://localhost/${query}`, runScripts:'outside-only'});
+  await tick(); // Let JSDOM finish its own initial lifecycle before importing the module.
+  globalThis.window = dom.window;
+  globalThis.document = dom.window.document;
+  globalThis.fetch = fetchData;
+  const errors = [];
+  dom.window.addEventListener('error', event => errors.push(event.error));
+  await import(`../dashboard/app.js?test=${sequence++}`);
+  dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
+  await tick();
+  const el = selector => dom.window.document.querySelector(selector);
+  const change = (selector, value) => {
+    const input = el(selector);
+    input.value = value;
+    input.dispatchEvent(new dom.window.Event(input.tagName === 'SELECT' ? 'change' : 'input'));
+  };
+  const upload = async json => {
+    Object.defineProperty(el('#jsonFile'), 'files', {configurable:true,value:[{name:'test.json',text:async()=>JSON.stringify(json)}]});
+    el('#jsonFile').dispatchEvent(new dom.window.Event('change'));
+    await tick();
+  };
+  return {dom,el,change,upload,errors};
+}
+
+test('ALL survives a copied URL, selected country and sort are restored', async () => {
+  const first = await dashboard();
+  assert.equal(first.el('#visibleCount').textContent, '49');
+  first.change('#validFilter','all');
+  first.el('th[data-sort="country"] button').click();
+  first.el('tr[data-country="Spain"] button').click();
+  const query = first.dom.window.location.search;
+  assert.match(query, /dnv=all/);
+  first.dom.window.close();
+  const restored = await dashboard(query);
+  assert.equal(restored.el('#visibleCount').textContent, '193');
+  assert.equal(restored.el('#detailsPanel h2').textContent, 'Spain');
+  assert.equal(restored.el('th[data-sort="country"]').getAttribute('aria-sort'), 'ascending');
+  assert.equal(restored.el('tr.active button').getAttribute('aria-pressed'), 'true');
+  restored.dom.window.close();
+});
+
+test('numeric filter and descending sort produce consistent rendered rows', async () => {
+  const ui = await dashboard();
+  ui.change('#citizenshipMax','1');
+  assert.equal(ui.el('#visibleCount').textContent, '0');
+  ui.change('#citizenshipMax','');
+  ui.el('th[data-sort="income"] button').click();
+  ui.el('th[data-sort="income"] button').click();
+  assert.equal(ui.el('#countryRows tr').dataset.country, 'Thailand');
+  assert.equal(ui.el('th[data-sort="income"]').getAttribute('aria-sort'), 'descending');
+  ui.change('#prCitFilter', 'category:no_visa');
+  assert.equal(ui.el('#validFilter').value, 'all');
+  assert.equal(ui.el('#visibleCount').textContent, '144');
+  ui.dom.window.close();
+});
+
+test('every country detail renders without errors and table/card route statuses agree', async () => {
+  const ui = await dashboard('?dnv=all');
+  for (const item of dataset.results) {
+    ui.el(`tr[data-country="${item.country}"] button`).click();
+    assert.equal(ui.el('#detailsPanel h2').textContent, item.country);
+    assert.ok(ui.el('#detailsPanel .full-data pre'), item.country);
+  }
+  assert.deepEqual(ui.errors, []);
+  ui.dom.window.close();
+});
+
+test('malformed upload keeps the previous dataset usable', async () => {
+  const ui = await dashboard();
+  await ui.upload({results:[{country:'Broken',languages:{official_languages:[1]}}]});
+  assert.match(ui.el('#fileStatus').textContent, /COULD NOT READ JSON/);
+  assert.equal(ui.el('#metricTotal').textContent, '193');
+  ui.change('#searchInput','Portugal');
+  assert.equal(ui.el('#visibleCount').textContent, '1');
+  ui.el('tr[data-country="Portugal"] button').click();
+  assert.deepEqual(ui.errors, []);
+  ui.dom.window.close();
+});
+
+test('uploaded markup is escaped in numeric fields and unsafe URLs are not links', async () => {
+  const ui = await dashboard('?dnv=all');
+  const payload = '<img src=x onerror=alert(1)>';
+  await ui.upload([{country:'Markup',taxes:{taxation_system:{top_personal_income_tax_rate_percent:payload,tax_brackets:[{rate_percent:payload}]}},sources:[{title:'Unsafe',url:'javascript:alert(1)'}],visa_application:{application_url:'javascript:alert(1)'}}]);
+  ui.el('tr[data-country="Markup"] button').click();
+  assert.equal(ui.el('#detailsPanel img'), null);
+  assert.equal(ui.el('#detailsPanel a[href^="javascript:"]'), null);
+  assert.match(ui.el('#detailsPanel').textContent, /<img src=x onerror=alert\(1\)>/);
+  assert.deepEqual(ui.errors, []);
+  ui.dom.window.close();
+});
+
+test('uploaded dataset wins over a late built-in response', async () => {
+  let resolveFetch;
+  const ui = await dashboard('?dnv=all', () => new Promise(resolve => {resolveFetch=resolve;}));
+  await ui.upload([{country:'Uploaded'}]);
+  resolveFetch({ok:true,json:async()=>dataset});
+  await tick();
+  assert.equal(ui.el('#metricTotal').textContent, '1');
+  assert.equal(ui.el('#countryRows tr').dataset.country, 'Uploaded');
+  assert.match(ui.el('#fileStatus').textContent, /LOADED FILE/);
+  ui.dom.window.close();
+});
+
+test('HTTP errors are not presented as a successfully loaded empty dataset', async () => {
+  const ui = await dashboard('', async () => ({ok:false,status:404,json:async()=>({})}));
+  assert.match(ui.el('#fileStatus').textContent, /COULD NOT LOAD DEFAULT DATA: HTTP 404/);
+  assert.equal(ui.el('#metricTotal').textContent, '0');
+  ui.dom.window.close();
+});
+
+
+test('failed upload does not cancel an in-flight valid default dataset', async () => {
+  let resolveFetch;
+  const ui = await dashboard('', () => new Promise(resolve => {resolveFetch=resolve;}));
+  await ui.upload({results:'invalid'});
+  assert.match(ui.el('#fileStatus').textContent, /COULD NOT READ JSON/);
+  resolveFetch({ok:true,json:async()=>dataset});
+  await tick();
+  assert.equal(ui.el('#metricTotal').textContent, '193');
+  assert.equal(ui.el('#visibleCount').textContent, '49');
+  ui.dom.window.close();
+});
+
+test('failed research is unknown and never classified as no visa', async () => {
+  const ui = await dashboard('?dnv=all');
+  await ui.upload([{country:'Failed',status:'error',error:{message:'Network failure'}}]);
+  assert.match(ui.el('#countryRows').textContent, /RESEARCH ERROR/);
+  assert.match(ui.el('#countryRows').textContent, /UNKNOWN/);
+  ui.change('#prCitFilter','category:no_visa');
+  assert.equal(ui.el('#visibleCount').textContent, '0');
+  ui.change('#prCitFilter','all');
+  ui.change('#validFilter','error');
+  assert.equal(ui.el('#visibleCount').textContent, '1');
+  ui.el('tr[data-country="Failed"] button').click();
+  assert.match(ui.el('#detailsPanel').textContent, /Network failure/);
+  ui.dom.window.close();
+});

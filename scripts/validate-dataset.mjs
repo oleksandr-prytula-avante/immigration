@@ -1,45 +1,54 @@
 import fs from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import {
   digitalNomadCitizenshipCategory,
-  digitalNomadCitizenshipRoute,
   digitalNomadCitizenshipStatus,
   digitalNomadVisaRoute,
   hasDigitalNomadVisa
 } from "../dashboard/route-semantics.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const countrySchema = JSON.parse(readFileSync(path.join(root, "scripts/country-research.schema.json"), "utf8"));
 
 export function validateDatasetDocument(document, expectedCountries, options = {}) {
   const errors = [];
+  if (!document || typeof document !== "object" || Array.isArray(document)) {
+    errors.push("Dataset must be an object");
+  }
+  if (!Array.isArray(document?.results)) errors.push("Dataset results must be an array");
   const results = Array.isArray(document?.results) ? document.results : [];
-  const minimumSources = Number(
-    options.minimumSources ?? document?.meta?.minimum_distinct_source_urls_per_country ?? 15
-  );
+  const minimumSources = options.minimumSources ?? document?.meta?.minimum_distinct_source_urls_per_country ?? 15;
+  if (!Number.isInteger(minimumSources) || minimumSources < 1) {
+    errors.push("minimum_distinct_source_urls_per_country must be a positive integer");
+  }
   const names = results.map((item) => item?.country);
 
-  if (results.length !== expectedCountries.length) {
+  if (!options.allowPartial && results.length !== expectedCountries.length) {
     errors.push(`Expected ${expectedCountries.length} results, found ${results.length}`);
   }
+  if (options.allowPartial && results.length === 0) errors.push("Partial dataset must contain at least one country");
 
   const duplicateNames = duplicates(names);
   const missingNames = expectedCountries.filter((country) => !names.includes(country));
   const extraNames = names.filter((country) => !expectedCountries.includes(country));
   if (duplicateNames.length) errors.push(`Duplicate countries: ${duplicateNames.join(", ")}`);
-  if (missingNames.length) errors.push(`Missing countries: ${missingNames.join(", ")}`);
+  if (!options.allowPartial && missingNames.length) errors.push(`Missing countries: ${missingNames.join(", ")}`);
   if (extraNames.length) errors.push(`Unexpected countries: ${extraNames.join(", ")}`);
 
-  for (const item of results) validateCountry(item, minimumSources, errors);
+  validateMetadata(document?.meta, results, expectedCountries, errors);
+  // Invalid shapes must be reported before route helpers or the importer consume them.
+  const structurallyValidResults = results.filter((item) => validateCountry(item, minimumSources, errors));
 
-  const digitalNomadVisas = results.filter((item) => hasDigitalNomadVisa(item?.data));
+  const digitalNomadVisas = structurallyValidResults.filter((item) => hasDigitalNomadVisa(item.data));
   const citizenshipStatuses = digitalNomadVisas.reduce((counts, item) => {
     const status = digitalNomadCitizenshipStatus(item?.data);
     counts[status] = (counts[status] || 0) + 1;
     return counts;
   }, {});
-  const citizenshipCategories = results.reduce((counts, item) => {
+  const citizenshipCategories = structurallyValidResults.reduce((counts, item) => {
     const category = digitalNomadCitizenshipCategory(item?.data);
     counts[category] = (counts[category] || 0) + 1;
     return counts;
@@ -52,10 +61,10 @@ export function validateDatasetDocument(document, expectedCountries, options = {
       countries: results.length,
       ok: results.filter((item) => item?.status === "ok").length,
       routes: results.reduce(
-        (sum, item) => sum + (item?.data?.best_routes?.length || 0) + (item?.data?.rejected_routes?.length || 0),
+        (sum, item) => sum + arrayLength(item?.data?.best_routes) + arrayLength(item?.data?.rejected_routes),
         0
       ),
-      source_links: results.reduce((sum, item) => sum + (item?.data?.sources?.length || 0), 0),
+      source_links: results.reduce((sum, item) => sum + arrayLength(item?.data?.sources), 0),
       minimum_sources: minimumSources,
       digital_nomad_visas: digitalNomadVisas.length,
       digital_nomad_visas_with_citizenship: citizenshipStatuses.yes || 0,
@@ -71,12 +80,13 @@ function validateCountry(item, minimumSources, errors) {
   if (item?.status !== "ok") errors.push(`${country}: status must be ok`);
   if (!data || typeof data !== "object" || Array.isArray(data)) {
     errors.push(`${country}: data must be an object`);
-    return;
+    return false;
   }
+  const previousErrorCount = errors.length;
+  validateSchema(data, countrySchema, `${country}: data`, errors);
+  if (errors.length > previousErrorCount) return false;
   if (data.country !== country) errors.push(`${country}: data.country does not match wrapper country`);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(data.researched_at || "")) {
-    errors.push(`${country}: researched_at must be YYYY-MM-DD`);
-  }
+  validateDatesAndNumbers(data, `${country}: data`, errors);
 
   const sources = Array.isArray(data.sources) ? data.sources : [];
   const normalizedUrls = sources.map((source) => normalizeUrl(source?.url)).filter(Boolean);
@@ -89,9 +99,9 @@ function validateCountry(item, minimumSources, errors) {
   }
   if (sourceIds.length !== new Set(sourceIds).size) errors.push(`${country}: duplicate source IDs`);
   sources.forEach((source, index) => {
-    if (!source?.id) errors.push(`${country}: sources[${index}].id is empty`);
+    if (!source?.id?.trim()) errors.push(`${country}: sources[${index}].id is empty`);
     if (!normalizeUrl(source?.url)) errors.push(`${country}: sources[${index}].url is invalid`);
-    if (!source?.title) errors.push(`${country}: sources[${index}].title is empty`);
+    if (!source?.title?.trim()) errors.push(`${country}: sources[${index}].title is empty`);
   });
 
   const sourceIdSet = new Set(sourceIds);
@@ -115,8 +125,8 @@ function validateCountry(item, minimumSources, errors) {
     errors.push(`${country}: fully_matched=true requires valid_for_selection=true`);
   }
 
-  if (digitalNomadCitizenshipStatus(data) === "yes") {
-    const citizenshipRoute = digitalNomadCitizenshipRoute(data);
+  const citizenshipRoute = digitalNomadVisaRoute(data);
+  if (citizenshipRoute?.valid_for_selection === true && data.settlement_track?.can_lead_to_citizenship_from_this_route === true) {
     const citizenshipPath = citizenshipRoute?.path_to_citizenship;
     if (typeof citizenshipPath?.value !== "string" || !citizenshipPath.value.trim()) {
       errors.push(`${country}: dashboard citizenship YES requires a non-empty route citizenship path`);
@@ -148,6 +158,96 @@ function validateCountry(item, minimumSources, errors) {
       errors.push(`${country}: ${propertyPath} has an unexplained or uncited null value`);
     }
   });
+  return true;
+}
+
+function arrayLength(value) {
+  return Array.isArray(value) ? value.length : 0;
+}
+
+function validateMetadata(meta, results, expectedCountries, errors) {
+  if (meta === undefined) return;
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) {
+    errors.push("Dataset meta must be an object");
+    return;
+  }
+  if (meta.total_countries !== undefined && meta.total_countries !== expectedCountries.length) {
+    errors.push(`meta.total_countries must match the country set (${expectedCountries.length})`);
+  }
+  const completed = results.filter((item) => item?.status === "ok").length;
+  if (meta.completed_countries !== undefined && meta.completed_countries !== completed) {
+    errors.push(`meta.completed_countries must match successful results (${completed})`);
+  }
+  if (meta.status === "complete" && completed !== expectedCountries.length) {
+    errors.push("meta.status=complete requires all expected countries to be successful");
+  }
+  if (meta.updated_at !== undefined && (
+    typeof meta.updated_at !== "string" || !/^\d{4}-\d{2}-\d{2}T/.test(meta.updated_at) ||
+    !validISODate(meta.updated_at.slice(0, 10)) || !Number.isFinite(Date.parse(meta.updated_at))
+  )) {
+    errors.push("meta.updated_at must be a valid ISO timestamp");
+  }
+  if (meta.last_full_research_date !== undefined && !validISODate(meta.last_full_research_date)) {
+    errors.push("meta.last_full_research_date must be a valid YYYY-MM-DD date");
+  }
+}
+
+// The research schema uses this deliberately small JSON Schema subset.
+function validateSchema(value, schema, propertyPath, errors) {
+  const types = Array.isArray(schema.type) ? schema.type : [schema.type];
+  const actualType = value === null ? "null" : Array.isArray(value) ? "array" : typeof value;
+  if (!types.includes(actualType) || (actualType === "number" && !Number.isFinite(value))) {
+    errors.push(`${propertyPath} must be ${types.join(" or ")}`);
+    return;
+  }
+  if (schema.enum && !schema.enum.includes(value)) {
+    errors.push(`${propertyPath} has unsupported value ${JSON.stringify(value)}`);
+  }
+  if (actualType === "object") {
+    for (const required of schema.required || []) {
+      if (!Object.hasOwn(value, required)) errors.push(`${propertyPath}.${required} is required`);
+    }
+    for (const [key, child] of Object.entries(value)) {
+      if (schema.properties?.[key]) validateSchema(child, schema.properties[key], `${propertyPath}.${key}`, errors);
+      else if (schema.additionalProperties === false) errors.push(`${propertyPath}.${key} is not allowed`);
+    }
+  } else if (actualType === "array") {
+    value.forEach((child, index) => validateSchema(child, schema.items, `${propertyPath}[${index}]`, errors));
+  }
+}
+
+export function validISODate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return Number.isFinite(date.valueOf()) && date.toISOString().slice(0, 10) === value;
+}
+
+function validateDatesAndNumbers(value, propertyPath, errors) {
+  if (!value || typeof value !== "object") return;
+  for (const [key, child] of Object.entries(value)) {
+    const childPath = `${propertyPath}.${key}`;
+    if (["researched_at", "accessed_at", "reviewed_at", "last_checked"].includes(key) && child !== null && !validISODate(child)) {
+      errors.push(`${childPath} must be a valid YYYY-MM-DD date`);
+    }
+    const number = typeof child === "number" ? child : child?.value;
+    if (typeof number === "number") {
+      if (number < 0) errors.push(`${childPath} must not be negative`);
+      if ((key.endsWith("_percent") || key === "rate_percent") && number > 100) {
+        errors.push(`${childPath} must not exceed 100 percent`);
+      }
+      if (["rank", "visa_free_destinations"].includes(key) && !Number.isInteger(number)) {
+        errors.push(`${childPath} must be an integer`);
+      }
+      if (key === "rank" && number === 0) errors.push(`${childPath} must be greater than zero`);
+    }
+    if (key === "source_ids" && Array.isArray(child) && duplicates(child).length) {
+      errors.push(`${childPath} contains duplicate source IDs`);
+    }
+    if (key === "application_url" && child !== null && !normalizeUrl(child)) {
+      errors.push(`${childPath} must be an HTTP(S) URL`);
+    }
+    validateDatesAndNumbers(child, childPath, errors);
+  }
 }
 
 function collectSourceIdReferences(value, currentPath, callback) {
@@ -176,15 +276,18 @@ function collectSourcedNulls(value, currentPath, callback) {
   }
 }
 
-function normalizeUrl(value) {
+export function normalizeUrl(value) {
   try {
+    if (typeof value !== "string" || !value.trim()) return null;
     const url = new URL(value);
-    if (!/^https?:$/.test(url.protocol)) return null;
+    if (!/^https?:$/.test(url.protocol) || url.username || url.password) return null;
     url.hash = "";
     for (const key of [...url.searchParams.keys()]) {
       if (/^(utm_|fbclid$|gclid$)/i.test(key)) url.searchParams.delete(key);
     }
-    return url.toString().replace(/\/$/, "");
+    url.searchParams.sort();
+    url.pathname = url.pathname.replace(/\/$/, "");
+    return url.toString();
   } catch {
     return null;
   }

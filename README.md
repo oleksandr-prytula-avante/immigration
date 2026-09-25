@@ -50,19 +50,42 @@ node immigration_research.mjs --force
 
 The one-page dashboard is located at `dashboard/index.html`.
 
-If the local preview server is running, open:
+Start the local preview with Node.js 22.13 or newer:
 
-```text
-http://localhost:4174/
+```bash
+npm run dashboard
 ```
 
-Click `Load JSON` and select the result file, for example:
+Open the `http://127.0.0.1:<port>` URL printed by the server. The port is selected
+automatically. The bundled 193-country dataset loads on startup.
+
+Click `UPLOAD JSON` and select the result file, for example:
 
 ```text
 data/immigration-research.json
 ```
 
-The dashboard supports search, default eligible filtering, fully matched filtering, income/tax/citizenship-year filters, and sorting by citizenship/passport timeline, country, and taxation.
+The dashboard defaults to recorded digital-nomad or equivalent remote-work routes.
+It supports country/text search, official-language filtering, citizenship categories,
+unconditional jus soli, maximum income/tax/citizenship-year limits, and sortable
+columns. Filters, sorting, and selected country are preserved in the URL; uploaded
+files remain local to the current page and are not embedded in that URL.
+
+Maximum filters exclude unknown values. Numeric sorting keeps unknown values last
+in both directions. Summary cards describe the entire loaded dataset. TOP TAX is a
+screening rate, not an effective tax estimate. Citizenship YES requires a cited path
+for the displayed route; a separate residence route does not qualify that visa.
+Country-level alternative timelines remain available in the details panel.
+
+Run the full checks before publishing:
+
+```bash
+npm run check
+```
+
+This runs regression tests, dataset schema/consistency validation, and a database
+import dry run without connecting to Supabase. GitHub Pages deployment runs these
+checks too. See [AUDIT.md](AUDIT.md) for the audit scope, findings, and limitations.
 
 ## Supabase database
 

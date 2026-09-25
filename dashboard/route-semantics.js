@@ -1,13 +1,17 @@
 const DIGITAL_NOMAD_ROUTE_TYPES = new Set(["digital_nomad", "remote_worker"]);
 
 export function digitalNomadVisaRoute(data) {
-  const remoteWorkFit = data?.regular_foreign_contract_remote_work_fit?.value;
   const settlement = String(data?.settlement_track?.classification ?? "").toLowerCase();
   if (settlement.startsWith("not_valid")) return null;
 
   const bestRoutes = Array.isArray(data?.best_routes) ? data.best_routes : [];
-  const bestRoute = bestRoutes.find((item) => DIGITAL_NOMAD_ROUTE_TYPES.has(item?.route_type));
-  if (bestRoute && remoteWorkFit !== false) return bestRoute;
+  const nomadRoutes = bestRoutes.filter((item) => DIGITAL_NOMAD_ROUTE_TYPES.has(item?.route_type));
+  // A current visa can exist even when it does not fit the applicant or lead to
+  // settlement. Prefer the confirmed route when several nomad routes are listed.
+  const bestRoute = nomadRoutes.find((item) =>
+    item.valid_for_selection === true && hasCitedCitizenshipPath(data, item)
+  ) ?? nomadRoutes.find((item) => item.valid_for_selection === true) ?? nomadRoutes[0];
+  if (bestRoute) return bestRoute;
 
   const rejectedRoutes = Array.isArray(data?.rejected_routes) ? data.rejected_routes : [];
   return rejectedRoutes.find(isCurrentDedicatedNomadRoute) ?? null;
@@ -44,14 +48,25 @@ export function digitalNomadCitizenshipRoute(data) {
 
   const canLead = data?.settlement_track?.can_lead_to_citizenship_from_this_route;
   if (canLead !== true) return null;
-  if (route.valid_for_selection === true) return route;
+  // The country settlement track may describe a separate residence route.
+  // Never transfer that route's citizenship eligibility to the nomad visa.
+  return route.valid_for_selection === true && hasCitedCitizenshipPath(data, route) ? route : null;
+}
 
-  if (data?.regular_foreign_contract_remote_work_fit?.value !== true) return null;
-  return (data?.best_routes || []).find((candidate) =>
-      candidate?.valid_for_selection === true &&
-      candidate?.direct_permanent_residence_possible === true &&
-      candidate?.local_employer_required !== true
-    ) ?? null;
+function hasCitedCitizenshipPath(data, route) {
+  const path = route.path_to_citizenship;
+  if (typeof path?.value !== "string" || !path.value.trim()) return false;
+  if (!Array.isArray(path.source_ids) || path.source_ids.length === 0) return false;
+
+  const sources = Array.isArray(data?.sources) ? data.sources : [];
+  return path.source_ids.every((id) => typeof id === "string" && id.trim() && sources.some((source) => {
+    if (source?.id !== id) return false;
+    try {
+      return ["http:", "https:"].includes(new URL(source.url).protocol);
+    } catch {
+      return false;
+    }
+  }));
 }
 
 export function digitalNomadCitizenshipCategory(data) {
@@ -60,7 +75,9 @@ export function digitalNomadCitizenshipCategory(data) {
   if (digitalNomadCitizenshipStatus(data) === "yes") return "confirmed";
 
   const canLead = data?.settlement_track?.can_lead_to_citizenship_from_this_route;
-  if (route.valid_for_selection === "uncertain" || canLead === "uncertain") {
+  if (route.valid_for_selection === "uncertain" ||
+    (route.valid_for_selection === true && canLead === true) ||
+    (route.valid_for_selection !== false && canLead !== true && canLead !== false)) {
     return "unconfirmed";
   }
   if (canLead === true) return "separate_profile_route";

@@ -1,134 +1,128 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import pg from "pg";
-import { digitalNomadVisaRoute, hasDigitalNomadVisa } from "../dashboard/route-semantics.js";
+import { normalizeResults } from "../dashboard/dataset-model.js";
 import { databaseUrl, loadLocalEnv } from "./db-env.mjs";
-import { validateDatasetDocument } from "./validate-dataset.mjs";
+import { normalizeUrl, validISODate, validateDatasetDocument } from "./validate-dataset.mjs";
 
 const { Client } = pg;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-await loadLocalEnv(root);
 
-const args = parseArgs(process.argv.slice(2));
-const inputPath = path.resolve(root, args.file || "dashboard/data/all-countries.json");
-const document = JSON.parse(await fs.readFile(inputPath, "utf8"));
-const results = Array.isArray(document.results) ? document.results : [];
-const expectedCountries = JSON.parse(
-  await fs.readFile(path.join(root, "countries.un-members-193.json"), "utf8")
-);
+async function main() {
+  await loadLocalEnv(root);
 
-const validation = validateDatasetDocument(document, expectedCountries);
-if (!validation.valid) {
-  throw new Error(`Dataset validation failed:\n${validation.errors.join("\n")}`);
-}
-
-if (results.length !== 193 && !args.allowPartial) {
-  throw new Error(`Expected 193 country results, found ${results.length}. Use --allow-partial to override.`);
-}
-
-const duplicateCountries = duplicates(results.map((item) => item.country));
-if (duplicateCountries.length) {
-  throw new Error(`Duplicate countries: ${duplicateCountries.join(", ")}`);
-}
-
-if (args.validateOnly) {
-  const okCount = results.filter((item) => item.status === "ok").length;
-  let routeCount = 0;
-  let sourceCount = 0;
-  const validationDb = {
-    async query(sql, parameters = []) {
-      const placeholders = [...sql.matchAll(/\$(\d+)/g)].map((match) => Number(match[1]));
-      const expected = placeholders.length ? Math.max(...placeholders) : 0;
-      if (expected !== parameters.length) {
-        throw new Error(`SQL parameter mismatch: query expects ${expected}, received ${parameters.length}`);
-      }
-      if (/returning id, url/i.test(sql)) {
-        return {
-          rows: Array.from({ length: parameters.length / 6 }, (_, index) => ({
-            id: index + 1,
-            url: parameters[index * 6]
-          }))
-        };
-      }
-      return { rows: [{ id: 1 }] };
-    }
-  };
-
-  for (const item of results) {
-    const countryId = await upsertCountry(validationDb, item, "00000000-0000-0000-0000-000000000000");
-    routeCount += await replaceRoutes(validationDb, countryId, item.data);
-    sourceCount += await replaceSources(
-      validationDb,
-      countryId,
-      "00000000-0000-0000-0000-000000000000",
-      item.data?.sources
-    );
-    await insertSnapshot(
-      validationDb,
-      countryId,
-      "00000000-0000-0000-0000-000000000000",
-      item
-    );
-  }
-  console.log(
-    `valid dataset: ${results.length} countries; ${okCount} ok; ${routeCount} routes; ` +
-    `${sourceCount} source links; ${validation.summary.digital_nomad_visas} digital-nomad visas ` +
-    `(${validation.summary.digital_nomad_visas_with_citizenship} citizenship yes, ` +
-    `${validation.summary.digital_nomad_visas_without_citizenship} no)`
+  const args = parseArgs(process.argv.slice(2));
+  const inputPath = path.resolve(root, args.file || "dashboard/data/all-countries.json");
+  const document = JSON.parse(await fs.readFile(inputPath, "utf8"));
+  const results = Array.isArray(document.results) ? document.results : [];
+  const expectedCountries = JSON.parse(
+    await fs.readFile(path.join(root, "countries.un-members-193.json"), "utf8")
   );
-  process.exit(0);
-}
 
-const client = new Client({
-  connectionString: databaseUrl(),
-  ssl: sslOptions()
-});
-
-await client.connect();
-
-try {
-  await client.query("begin");
-  const runId = await createRun(client, document, inputPath, results.length);
-
-  let routeCount = 0;
-  let sourceLinkCount = 0;
-
-  for (const [index, item] of results.entries()) {
-    const countryId = await upsertCountry(client, item, runId);
-    await client.query("delete from public.routes where country_id = $1", [countryId]);
-    await client.query("delete from public.country_sources where country_id = $1", [countryId]);
-
-    routeCount += await replaceRoutes(client, countryId, item.data);
-    sourceLinkCount += await replaceSources(client, countryId, runId, item.data?.sources);
-    await insertSnapshot(client, countryId, runId, item);
-
-    if ((index + 1) % 25 === 0 || index + 1 === results.length) {
-      console.log(`imported ${index + 1}/${results.length}`);
-    }
+  const validation = validateDatasetDocument(document, expectedCountries, { allowPartial: args.allowPartial });
+  if (!validation.valid) {
+    throw new Error(`Dataset validation failed:\n${validation.errors.join("\n")}`);
   }
 
-  await client.query(
-    "update public.research_runs set imported_country_count = $2 where id = $1",
-    [runId, results.length]
-  );
-  await verifyImport(client, runId, {
-    countries: results.length,
-    routes: routeCount,
-    sourceLinks: sourceLinkCount,
-    snapshots: results.length,
-    digitalNomadVisas: validation.summary.digital_nomad_visas
+  if (args.validateOnly) {
+    const okCount = results.filter((item) => item.status === "ok").length;
+    let routeCount = 0;
+    let sourceCount = 0;
+    const validationDb = {
+      async query(sql, parameters = []) {
+        const placeholders = [...sql.matchAll(/\$(\d+)/g)].map((match) => Number(match[1]));
+        const expected = placeholders.length ? Math.max(...placeholders) : 0;
+        if (expected !== parameters.length) {
+          throw new Error(`SQL parameter mismatch: query expects ${expected}, received ${parameters.length}`);
+        }
+        if (/returning id, url/i.test(sql)) {
+          return {
+            rows: Array.from({ length: parameters.length / 6 }, (_, index) => ({
+              id: index + 1,
+              url: parameters[index * 6]
+            }))
+          };
+        }
+        return { rows: [{ id: 1 }] };
+      }
+    };
+
+    for (const item of results) {
+      const countryId = await upsertCountry(validationDb, item, "00000000-0000-0000-0000-000000000000");
+      routeCount += await replaceRoutes(validationDb, countryId, item.data);
+      sourceCount += await replaceSources(
+        validationDb,
+        countryId,
+        "00000000-0000-0000-0000-000000000000",
+        item.data?.sources
+      );
+      await insertSnapshot(
+        validationDb,
+        countryId,
+        "00000000-0000-0000-0000-000000000000",
+        item
+      );
+    }
+    console.log(
+      `valid dataset: ${results.length} countries; ${okCount} ok; ${routeCount} routes; ` +
+      `${sourceCount} source links; ${validation.summary.digital_nomad_visas} digital-nomad visas ` +
+      `(${validation.summary.digital_nomad_visas_with_citizenship} citizenship yes, ` +
+      `${validation.summary.digital_nomad_visas_without_citizenship} no)`
+    );
+    return;
+  }
+
+  const client = new Client({
+    connectionString: databaseUrl(),
+    ssl: sslOptions()
   });
-  await client.query("commit");
 
-  console.log(`run ${runId}`);
-  console.log(`countries ${results.length}; routes ${routeCount}; source links ${sourceLinkCount}`);
-} catch (error) {
-  await client.query("rollback");
-  throw error;
-} finally {
-  await client.end();
+  await client.connect();
+
+  try {
+    await client.query("begin");
+    const runId = await createRun(client, document, inputPath, results.length);
+
+    let routeCount = 0;
+    let sourceLinkCount = 0;
+
+    for (const [index, item] of results.entries()) {
+      const countryId = await upsertCountry(client, item, runId);
+      await client.query("delete from public.routes where country_id = $1", [countryId]);
+      await client.query("delete from public.country_sources where country_id = $1", [countryId]);
+
+      routeCount += await replaceRoutes(client, countryId, item.data);
+      sourceLinkCount += await replaceSources(client, countryId, runId, item.data?.sources);
+      await insertSnapshot(client, countryId, runId, item);
+
+      if ((index + 1) % 25 === 0 || index + 1 === results.length) {
+        console.log(`imported ${index + 1}/${results.length}`);
+      }
+    }
+
+    await client.query(
+      "update public.research_runs set imported_country_count = $2 where id = $1",
+      [runId, results.length]
+    );
+    await verifyImport(client, runId, {
+      countries: results.length,
+      routes: routeCount,
+      sourceLinks: sourceLinkCount,
+      snapshots: results.length,
+      digitalNomadVisas: validation.summary.digital_nomad_visas
+    });
+    await client.query("commit");
+
+    console.log(`run ${runId}`);
+    console.log(`countries ${results.length}; routes ${routeCount}; source links ${sourceLinkCount}`);
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
+  } finally {
+    await client.end();
+  }
 }
 
 async function verifyImport(db, runId, expected) {
@@ -185,12 +179,9 @@ async function createRun(db, input, sourceFile, expectedCount) {
   return result.rows[0].id;
 }
 
-async function upsertCountry(db, item, runId) {
+export async function upsertCountry(db, item, runId) {
   const data = item.data || {};
-  const bestRoute = digitalNomadVisaRoute(data)
-    || (data.best_routes || []).find((route) => route?.valid_for_selection === true)
-    || data.best_routes?.[0]
-    || null;
+  const [dashboard] = normalizeResults([item]);
   const sourceCount = Array.isArray(data.sources) ? data.sources.length : 0;
   const values = [
     item.country,
@@ -198,22 +189,14 @@ async function upsertCountry(db, item, runId) {
     validDate(data.researched_at),
     selectionValue(data.valid_for_selection),
     data.fully_matched === true,
-    hasDigitalNomadVisa(data),
-    jusSoliValue(data.child_citizenship),
-    textValue(data.citizenship_track_strength),
+    dashboard.valid,
+    dashboard.jusSoli,
+    textValue(data.settlement_track?.citizenship_track_strength ?? data.citizenship_track_strength),
     textValue(data.settlement_track?.classification),
     selectionValue(data.regular_foreign_contract_remote_work_fit?.value, true),
-    numberValue(bestRoute?.minimum_monthly_income_usd),
-    firstNumber(
-      data.taxes?.taxation_system?.top_personal_income_tax_rate_percent,
-      data.taxes?.digital_nomad_taxation?.top_or_screening_pit_rate_percent,
-      data.taxes?.income_tax_rate_percent
-    ),
-    firstNumber(
-      data.timeline?.total_years_to_citizenship,
-      data.timeline?.years_to_citizenship,
-      data.settlement_track?.years_to_citizenship
-    ),
+    dashboard.income,
+    dashboard.tax,
+    dashboard.citizenshipYears,
     integerValue(data.passport?.rank),
     integerValue(data.passport?.visa_free_destinations),
     firstNumber(
@@ -267,7 +250,7 @@ async function upsertCountry(db, item, runId) {
   return result.rows[0].id;
 }
 
-async function replaceRoutes(db, countryId, data) {
+export async function replaceRoutes(db, countryId, data) {
   const routeRows = [];
   for (const [kind, routes] of [
     ["best", data?.best_routes || []],
@@ -305,11 +288,11 @@ async function replaceRoutes(db, countryId, data) {
   return routeRows.length;
 }
 
-async function replaceSources(db, countryId, runId, sources) {
+export async function replaceSources(db, countryId, runId, sources) {
   const sourceRows = [];
   const sourceKeys = [];
   for (const [index, source] of (Array.isArray(sources) ? sources : []).entries()) {
-    const url = textValue(source?.url);
+    const url = normalizeUrl(source?.url);
     if (!url) continue;
     sourceRows.push([
       url,
@@ -382,24 +365,28 @@ async function insertSnapshot(db, countryId, runId, item) {
   );
 }
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const parsed = {};
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (!arg.startsWith("--")) continue;
-    const key = arg.slice(2).replace(/-([a-z])/g, (_, char) => char.toUpperCase());
-    const next = argv[index + 1];
-    if (!next || next.startsWith("--")) parsed[key] = true;
-    else {
-      parsed[key] = next;
+    if (arg === "--allow-partial") parsed.allowPartial = true;
+    else if (arg === "--validate-only") parsed.validateOnly = true;
+    else if (arg === "--file") {
+      const next = argv[index + 1];
+      if (!next || next.startsWith("--")) throw new Error("--file requires a path");
+      parsed.file = next;
       index += 1;
-    }
+    } else throw new Error(`Unknown argument: ${arg}`);
   }
   return parsed;
 }
 
+function scalarValue(value) {
+  return value && typeof value === "object" && Object.hasOwn(value, "value") ? value.value : value;
+}
+
 function selectionValue(value, nullable = false) {
-  const raw = value?.value ?? value;
+  const raw = scalarValue(value);
   if (raw === true || raw === "true") return "true";
   if (raw === false || raw === "false") return "false";
   if (raw === "partial" || raw === "uncertain") return raw;
@@ -408,15 +395,13 @@ function selectionValue(value, nullable = false) {
 }
 
 function numberValue(value) {
-  const raw = value?.value ?? value;
-  if (raw === null || raw === undefined || raw === "") return null;
-  const number = Number(raw);
-  return Number.isFinite(number) ? number : null;
+  const raw = scalarValue(value);
+  return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
 }
 
 function integerValue(value) {
   const number = numberValue(value);
-  return number === null ? null : Math.round(number);
+  return Number.isInteger(number) ? number : null;
 }
 
 function firstNumber(...values) {
@@ -428,31 +413,20 @@ function firstNumber(...values) {
 }
 
 function booleanValue(value) {
-  const raw = value?.value ?? value;
+  const raw = scalarValue(value);
   if (raw === true || raw === "true" || raw === "yes") return true;
   if (raw === false || raw === "false" || raw === "no") return false;
   return null;
 }
 
-function jusSoliValue(childCitizenship) {
-  const explicit = booleanValue(childCitizenship?.jus_soli);
-  if (explicit !== null) return explicit;
-  const classification = childCitizenship?.birthright_citizenship?.value;
-  if (!classification) return null;
-  return classification === "unconditional_jus_soli";
-}
-
 function textValue(value) {
-  const raw = value?.value ?? value;
+  const raw = scalarValue(value);
   if (raw === null || raw === undefined) return null;
-  if (typeof raw === "object") return JSON.stringify(raw);
-  return String(raw);
+  return typeof raw === "string" ? raw : null;
 }
 
 function validDate(value) {
-  if (!value) return null;
-  const match = String(value).match(/^\d{4}-\d{2}-\d{2}/);
-  return match ? match[0] : null;
+  return validISODate(value) ? value : null;
 }
 
 function validTimestamp(value) {
@@ -471,17 +445,9 @@ function countUnresolved(value) {
   return 0;
 }
 
-function duplicates(values) {
-  const seen = new Set();
-  const repeated = new Set();
-  for (const value of values) {
-    if (seen.has(value)) repeated.add(value);
-    seen.add(value);
-  }
-  return [...repeated];
-}
-
 function sslOptions() {
   if (process.env.PGSSLMODE === "disable") return false;
   return { rejectUnauthorized: process.env.PGSSL_REJECT_UNAUTHORIZED !== "false" };
 }
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await main();

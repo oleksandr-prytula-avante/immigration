@@ -204,7 +204,8 @@ button:focus-visible,
 }
 
 .table-wrap {
-  overflow-x: hidden;
+  min-width: 0;
+  overflow-x: auto;
   overflow-y: auto;
 }
 
@@ -212,7 +213,7 @@ table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  min-width: 0;
+  min-width: 760px;
 }
 
 th,
@@ -548,3 +549,25 @@ tbody tr.active {
     display: grid;
   }
 }
+
+.filter-help {
+  margin: 10px 2px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+th button, .country-select {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.country-select { font-weight: 800; overflow-wrap: anywhere; }
+th[aria-sort="ascending"] button::after { content: " ↑"; }
+th[aria-sort="descending"] button::after { content: " ↓"; }
+.table-wrap:focus-visible { outline: 2px solid var(--accent); }

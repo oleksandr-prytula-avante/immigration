@@ -19,18 +19,18 @@
         </label>
       </section>
 
-      <section class="metrics" aria-label="Summary">
+      <section class="metrics" aria-label="Whole dataset summary">
         <article>
           <span id="metricTotal">0</span>
-          <p>COUNTRIES</p>
+          <p>COUNTRIES IN DATASET</p>
         </article>
         <article>
           <span id="metricValid">0</span>
-          <p>DIGITAL NOMAD VISAS</p>
+          <p>NOMAD / REMOTE-WORK ROUTES</p>
         </article>
         <article>
           <span id="metricAvgIncome">NOT FOUND</span>
-          <p>AVG THRESHOLD, USD</p>
+          <p>AVG KNOWN THRESHOLD, USD/MO</p>
         </article>
       </section>
 
@@ -40,11 +40,12 @@
           <input id="searchInput" type="search" placeholder="PORTUGAL, NOMAD, PR...">
         </label>
         <label>
-          DIGITAL NOMAD VISA
+          NOMAD / REMOTE-WORK ROUTE
           <select id="validFilter">
             <option value="all">ALL</option>
             <option value="true" selected>YES</option>
             <option value="false">NO</option>
+            <option value="error">RESEARCH ERROR</option>
           </select>
         </label>
         <label>
@@ -58,7 +59,7 @@
           <input id="incomeMax" type="number" min="0" step="100" placeholder="E.G. 3500">
         </label>
         <label>
-          MAX TAX, %
+          MAX TOP TAX RATE, %
           <input id="taxMax" type="number" min="0" max="100" step="1" placeholder="E.G. 20">
         </label>
         <label>
@@ -66,7 +67,7 @@
           <input id="citizenshipMax" type="number" min="0" step="1" placeholder="E.G. 7">
         </label>
         <label>
-          JUS SOLI
+          UNCONDITIONAL JUS SOLI
           <select id="jusSoliFilter">
             <option value="all">ALL</option>
             <option value="yes">YES</option>
@@ -88,30 +89,32 @@
         </label>
       </section>
 
+      <p class="filter-help">Maximum filters include known values only. TOP TAX is the country screening rate, not your effective or nomad-specific rate. JUS SOLI means unconditional birthright citizenship. Summary cards cover the whole dataset.</p>
+
       <section class="status-row">
-        <p id="fileStatus">DEMO JSON LOADED. YOU CAN UPLOAD A RESULT FILE.</p>
-        <p><span id="visibleCount">0</span> SHOWN</p>
+        <p id="fileStatus" role="status">LOADING RESEARCH DATA…</p>
+        <p aria-live="polite"><span id="visibleCount">0</span> SHOWN</p>
       </section>
 
       <section class="content-grid">
-        <div class="table-wrap">
+        <div class="table-wrap" role="region" aria-label="Country comparison; scroll horizontally for more columns" tabindex="0">
           <table>
             <thead>
               <tr>
-                <th data-sort="country">COUNTRY</th>
-                <th class="route-col">DIGITAL NOMAD VISA</th>
-                <th class="income-col" data-sort="income">INCOME</th>
-                <th data-sort="tax">TAX</th>
-                <th class="nomad-col" data-sort="nomadTransition">CIT</th>
-                <th data-sort="citizenship">YEARS</th>
-                <th data-sort="jusSoli">JUS SOLI</th>
+                <th data-sort="country" scope="col" aria-sort="none"><button type="button">COUNTRY</button></th>
+                <th class="route-col" scope="col">NOMAD / REMOTE-WORK ROUTE</th>
+                <th class="income-col" data-sort="income" scope="col" aria-sort="none"><button type="button">INCOME</button></th>
+                <th data-sort="tax" scope="col" aria-sort="none"><button type="button">TOP TAX</button></th>
+                <th class="nomad-col" data-sort="nomadTransition" scope="col" aria-sort="none"><button type="button">CIT</button></th>
+                <th data-sort="citizenship" scope="col" aria-sort="none"><button type="button">YEARS</button></th>
+                <th data-sort="jusSoli" scope="col" aria-sort="none"><button type="button">JUS SOLI</button></th>
               </tr>
             </thead>
             <tbody id="countryRows"></tbody>
           </table>
         </div>
 
-        <aside class="details" id="detailsPanel">
+        <aside class="details" id="detailsPanel" aria-label="Selected country details">
           <p class="empty">SELECT A COUNTRY IN THE TABLE TO SEE DETAILS.</p>
         </aside>
       </section>

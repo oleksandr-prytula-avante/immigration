@@ -10,10 +10,15 @@
     "db:import": "node scripts/import-to-supabase.mjs",
     "db:setup": "npm run db:migrate && npm run db:import",
     "research": "node immigration_research.mjs",
-    "research:test-one": "node immigration_research.mjs --country Estonia --out data/test-estonia.json"
+    "research:test-one": "node immigration_research.mjs --country Estonia --out data/test-estonia.json",
+    "test": "node --test",
+    "check": "npm test && npm run data:validate && node scripts/import-to-supabase.mjs --validate-only"
   },
   "dependencies": {
     "openai": "^6.0.0",
     "pg": "^8.22.0"
+  },
+  "devDependencies": {
+    "jsdom": "^29.1.1"
   }
 }
