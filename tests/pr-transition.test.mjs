@@ -47,14 +47,14 @@ test("a separate remote-work PR application is YES even when nomad time does not
 });
 
 test("conditional and unconfirmed PR paths retain their distinctions from YES and NO", () => {
-  for (const [status, label] of [["conditional", "CONDITIONAL"], ["unconfirmed", "UNCONFIRMED"], ["not_available", "NO"]]) {
+  for (const [status, label] of [["conditional", "CND"], ["unconfirmed", "UNK"], ["not_available", "NO"]]) {
     const transition = nomadPrTransition(fixture({ status, years_to_pr: null }));
     assert.equal(transition.status, status);
     assert.equal(transition.label, label);
   }
   const legacy = fixture();
   delete legacy.digital_nomad_pr_transition;
-  assert.equal(nomadPrTransition(legacy).label, "UNCONFIRMED");
+  assert.equal(nomadPrTransition(legacy).label, "UNK");
   assert.equal(nomadPrTransition({ ...legacy, best_routes: [] }).label, "N/A");
 });
 
@@ -71,21 +71,21 @@ test("PR claims require an explanation and references to the displayed existing 
     { reviewed_route_names: ["Digital Nomad Visa", "Digital Nomad Visa"] }
   ]) {
     const transition = nomadPrTransition(fixture(overrides));
-    assert.equal(transition.label, "UNCONFIRMED", JSON.stringify(overrides));
+    assert.equal(transition.label, "UNK", JSON.stringify(overrides));
     assert.equal(transition.review, null);
   }
 });
 
 test("PR claims with missing, unresolved or unsafe source references display UNCONFIRMED", () => {
   for (const source_ids of [undefined, [], ["MISSING"], ["PR_LAW", "MISSING"], [null]]) {
-    assert.equal(nomadPrTransition(fixture({ source_ids })).label, "UNCONFIRMED");
+    assert.equal(nomadPrTransition(fixture({ source_ids })).label, "UNK");
   }
   for (const url of [undefined, "not a URL", "javascript:alert(1)", "https://user:password@example.gov/law"]) {
     const data = fixture();
     data.sources[0].url = url;
-    assert.equal(nomadPrTransition(data).label, "UNCONFIRMED", String(url));
+    assert.equal(nomadPrTransition(data).label, "UNK", String(url));
   }
-  assert.equal(nomadPrTransition({ ...fixture(), sources: {} }).label, "UNCONFIRMED");
+  assert.equal(nomadPrTransition({ ...fixture(), sources: {} }).label, "UNK");
 });
 
 test("contradictory confirmed PR claims cannot become YES in an uploaded dataset", () => {
@@ -99,7 +99,7 @@ test("contradictory confirmed PR claims cannot become YES in an uploaded dataset
     { pathway_type: "direct_residence_clock", nomad_time_counts_toward_pr: false }
   ]) {
     const transition = nomadPrTransition(fixture(overrides));
-    assert.equal(transition.label, "UNCONFIRMED", JSON.stringify(overrides));
+    assert.equal(transition.label, "UNK", JSON.stringify(overrides));
     assert.equal(transition.review, null);
   }
 });

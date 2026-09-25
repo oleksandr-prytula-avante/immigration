@@ -23,8 +23,14 @@ test('citizenship years retain captured values independently of visa and citizen
     assert.equal(row.nomadTransition.label, citizenshipLabel, country);
   }
   assert.equal(rows.find(row => row.country === 'Argentina').citizenshipYears, null);
+  const textualTimelines = rows.filter(row => row.citizenshipYears === null);
+  assert.equal(textualTimelines.length, 57);
+  for (const row of textualTimelines) {
+    assert.equal(row.citizenshipYearsText, row.data.timeline.total_years_to_citizenship.notes, row.country);
+  }
   const [failed] = normalizeResults([{country:'Failed', status:'error', timeline:{total_years_to_citizenship:{value:5}}}]);
   assert.equal(failed.citizenshipYears, null);
+  assert.equal(failed.citizenshipYearsText, null);
 });
 
 test('maximum filters exclude missing values and include captured timelines regardless of citizenship status', () => {

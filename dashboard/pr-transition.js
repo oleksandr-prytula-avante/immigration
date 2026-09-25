@@ -1,10 +1,10 @@
 import { digitalNomadVisaRoute } from "./route-semantics.js";
 
 const statuses = new Map([
-  ["confirmed", { label: "YES", tone: "good", rank: 1 }],
-  ["conditional", { label: "CONDITIONAL", tone: "info", rank: 2 }],
-  ["unconfirmed", { label: "UNCONFIRMED", tone: "warn", rank: 3 }],
-  ["not_available", { label: "NO", tone: "bad", rank: 4 }]
+  ["confirmed", { label: "YES", fullLabel: "Confirmed PR path", tone: "good", rank: 1 }],
+  ["conditional", { label: "CND", fullLabel: "Conditional: additional eligibility required", tone: "info", rank: 2 }],
+  ["unconfirmed", { label: "UNK", fullLabel: "Unconfirmed PR path", tone: "warn", rank: 3 }],
+  ["not_available", { label: "NO", fullLabel: "PR path not available", tone: "bad", rank: 4 }]
 ]);
 
 function validReviewShape(review) {

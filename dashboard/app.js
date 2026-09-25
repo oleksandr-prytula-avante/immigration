@@ -1,4 +1,4 @@
-import { normalizeResults, numberValue, compareNullableNumbers, matchesMaximum, safeHttpUrl, languageKey } from "./dataset-model.js";
+import { normalizeResults, numberValue, recordedPeriodText, compareNullableNumbers, matchesMaximum, safeHttpUrl, languageKey } from "./dataset-model.js";
 
 const state = {
   raw: null,
@@ -259,6 +259,7 @@ function filteredRows() {
       row.nomadTransition.label,
       row.prTransition.label,
       row.prTransition.summary,
+      row.citizenshipYearsText,
       citizenshipCategoryLabel(row.citizenshipCategory),
       row.jusSoli,
       jusSoliLabel(row.jusSoli),
@@ -386,7 +387,7 @@ function renderTable(rows) {
       <td class="income-col">${escapeHtml(formatIncome(row))}</td>
       <td>${escapeHtml(formatTax(row))}</td>
       <td class="nomad-col">${nomadTransitionPill(row.nomadTransition)}</td>
-      <td>${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</td>
+      <td class="years-col" data-years="${row.citizenshipYears ?? ""}">${formatCitizenshipYears(row, true)}</td>
       <td class="pr-col" title="${escapeAttr(row.prTransition.summary)}">${nomadTransitionPill(row.prTransition)}</td>
       <td>${jusSoliPill(row.jusSoli)}</td>
     </tr>
@@ -481,7 +482,7 @@ function renderDetails(visibleRows) {
         <li>INCOME: ${escapeHtml(formatIncome(row))}</li>
         <li>INCOME PROOF: ${escapeHtml(formatIncomeProof(route))}</li>
         <li>TAX: ${escapeHtml(formatTax(row))}</li>
-        <li>CITIZENSHIP TIMELINE: ${formatNullable(row.citizenshipYears, (value) => `${value} YRS`)}</li>
+        <li>CITIZENSHIP TIMELINE: ${formatCitizenshipYears(row)}</li>
       </ul>
     </div>
 
@@ -535,14 +536,13 @@ function renderDetails(visibleRows) {
       <h3>COUNTRY CITIZENSHIP TIMELINE</h3>
       <p class="explain">YEARS shows the recorded country timeline regardless of CIT status. These notes explain the relevant route and conditions.</p>
       <ul class="detail-list">
-        <li>TOTAL YEARS: ${formatSourcedInline(data.timeline?.total_years_to_citizenship, (value) => `${value} YRS`)}</li>
-        <li>PERMANENT RESIDENCE YEARS: ${formatSourcedInline(data.timeline?.permanent_residence_years, (value) => `${value} YRS`)}</li>
-        <li>DUAL CITIZENSHIP: ${formatSourcedInline(data.timeline?.dual_citizenship)}</li>
-        <li>PROCESSING TIME: ${formatSourcedInline(data.timeline?.citizenship_processing_time)}</li>
-        <li>NOMAD ROUTE: ${formatSourcedInline(data.timeline?.citizenship_via_nomad_route)}</li>
-        <li>ROUTE REALISM: ${formatSourcedInline(data.timeline?.citizenship_route_realism)}</li>
+        <li>TOTAL YEARS: ${formatRecordedPeriod(data.timeline?.total_years_to_citizenship)}</li>
+        <li>TO TEMPORARY RESIDENCE: ${formatRecordedPeriod(data.timeline?.years_to_temporary_residence)}</li>
+        <li>TO PR AFTER TEMPORARY RESIDENCE: ${formatRecordedPeriod(data.timeline?.years_to_permanent_residence_after_temporary ?? data.timeline?.permanent_residence_years)}</li>
+        <li>TO CITIZENSHIP AFTER PR: ${formatRecordedPeriod(data.timeline?.years_to_citizenship_after_permanent_residence)}</li>
+        <li>PROCESSING TIME: ${formatRecordedPeriod(data.timeline?.typical_citizenship_processing_time_months ?? data.timeline?.citizenship_processing_time, "MONTHS")}</li>
       </ul>
-      <p class="summary">${escapeHtml(data.timeline?.status_transition_notes?.value ?? "")}</p>
+      <p class="summary">${formatSourcedInline(data.timeline?.key_conditions ?? data.timeline?.status_transition_notes)}</p>
     </div>
 
     <div class="detail-block">
@@ -553,9 +553,9 @@ function renderDetails(visibleRows) {
         <li>IF BOTH PARENTS MIGRANTS: ${formatSourcedInline(data.child_citizenship?.if_both_parents_migrants)}</li>
         <li>IF SECOND PARENT LOCAL: ${formatSourcedInline(data.child_citizenship?.if_second_parent_local_citizen)}</li>
         <li>FATHER BENEFIT: ${formatSourcedInline(data.child_citizenship?.benefit_to_migrant_father)}</li>
-        <li>MARRIAGE YEARS: ${formatSourcedInline(data.marriage?.years_to_citizenship_via_marriage, (value) => `${value} YRS`)}</li>
-        <li>MARRIAGE BENEFIT: ${formatSourcedInline(data.marriage?.residence_benefit)}</li>
-        <li>EXISTING MARRIAGE IMPACT: ${formatSourcedInline(data.marriage?.existing_marriage_impact)}</li>
+        <li>MARRIAGE YEARS: ${formatRecordedPeriod(data.marriage?.years_of_marriage_or_residence_required ?? data.marriage?.years_to_citizenship_via_marriage)}</li>
+        <li>ACCELERATES CITIZENSHIP OR PR: ${escapeHtml(formatBooleanish(data.marriage?.accelerates_citizenship_or_pr))}</li>
+        <li>EXISTING MARRIAGE IMPACT: ${formatSourcedInline(data.marriage?.existing_marriage_effect ?? data.marriage?.existing_marriage_impact)}</li>
       </ul>
       <p>${escapeHtml(data.marriage?.requirements_and_risks?.value ?? "NOT FOUND.")}</p>
       <p class="summary">${escapeHtml(data.marriage?.genuine_marriage_warning?.value ?? data.child_citizenship?.parent_benefit_summary?.value ?? "")}</p>
@@ -709,7 +709,8 @@ function nomadTransitionRank(value) {
 }
 
 function nomadTransitionPill(transition) {
-  return `<span class="pill ${transition.tone}">${escapeHtml(transition.label)}</span>`;
+  const description = transition.fullLabel ? ` title="${escapeAttr(transition.fullLabel)}" aria-label="${escapeAttr(transition.fullLabel)}"` : "";
+  return `<span class="pill ${transition.tone}"${description}>${escapeHtml(transition.label)}</span>`;
 }
 
 function jusSoliRank(value) {
@@ -748,6 +749,20 @@ function parseOptionalNumber(value) {
 
 function formatNullable(value, formatter) {
   return value === null || value === undefined ? "NOT FOUND" : escapeHtml(formatter(value));
+}
+
+function formatCitizenshipYears(row, compact = false) {
+  if (row.citizenshipYears !== null) return `${row.citizenshipYears} YRS`;
+  const text = row.citizenshipYearsText ?? (row.status === "error" ? "RESEARCH ERROR" : "NOT RECORDED");
+  return compact
+    ? `<span class="timeline-note" title="${escapeAttr(text)}">${escapeHtml(text)}</span>`
+    : escapeHtml(text);
+}
+
+function formatRecordedPeriod(item, unit = "YRS") {
+  if (numberValue(item) !== null) return formatSourcedInline(item, value => `${value} ${unit}`);
+  const text = recordedPeriodText(item);
+  return `${escapeHtml(text ?? "NOT RECORDED")}${formatSourceIds(item?.source_ids)}`;
 }
 
 function formatIncome(row) {
@@ -1053,11 +1068,11 @@ function formatPrReview(transition) {
       <li>STATUS SWITCH: ${escapeHtml(formatBooleanish(review.requires_status_switch))}</li>
       <li>EXIT REQUIRED: ${escapeHtml(formatBooleanish(review.requires_exit))}</li>
       <li>NOMAD TIME COUNTS TOWARD PR: ${escapeHtml(formatBooleanish(review.nomad_time_counts_toward_pr))}</li>
-      <li>QUALIFYING YEARS TO PR: ${formatNullable(numberValue(review.years_to_pr), value => `${value} YRS`)}</li>
+      <li>QUALIFYING YEARS TO PR: ${formatRecordedPeriod({value: review.years_to_pr, notes: review.years_to_pr === null ? review.notes : null})}</li>
       <li>REVIEWED: ${escapeHtml(review.reviewed_at)}</li>
     </ul>
     <ul class="detail-list compact">${(Array.isArray(review.requirements) ? review.requirements : []).map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-    <p class="summary">${escapeHtml(review.notes)}</p>
+    ${review.years_to_pr !== null ? `<p class="summary">${escapeHtml(review.notes)}</p>` : ""}
     ${formatSourceIds(review.source_ids)}` : ""}
   </div>`;
 }

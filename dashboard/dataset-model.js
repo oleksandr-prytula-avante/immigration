@@ -50,6 +50,13 @@ function normalizeResults(json) {
     const nomadTransition = failed
       ? { status: "research_error", label: "UNKNOWN", tone: "warn", description: "Research failed; route availability and citizenship are unknown." }
       : buildNomadTransition(data, nomadRoute);
+    const citizenshipTimelines = failed ? [] : [
+      data.timeline?.total_years_to_citizenship,
+      data.timeline?.years_to_citizenship,
+      data.citizenship?.years_to_citizenship,
+      data.citizenship?.ordinary_naturalization_years,
+      data.settlement_track?.years_to_citizenship
+    ];
     return {
       country: item.country ?? data.country ?? "UNKNOWN",
       status: item.status ?? "ok",
@@ -65,7 +72,7 @@ function normalizeResults(json) {
       citizenshipCategory: failed ? "research_error" : digitalNomadCitizenshipCategory(data),
       nomadTransition,
       prTransition: failed
-        ? { status: "research_error", label: "UNKNOWN", tone: "warn", rank: 6, summary: "Research failed.", review: null }
+        ? { status: "research_error", label: "ERR", fullLabel: "Research failed", tone: "warn", rank: 6, summary: "Research failed.", review: null }
         : nomadPrTransition(data),
       languages: data.languages?.official_languages ?? [],
       jusSoli: failed ? null : normalizeJusSoli(data.child_citizenship),
@@ -77,13 +84,8 @@ function normalizeResults(json) {
         data.taxes?.income_tax_rate_percent
       ),
       taxText: taxTextValue(data),
-      citizenshipYears: failed ? null : firstNumberValue(
-        data.timeline?.total_years_to_citizenship,
-        data.timeline?.years_to_citizenship,
-        data.citizenship?.years_to_citizenship,
-        data.citizenship?.ordinary_naturalization_years,
-        data.settlement_track?.years_to_citizenship
-      ),
+      citizenshipYears: firstNumberValue(...citizenshipTimelines),
+      citizenshipYearsText: citizenshipTimelines.map(recordedPeriodText).find(Boolean) ?? null,
       sourceCount: data.sources?.length ?? 0,
       error: item.error ?? null
     };
@@ -161,6 +163,11 @@ function firstNumberValue(...values) {
     if (number !== null) return number;
   }
   return null;
+}
+
+export function recordedPeriodText(item) {
+  const values = typeof item === "string" ? [item] : [item?.display_value, item?.value, item?.local_or_formula_value, item?.notes];
+  return values.find(value => typeof value === "string" && value.trim()) ?? null;
 }
 
 function taxTextValue(data) {

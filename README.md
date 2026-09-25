@@ -78,14 +78,16 @@ for the displayed route; a separate residence route does not qualify that visa.
 PR PATH separately shows whether a recorded nomad/remote-worker route can be followed
 by permanent residence while keeping foreign remote work. A separate application or
 exit is acceptable; nomad time need not count. YES requires a sourced pathway for
-that profile. CONDITIONAL needs additional eligibility, UNCONFIRMED lacks sufficient
-evidence, and NO means no supported PR pathway. The country details show the successor,
+that profile. CND needs additional eligibility, UNK lacks sufficient evidence, and
+NO means no supported PR pathway; hover over a label for its full meaning. The country details show the successor,
 conditions, residence clock, exit requirement, sources and review date. The JSON field
-is `digital_nomad_pr_transition`; older exports without it display UNCONFIRMED.
+is `digital_nomad_pr_transition`; older exports without it display UNK.
 
 YEARS displays the recorded country timeline regardless of CIT status, including
-general or alternative-route timelines. The details panel preserves their notes
-and conditions. Missing numeric timelines remain NOT FOUND.
+general or alternative-route timelines. When a numeric total is absent, YEARS
+shows the original recorded explanation, with the full text in the tooltip and
+country details. Sorting and maximum-year filters continue to use numeric totals
+only; they do not extract or invent a number from the explanation.
 
 Run the full checks before publishing:
 

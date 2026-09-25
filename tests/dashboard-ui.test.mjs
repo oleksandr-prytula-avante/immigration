@@ -72,6 +72,11 @@ test('PR PATH confirms Uruguay independently of CIT and restores the confirmed f
   const uruguay = ui.el('tr[data-country="Uruguay"]');
   assert.equal(uruguay.querySelector('.pr-col').textContent.trim(), 'YES');
   assert.equal(uruguay.querySelector('.nomad-col').textContent.trim(), 'NO');
+  const conditionalPill = ui.el('tr[data-country="Estonia"] .pr-col .pill');
+  assert.equal(conditionalPill.textContent, 'CND');
+  assert.match(conditionalPill.title, /Conditional/);
+  assert.equal(ui.el('tr[data-country="Greece"] .pr-col .pill').textContent, 'UNK');
+  for (const pill of ui.dom.window.document.querySelectorAll('.pr-col .pill')) assert.ok(pill.textContent.length <= 3);
   uruguay.querySelector('button').click();
   const prDetail = [...ui.dom.window.document.querySelectorAll('#detailsPanel .detail-block')]
     .find(block => block.querySelector('h3')?.textContent === 'PERMANENT RESIDENCE AFTER NOMAD');
@@ -104,7 +109,8 @@ test('PR PATH confirms Uruguay independently of CIT and restores the confirmed f
 
 test('YEARS displays captured timelines with unchanged CIT labels and uses them for filtering and sorting', async () => {
   const ui = await dashboard('?dnv=all');
-  for (const [country, years, citizenship] of [['Estonia', '8 YRS', 'NO'], ['Uruguay', '5 YRS', 'NO'], ['Austria', '10 YRS', 'N/A'], ['Argentina', 'NOT FOUND', 'NO']]) {
+  const argentinaNotes = dataset.results.find(item => item.country === 'Argentina').data.timeline.total_years_to_citizenship.notes;
+  for (const [country, years, citizenship] of [['Estonia', '8 YRS', 'NO'], ['Uruguay', '5 YRS', 'NO'], ['Austria', '10 YRS', 'N/A'], ['Argentina', argentinaNotes, 'NO']]) {
     const row = ui.el(`tr[data-country="${country}"]`);
     assert.equal(row.cells[4].textContent.trim(), citizenship, country);
     assert.equal(row.cells[5].textContent.trim(), years, country);
@@ -119,7 +125,7 @@ test('YEARS displays captured timelines with unchanged CIT labels and uses them 
   ui.change('#citizenshipMax', '');
   for (const direction of ['ascending', 'descending']) {
     assert.equal(ui.el('th[data-sort="citizenship"]').getAttribute('aria-sort'), direction);
-    const values = [...ui.dom.window.document.querySelectorAll('#countryRows tr')].map(row => Number.parseFloat(row.cells[5].textContent));
+    const values = [...ui.dom.window.document.querySelectorAll('#countryRows tr')].map(row => Number.parseFloat(row.cells[5].dataset.years));
     const firstMissing = values.findIndex(Number.isNaN);
     assert.ok(firstMissing > 0);
     assert.ok(values.slice(firstMissing).every(Number.isNaN));
@@ -137,6 +143,17 @@ test('every country detail renders without errors and table/card route statuses 
     ui.el(`tr[data-country="${item.country}"] button`).click();
     assert.equal(ui.el('#detailsPanel h2').textContent, item.country);
     assert.ok(ui.el('#detailsPanel .full-data pre'), item.country);
+    const timeline = [...ui.dom.window.document.querySelectorAll('#detailsPanel .detail-block')]
+      .find(block => block.querySelector('h3')?.textContent === 'COUNTRY CITIZENSHIP TIMELINE');
+    assert.doesNotMatch(timeline.textContent, /NOT FOUND|NOT RECORDED/, item.country);
+    for (const field of ['total_years_to_citizenship', 'years_to_temporary_residence', 'years_to_permanent_residence_after_temporary', 'years_to_citizenship_after_permanent_residence', 'typical_citizenship_processing_time_months']) {
+      const value = item.data.timeline[field];
+      assert.ok(timeline.textContent.includes(value.notes), `${item.country}: ${field} notes`);
+      if (value.value !== null) assert.ok(timeline.textContent.includes(`${value.value} ${field.endsWith('_months') ? 'MONTHS' : 'YRS'}`), `${item.country}: ${field} value`);
+    }
+    const marriageYears = [...ui.dom.window.document.querySelectorAll('#detailsPanel li')].find(li => li.textContent.startsWith('MARRIAGE YEARS:'));
+    assert.ok(marriageYears.textContent.includes(item.data.marriage.years_of_marriage_or_residence_required.notes), `${item.country}: marriage period notes`);
+    assert.doesNotMatch(marriageYears.textContent, /NOT FOUND|NOT RECORDED/, item.country);
   }
   assert.deepEqual(ui.errors, []);
   ui.dom.window.close();
