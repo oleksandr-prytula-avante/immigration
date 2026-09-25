@@ -2,6 +2,9 @@ import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
+import { normalizeUrl, validateDatasetDocument } from "./validate-dataset.mjs";
+import { assertResearchState, refreshResearchMetadata, saveResearchState } from "./research-state.mjs";
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..");
 const args = parseArgs(process.argv.slice(2));
@@ -12,10 +15,12 @@ const runDirectory = path.resolve(root, args.runDir || ".research-runs");
 const today = args.date || new Date().toISOString().slice(0, 10);
 const concurrency = Math.max(1, Number(args.concurrency || 1));
 const maxAttempts = Math.max(1, Number(args.maxAttempts || 3));
-const minimumSources = Math.max(10, Number(args.minimumSources || 15));
+let minimumSources = Math.max(10, Number(args.minimumSources || 15));
 
 async function main() {
   const allCountries = JSON.parse(await fs.readFile(countriesPath, "utf8"));
+  const existingDataset = await loadDataset();
+  minimumSources = Math.max(minimumSources, existingDataset.meta?.minimum_distinct_source_urls_per_country ?? 15);
   let selectedCountries = selectCountries(allCountries, args);
   if (args.onlyUnresolved) {
     const dataset = await loadDataset();
@@ -34,6 +39,10 @@ async function main() {
         .map((item) => item.country)
     );
     selectedCountries = selectedCountries.filter((country) => incompleteCountries.has(country));
+  }
+  if (selectedCountries.length === 0) {
+    console.log("No countries selected; dataset unchanged");
+    return;
   }
   await fs.mkdir(runDirectory, { recursive: true });
 
@@ -86,11 +95,10 @@ async function main() {
     updated_at: new Date().toISOString(),
     total_countries: allCountries.length,
     completed_countries: finalDataset.results.filter((item) => item.status === "ok").length,
-    status: fullRun ? "complete" : "in_progress",
     research_mode: "Codex CLI chats with current web research and JSON-schema validation",
-    minimum_distinct_source_urls_per_country: minimumSources,
-    last_full_research_date: today
+    minimum_distinct_source_urls_per_country: fullRun ? minimumSources : finalDataset.meta?.minimum_distinct_source_urls_per_country ?? minimumSources
   };
+  refreshResearchMetadata(finalDataset, allCountries, fullRun ? today : undefined);
   await saveDataset(finalDataset);
   console.log(`complete: ${selectedCountries.length} countries processed; selected-country audit passed`);
 }
@@ -106,8 +114,8 @@ async function researchAndMergeCountry(country, position, total, workerNumber) {
     : findUnresolvedPaths(previousData);
   const previousUrls = uniqueUrls(previousData || { sources: [] });
 
-  if (!args.force) {
-    const checkpoint = await readValidCheckpoint(resultPath, country);
+  if (!args.force && !args.onlyUnresolved && !args.onlyUnexplainedNulls) {
+    const checkpoint = await readValidCheckpoint(resultPath, country, (await fs.stat(datasetPath)).mtimeMs);
     if (checkpoint) {
       await mergeCountry(country, checkpoint);
       console.log(`[${position}/${total}] worker ${workerNumber}: checkpoint ${country}`);
@@ -117,9 +125,9 @@ async function researchAndMergeCountry(country, position, total, workerNumber) {
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     console.log(`[${position}/${total}] worker ${workerNumber}: research ${country} (attempt ${attempt})`);
-    await runCodex(country, resultPath, logPath, targetPaths, previousUrls);
-
     try {
+      await fs.rm(resultPath, { force: true });
+      await runCodex(country, resultPath, logPath, targetPaths, previousUrls);
       const result = JSON.parse(await fs.readFile(resultPath, "utf8"));
       validateCountryResult(country, result);
       if (args.onlyUnresolved || args.onlyUnexplainedNulls) {
@@ -149,7 +157,7 @@ async function runCodex(country, resultPath, logPath, unresolvedPaths, previousU
   const prompt = [
     `Research ${country} now.`,
     `Read research_prompt.md in full and follow it exactly, replacing {{COUNTRY}} with ${country} and {{TODAY}} with ${today}.`,
-    `Read the existing ${country} record from dashboard/data/all-countries.json under .results[] and audit/improve it as PREVIOUS COUNTRY RESULT.`,
+    `Read the existing ${country} record from ${datasetPath} under .results[] and audit/improve it as PREVIOUS COUNTRY RESULT.`,
     `Use current web research and inspect at least ${minimumSources} distinct, directly relevant URLs in total.`,
     "Resolve every gap you can through focused searches, prefer official primary sources, and keep cautious explained nulls when a fact genuinely cannot be established.",
     "Every source_ids entry must match an id in sources, and every sources item must use a distinct canonical URL.",
@@ -198,8 +206,9 @@ async function runCodex(country, resultPath, logPath, unresolvedPaths, previousU
   }
 }
 
-async function readValidCheckpoint(file, country) {
+export async function readValidCheckpoint(file, country, minimumModifiedAt = 0) {
   try {
+    if ((await fs.stat(file)).mtimeMs < minimumModifiedAt) return null;
     const result = JSON.parse(await fs.readFile(file, "utf8"));
     validateCountryResult(country, result);
     return result;
@@ -210,41 +219,14 @@ async function readValidCheckpoint(file, country) {
   }
 }
 
-function validateCountryResult(country, result) {
-  if (!result || typeof result !== "object" || Array.isArray(result)) {
-    throw new Error("result is not a JSON object");
-  }
-  if (result.country !== country) {
-    throw new Error(`country mismatch: expected ${country}, got ${result.country}`);
-  }
-
-  const urls = uniqueUrls(result);
-  if (urls.length < minimumSources) {
-    throw new Error(`${urls.length} distinct source URLs; ${minimumSources} required`);
-  }
-  if ((result.languages?.official_languages?.length || 0) === 0) {
-    throw new Error("official_languages is empty");
-  }
-  if (!result.child_citizenship?.birthright_citizenship?.value) {
-    throw new Error("birthright citizenship classification is missing");
-  }
-  if (!result.settlement_track?.classification) {
-    throw new Error("settlement classification is missing");
-  }
-  if (result.valid_for_selection === true && result.fully_matched !== true) {
-    throw new Error("valid_for_selection=true requires fully_matched=true under the research prompt");
-  }
-  if (result.fully_matched === true && result.valid_for_selection !== true) {
-    throw new Error("fully_matched=true requires valid_for_selection=true");
-  }
-
-  const sourceIds = new Set((result.sources || []).map((source) => source.id));
-  const missingSourceIds = [];
-  collectSourceIds(result, "", (id, propertyPath) => {
-    if (!sourceIds.has(id)) missingSourceIds.push(`${propertyPath}:${id}`);
+export function validateCountryResult(country, result, options = {}) {
+  const validation = validateDatasetDocument({ results: [{ country, status: "ok", data: result }] }, [country], {
+    minimumSources: options.minimumSources ?? minimumSources,
+    requireNomadPrReview: true
   });
-  if (missingSourceIds.length > 0) {
-    throw new Error(`unresolved source_ids: ${missingSourceIds.slice(0, 10).join(", ")}`);
+  if (!validation.valid) throw new Error(validation.errors.join("\n"));
+  if (result.researched_at !== (options.researchDate ?? today)) {
+    throw new Error(`${country}: researched_at must match the requested research date`);
   }
 }
 
@@ -283,38 +265,10 @@ function findUnexplainedNullPaths(value, currentPath = "", found = []) {
   return found;
 }
 
-function normalizeUrl(value) {
-  try {
-    const url = new URL(value);
-    url.hash = "";
-    for (const key of [...url.searchParams.keys()]) {
-      if (/^(utm_|fbclid$|gclid$)/i.test(key)) url.searchParams.delete(key);
-    }
-    return url.toString().replace(/\/$/, "");
-  } catch {
-    return String(value || "").trim().replace(/\/$/, "");
-  }
-}
-
-function collectSourceIds(value, currentPath, callback) {
-  if (Array.isArray(value)) {
-    if (currentPath.endsWith("source_ids")) {
-      value.forEach((id) => callback(id, currentPath));
-    } else {
-      value.forEach((item, index) => collectSourceIds(item, `${currentPath}[${index}]`, callback));
-    }
-    return;
-  }
-  if (!value || typeof value !== "object") return;
-  for (const [key, item] of Object.entries(value)) {
-    collectSourceIds(item, currentPath ? `${currentPath}.${key}` : key, callback);
-  }
-}
-
 let mergeQueue = Promise.resolve();
 
 async function mergeCountry(country, data) {
-  mergeQueue = mergeQueue.then(async () => {
+  const pendingMerge = mergeQueue.then(async () => {
     const dataset = await loadDataset();
     const index = dataset.results.findIndex((item) => item.country === country);
     const previous = index >= 0 ? dataset.results[index] : null;
@@ -327,22 +281,21 @@ async function mergeCountry(country, data) {
     };
     if (index >= 0) dataset.results[index] = item;
     else dataset.results.push(item);
-    dataset.meta = { ...(dataset.meta || {}), updated_at: new Date().toISOString(), status: "in_progress" };
+    const allCountries = JSON.parse(await fs.readFile(countriesPath, "utf8"));
+    refreshResearchMetadata(dataset, allCountries);
     await saveDataset(dataset);
   });
-  return mergeQueue;
+  mergeQueue = pendingMerge.catch(() => {});
+  return pendingMerge;
 }
 
 async function loadDataset() {
   const dataset = JSON.parse(await fs.readFile(datasetPath, "utf8"));
-  if (!Array.isArray(dataset.results)) throw new Error("dataset.results must be an array");
-  return dataset;
+  return assertResearchState(dataset);
 }
 
 async function saveDataset(dataset) {
-  const temporaryPath = `${datasetPath}.tmp`;
-  await fs.writeFile(temporaryPath, `${JSON.stringify(dataset, null, 2)}\n`);
-  await fs.rename(temporaryPath, datasetPath);
+  await saveResearchState(datasetPath, dataset);
 }
 
 function auditDataset(dataset, expectedCountries) {
@@ -393,4 +346,6 @@ function parseArgs(argv) {
   return parsed;
 }
 
-await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  await main();
+}

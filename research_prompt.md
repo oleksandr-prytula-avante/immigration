@@ -3,6 +3,8 @@ You are doing current immigration research for this country: {{COUNTRY}}.
 Research date: {{TODAY}}. Use the freshest available information. Use web search and verify primary or official sources whenever possible: immigration authority websites, consulates, tax authorities, official government portals, laws, and international passport indexes. If you use a non-official source, mark that in `notes` and lower confidence.
 
 Source coverage and comparison rules:
+- Keep the scope, population, time period and methodology of every numeric field consistent with its name. Do not substitute a combined mobility score for strictly visa-free destinations, a subgroup median for a national median, or a future tax schedule for the current schedule.
+- Keep application fees, taxes and local minimum wages separate from visa income requirements. Citizenship totals describe the qualifying residence period; record application processing separately. Reconcile country summaries, route descriptions, timeline fields and settlement classifications with the PR review before returning the record.
 - Use at least 10 distinct, directly relevant web-source URLs for this country. Do not count search-result pages or duplicate/canonical variants as separate sources.
 - Every source must have a unique `id` and a unique canonical HTTP(S) URL. Remove fragments and tracking parameters when comparing URLs. Every value in every `source_ids` array must match exactly one `sources[].id`; never emit dangling or duplicate source IDs.
 - Compare every field with the supplied previous country result when one is provided. Preserve a previous value when it remains better supported; replace or expand it when current sources are fresher, more official, or fill a gap.
@@ -99,10 +101,11 @@ Digital-nomad to permanent-residence review (independent of citizenship eligibil
    - whether birth of a citizen child gives the father advantages for residence, permanent residence, or citizenship. Do not imply that father citizenship is automatic just because the child is a citizen.
 8. Passport:
    - passport rank in the Henley Passport Index or another named index;
-   - number of visa-free destinations;
+   - number of strictly visa-free destinations in `visa_free_destinations`;
+   - combined access score in `mobility_score`, with the index methodology, snapshot date and included visa categories explained in notes;
    - number of destinations requiring a visa in advance;
    - number of visa-on-arrival / eTA destinations, if the source separates them.
-   - For countries passing selection, `rank` and `visa_free_destinations` must not remain empty. If Henley does not provide the needed breakdown, use a reliable passport index and cite the source.
+   - Henley's combined score includes visa-on-arrival and qualifying eTA access; do not put that score into `visa_free_destinations`. Seek a separately published breakdown, cite its index and date, and retain an explained, cited null if no comparable strict count is established. Never infer a breakdown by subtracting categories from different indexes or dates.
 9. Languages:
    - official national language(s);
    - how realistic it is to live and work remotely in English, Russian, or Ukrainian, if sources support that.

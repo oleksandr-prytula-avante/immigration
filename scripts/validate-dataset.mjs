@@ -50,6 +50,11 @@ export function validateDatasetDocument(document, expectedCountries, options = {
     return counts;
   }, {});
   const reviewMeta = document?.meta?.digital_nomad_pr_review;
+  if (options.requireNomadPrReview) {
+    for (const item of digitalNomadVisas) {
+      if (!item.data.digital_nomad_pr_transition) errors.push(`${item.country}: current nomad research requires a PR review`);
+    }
+  }
   if (reviewMeta !== undefined) {
     if (!reviewMeta || typeof reviewMeta !== "object" || !validISODate(reviewMeta.reviewed_at)) {
       errors.push("meta.digital_nomad_pr_review requires a valid reviewed_at date");
@@ -147,6 +152,9 @@ function validateCountry(item, minimumSources, errors) {
   if (data.fully_matched === true && data.valid_for_selection !== true) {
     errors.push(`${country}: fully_matched=true requires valid_for_selection=true`);
   }
+  if (data.citizenship_track_strength !== data.settlement_track.citizenship_track_strength) {
+    errors.push(`${country}: citizenship_track_strength must agree with settlement_track`);
+  }
 
   const citizenshipRoute = digitalNomadVisaRoute(data);
   validatePrTransition(data, citizenshipRoute, country, errors);
@@ -175,11 +183,16 @@ function validateCountry(item, minimumSources, errors) {
     }
   }
 
-  collectSourcedNulls(data, "", (value, propertyPath) => {
+  collectSourcedValues(data, "", (value, propertyPath) => {
     const notes = typeof value.notes === "string" ? value.notes.trim() : "";
     const ids = Array.isArray(value.source_ids) ? value.source_ids : [];
-    if (!notes || ids.length === 0) {
+    if (value.value === null && (!notes || ids.length === 0)) {
       errors.push(`${country}: ${propertyPath} has an unexplained or uncited null value`);
+    } else if (!ids.length) {
+      errors.push(`${country}: ${propertyPath} requires cited value evidence`);
+    }
+    if (typeof value.value === "string" && !value.value.trim()) {
+      errors.push(`${country}: ${propertyPath} contains an empty value`);
     }
   });
   return true;
@@ -286,7 +299,7 @@ function validateDatesAndNumbers(value, propertyPath, errors) {
       if ((key.endsWith("_percent") || key === "rate_percent") && number > 100) {
         errors.push(`${childPath} must not exceed 100 percent`);
       }
-      if (["rank", "visa_free_destinations"].includes(key) && !Number.isInteger(number)) {
+      if ((key === "rank" || key === "mobility_score" || key.endsWith("_destinations")) && !Number.isInteger(number)) {
         errors.push(`${childPath} must be an integer`);
       }
       if (key === "rank" && number === 0) errors.push(`${childPath} must be greater than zero`);
@@ -313,16 +326,16 @@ function collectSourceIdReferences(value, currentPath, callback) {
   }
 }
 
-function collectSourcedNulls(value, currentPath, callback) {
+function collectSourcedValues(value, currentPath, callback) {
   if (!value || typeof value !== "object") return;
-  if (!Array.isArray(value) && Object.prototype.hasOwnProperty.call(value, "value") && value.value === null) {
+  if (!Array.isArray(value) && Object.prototype.hasOwnProperty.call(value, "value")) {
     callback(value, currentPath || "$");
   }
   if (Array.isArray(value)) {
-    value.forEach((item, index) => collectSourcedNulls(item, `${currentPath}[${index}]`, callback));
+    value.forEach((item, index) => collectSourcedValues(item, `${currentPath}[${index}]`, callback));
   } else {
     for (const [key, item] of Object.entries(value)) {
-      collectSourcedNulls(item, currentPath ? `${currentPath}.${key}` : key, callback);
+      collectSourcedValues(item, currentPath ? `${currentPath}.${key}` : key, callback);
     }
   }
 }

@@ -2,7 +2,10 @@ import OpenAI from "openai";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 import { prTransitionSchema } from "./scripts/pr-transition-schema.mjs";
+import { normalizeUrl, validateDatasetDocument } from "./scripts/validate-dataset.mjs";
+import { assertResearchState, refreshResearchMetadata, saveResearchState } from "./scripts/research-state.mjs";
 
 await loadDotEnv();
 
@@ -44,6 +47,8 @@ async function main() {
 
   const selectedCountries = selectCountries(countries, args);
   const state = await loadState(outputPath);
+  let failures = 0;
+  let refreshed = 0;
 
   for (const country of selectedCountries) {
     const previousItem = state.results.find((item) => item.country === country && item.status === "ok");
@@ -57,7 +62,8 @@ async function main() {
     const startedAt = new Date().toISOString();
 
     try {
-      const result = await researchCountry(country, previousItem?.data || null);
+      const result = await researchCountry(country, previousItem?.data || null, state.meta.minimum_distinct_source_urls_per_country ?? 15);
+      refreshed += 1;
       upsertResult(state, {
         country,
         status: "ok",
@@ -66,6 +72,8 @@ async function main() {
         data: result
       });
     } catch (error) {
+      failures += 1;
+      console.error(`failed ${country}: ${error.message}`);
       if (previousItem) {
         upsertResult(state, {
           ...previousItem,
@@ -84,18 +92,23 @@ async function main() {
       }
     }
 
-    state.meta.updated_at = new Date().toISOString();
+    refreshResearchMetadata(state, countries);
     await saveState(outputPath, state);
     await sleep(Number(args.delayMs ?? 1500));
   }
 
-  console.log(`saved ${outputPath}`);
+  if (refreshed === countries.length && failures === 0) {
+    refreshResearchMetadata(state, countries, today);
+    await saveState(outputPath, state);
+  }
+  if (failures) throw new Error(`${failures} countries failed; previous successful records were preserved`);
+  console.log(`complete: ${refreshed} countries refreshed; output ${outputPath}`);
 }
 
-async function researchCountry(country, previousData) {
+async function researchCountry(country, previousData, minimumSources) {
   const basePrompt = promptTemplate
     .replaceAll("{{COUNTRY}}", country)
-    .replaceAll("{{TODAY}}", today);
+    .replaceAll("{{TODAY}}", today) + `\nThis dataset requires at least ${minimumSources} distinct relevant source URLs per country.`;
 
   const comparisonContext = previousData
     ? [
@@ -107,10 +120,10 @@ async function researchCountry(country, previousData) {
   let result = await requestCountryResearch(`${basePrompt}${comparisonContext}`);
   const firstPassUrls = uniqueSourceUrls(result);
   const unresolved = findUnresolvedPaths(result);
-  let validationOptions = { minimumSources: 10 };
+  let validationOptions = { minimumSources };
 
-  if (firstPassUrls.length < 10 || unresolved.length > 0) {
-    const requiredTotal = unresolved.length > 0 ? 15 : 10;
+  if (firstPassUrls.length < minimumSources || unresolved.length > 0) {
+    const requiredTotal = Math.max(minimumSources, unresolved.length > 0 ? 15 : 10);
     const auditPrompt = [
       basePrompt,
       "\nFOCUSED SECOND-PASS AUDIT:",
@@ -135,7 +148,7 @@ async function researchCountry(country, previousData) {
     };
   }
 
-  validateResearchResult(country, result, validationOptions);
+  validateResearchResult(country, result, { ...validationOptions, researchDate: today });
   return result;
 }
 
@@ -180,20 +193,7 @@ function uniqueSourceUrls(result) {
     ? result.sources.map((source) => source?.url).filter(Boolean)
     : [];
 
-  return [...new Set(urls.map((url) => normalizeSourceUrl(url)))];
-}
-
-function normalizeSourceUrl(value) {
-  try {
-    const url = new URL(value);
-    url.hash = "";
-    for (const key of [...url.searchParams.keys()]) {
-      if (/^(utm_|fbclid$|gclid$)/i.test(key)) url.searchParams.delete(key);
-    }
-    return url.toString().replace(/\/$/, "");
-  } catch {
-    return String(value).trim().replace(/\/$/, "");
-  }
+  return [...new Set(urls.map(normalizeUrl).filter(Boolean))];
 }
 
 function findUnresolvedPaths(value, currentPath = "", found = []) {
@@ -212,7 +212,7 @@ function findUnresolvedPaths(value, currentPath = "", found = []) {
   return found;
 }
 
-function validateResearchResult(country, result, options = {}) {
+export function validateResearchResult(country, result, options = {}) {
   const urls = uniqueSourceUrls(result);
   const sourceCount = urls.length;
   const unresolvedCount = findUnresolvedPaths(result).length;
@@ -237,6 +237,14 @@ function validateResearchResult(country, result, options = {}) {
           `${options.minimumAdditionalSources} required`
       );
     }
+  }
+  const validation = validateDatasetDocument({ results: [{ country, status: "ok", data: result }] }, [country], {
+    minimumSources: requiredSources,
+    requireNomadPrReview: true
+  });
+  if (!validation.valid) throw new Error(validation.errors.join("\n"));
+  if (options.researchDate && result.researched_at !== options.researchDate) {
+    throw new Error(`${country}: researched_at must match the requested research date`);
   }
 }
 
@@ -267,6 +275,7 @@ function createInitialState() {
 }
 
 function normalizeState(state) {
+  assertResearchState(state);
   const initialState = createInitialState();
 
   return {
@@ -277,13 +286,12 @@ function normalizeState(state) {
       ...(state && typeof state === "object" ? state.meta : null),
       model
     },
-    results: Array.isArray(state?.results) ? state.results : []
+    results: state.results
   };
 }
 
 async function saveState(file, state) {
-  await fs.mkdir(path.dirname(file), { recursive: true });
-  await fs.writeFile(file, `${JSON.stringify(state, null, 2)}\n`);
+  await saveResearchState(file, state);
 }
 
 function upsertResult(state, item) {
@@ -940,6 +948,7 @@ const countryResearchSchema = {
         index_name: nullableString,
         rank: sourcedNumber,
         visa_free_destinations: sourcedNumber,
+        mobility_score: sourcedNumber,
         visa_required_destinations: sourcedNumber,
         visa_on_arrival_or_eta_destinations: sourcedNumber,
         notes: nullableString
@@ -948,6 +957,7 @@ const countryResearchSchema = {
         "index_name",
         "rank",
         "visa_free_destinations",
+        "mobility_score",
         "visa_required_destinations",
         "visa_on_arrival_or_eta_destinations",
         "notes"
@@ -1040,4 +1050,6 @@ const countryResearchSchema = {
   ]
 };
 
-await main();
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+  await main();
+}

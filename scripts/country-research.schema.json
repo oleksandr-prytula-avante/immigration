@@ -2073,6 +2073,35 @@
             "string",
             "null"
           ]
+        },
+        "mobility_score": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "source_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "notes": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "value",
+            "source_ids",
+            "notes"
+          ]
         }
       },
       "required": [

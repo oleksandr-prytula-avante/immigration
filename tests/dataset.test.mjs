@@ -148,3 +148,53 @@ test("older exports without PR reviews remain valid, without claiming a complete
   assert.equal(result.valid, true, result.errors.join("\n"));
   assert.equal(result.summary.digital_nomad_pr_reviews, 0);
 });
+
+test("cited values and duplicate citizenship classifications cannot silently disagree", () => {
+  const input = fixture();
+  const data = input.results[0].data;
+  data.languages.russian_or_ukrainian_practicality.source_ids = [];
+  data.citizenship_track_strength = data.settlement_track.citizenship_track_strength === "strong" ? "none" : "strong";
+  data.passport.visa_required_destinations.value = 4.5;
+  const errors = validate(input).errors.join("\n");
+  assert.match(errors, /russian_or_ukrainian_practicality requires cited value evidence/);
+  assert.match(errors, /citizenship_track_strength must agree/);
+  assert.match(errors, /visa_required_destinations must be an integer/);
+});
+
+test("new nomad research requires PR review while historical imports remain compatible", () => {
+  const { input, item } = prFixture();
+  delete item.data.digital_nomad_pr_transition;
+  assert.equal(validateDatasetDocument(input, [item.country]).valid, true);
+  assert.match(validateDatasetDocument(input, [item.country], { requireNomadPrReview: true }).errors.join("\n"), /requires a PR review/);
+});
+
+test("combined passport scores retain their original amounts without masquerading as visa-free counts", () => {
+  const passport = country => document.results.find(item => item.country === country).data.passport;
+  assert.equal(passport("Belgium").mobility_score.value, 186);
+  assert.equal(passport("Belgium").visa_free_destinations.value, 121);
+  assert.equal(passport("Japan").mobility_score.value, 188);
+  assert.equal(passport("Japan").visa_free_destinations.value, null);
+  assert.match(passport("Japan").visa_free_destinations.notes, /separate strictly visa-free-only count/);
+});
+
+test("reviewed settlement and numeric corrections preserve their distinct legal meanings", () => {
+  const data = country => document.results.find(item => item.country === country).data;
+  const indonesia = data("Indonesia");
+  assert.equal(digitalNomadCitizenshipStatus(indonesia), "no");
+  assert.equal(indonesia.digital_nomad_pr_transition.status, "conditional");
+  assert.equal(indonesia.timeline.years_to_permanent_residence_after_temporary.value, null);
+  assert.equal(indonesia.timeline.total_years_to_citizenship.value, 5);
+  assert.match(indonesia.best_routes[0].path_to_citizenship.value, /KITAP/);
+  assert.match(data("Brazil").best_routes[0].extension_rules.notes, /multiple renewals/);
+  assert.equal(data("Czechia").best_routes[0].minimum_monthly_income_usd.value, 3503);
+  assert.equal(data("Czechia").best_routes[0].income_requirement_display.usd_monthly_value, 3503);
+  assert.equal(data("Panama").digital_nomad_pr_transition.years_to_pr, 2);
+  assert.equal(data("Canada").timeline.total_years_to_citizenship.value, 3);
+  assert.equal(data("Mongolia").taxes.digital_nomad_taxation.top_or_screening_pit_rate_percent, 20);
+  assert.deepEqual(data("Mongolia").taxes.taxation_system.tax_brackets.slice(0, 3).map(band => band.rate_percent), [10, 15, 20]);
+  assert.equal(data("Guinea").labor_market.average_wage_usd_monthly.value, null);
+  assert.match(data("Guinea").labor_market.average_wage_usd_monthly.notes, /177,792/);
+  for (const [country, index] of [["Belarus", 0], ["Cote d'Ivoire", 2], ["Saint Vincent and the Grenadines", 0]]) {
+    assert.equal(data(country).rejected_routes[index].income_requirement_display.usd_monthly_value, null, country);
+  }
+});

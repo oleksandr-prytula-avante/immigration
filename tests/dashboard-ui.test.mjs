@@ -229,3 +229,18 @@ test('failed research is unknown and never classified as no visa', async () => {
   assert.match(ui.el('#detailsPanel').textContent, /Network failure/);
   ui.dom.window.close();
 });
+
+test('passport details distinguish the index score from strictly visa-free access', async () => {
+  const ui = await dashboard('?dnv=all');
+  const passportDetail = () => [...ui.dom.window.document.querySelectorAll('#detailsPanel .detail-block')]
+    .find(block => block.querySelector('h3')?.textContent === 'PASSPORT AND LANGUAGES');
+  ui.el('tr[data-country="Belgium"] button').click();
+  assert.match(passportDetail().textContent, /ACCESS SCORE \(COMBINED\): 186 DESTINATIONS/);
+  assert.match(passportDetail().textContent, /STRICTLY VISA-FREE: 121 DESTINATIONS/);
+  ui.el('tr[data-country="Japan"] button').click();
+  assert.match(passportDetail().textContent, /ACCESS SCORE \(COMBINED\): 188 DESTINATIONS/);
+  assert.match(passportDetail().textContent, /separate strictly visa-free-only count/);
+  assert.doesNotMatch(passportDetail().textContent, /STRICTLY VISA-FREE: 188/);
+  assert.deepEqual(ui.errors, []);
+  ui.dom.window.close();
+});

@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated_at": "2026-09-25T18:36:43.649Z",
+    "updated_at": "2026-09-25T18:59:56.223Z",
     "country_set": "193 UN member states",
     "total_countries": 193,
     "completed_countries": 193,
@@ -10768,11 +10768,12 @@
             "notes": "Live Henley ranking inspected on 2026-08-15."
           },
           "visa_free_destinations": {
-            "value": 183,
+            "value": null,
             "source_ids": [
-              "AU_HENLEY_INDEX"
+              "AU_HENLEY_INDEX",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's score counts destinations accessible without obtaining a prior visa and can include visa-on-arrival or eTA access under its methodology."
+            "notes": "The recorded 183 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's score counts destinations accessible without obtaining a prior visa and can include visa-on-arrival or eTA access under its methodology."
           },
           "visa_required_destinations": {
             "value": null,
@@ -10788,7 +10789,15 @@
             ],
             "notes": "Henley combines qualifying access categories in its headline score and did not expose a separate Australia visa-on-arrival/eTA count in the inspected public ranking."
           },
-          "notes": "Rank and access are dynamic and should be rechecked before travel; each destination's entry rules remain controlling."
+          "notes": "Rank and access are dynamic and should be rechecked before travel; each destination's entry rules remain controlling.",
+          "mobility_score": {
+            "value": 183,
+            "source_ids": [
+              "AU_HENLEY_INDEX",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's score counts destinations accessible without obtaining a prior visa and can include visa-on-arrival or eTA access under its methodology."
+          }
         },
         "languages": {
           "official_languages": [
@@ -11180,6 +11189,14 @@
             "publisher": "Henley & Partners",
             "source_type": "passport_index",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -18110,7 +18127,7 @@
           "status": "conditional",
           "pathway_type": "status_switch",
           "qualifying_status": "Immigrant status under section 6 of the Immigration Act, followed by section 5 permanent residence",
-          "remote_work_profile_supported": false,
+          "remote_work_profile_supported": "uncertain",
           "requires_status_switch": true,
           "requires_exit": "uncertain",
           "nomad_time_counts_toward_pr": false,
@@ -18185,7 +18202,7 @@
             "income_requirement_display": {
               "value": "No immigration income threshold; BYN 45 minimum monthly tax while registered",
               "currency_basis": "BYN",
-              "usd_monthly_value": 15.5,
+              "usd_monthly_value": null,
               "local_or_formula_value": "BYN 45/month minimum NPD payment",
               "notes": "Approximately USD 15.5 using the late-July 2026 official-rate proxy of BYN 2.9063 per USD. This payment does not qualify anyone for residence.",
               "source_ids": [
@@ -20017,11 +20034,11 @@
             "notes": "Henley global rank on the page inspected on 2026-08-15."
           },
           "visa_free_destinations": {
-            "value": 186,
+            "value": 121,
             "source_ids": [
-              "BE_HENLEY_2026"
+              "BE_PASSPORT_INDEX"
             ],
-            "notes": "Henley's access score combines destinations accessible without obtaining a traditional visa in advance, including visa-on-arrival access; it is not the strict visa-free-only count."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 25,
@@ -20037,7 +20054,15 @@
             ],
             "notes": "Passport Index reports 41 visa-on-arrival and 11 eTA destinations. Its strict visa-free count is 121, and its separate eVisa classifications mean the categories should not be summed against the Henley score."
           },
-          "notes": "Rank/access and category-breakdown figures come from two named indexes with different methodologies and should not be treated as one internally additive dataset."
+          "notes": "Rank/access and category-breakdown figures come from two named indexes with different methodologies and should not be treated as one internally additive dataset.",
+          "mobility_score": {
+            "value": 186,
+            "source_ids": [
+              "BE_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score combines destinations accessible without obtaining a traditional visa in advance, including visa-on-arrival access; it is not the strict visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -20397,6 +20422,14 @@
             "publisher": "Eurostat",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -27578,7 +27611,7 @@
         "country": "Brazil",
         "researched_at": "2026-08-15",
         "valid_for_selection": false,
-        "selection_summary": "Brazil has an active VITEM XIV/RN 45 digital-nomad route that independently grants temporary residence for ordinary work performed remotely for a foreign employer or client. It is limited to an initial period of up to one year and one equal renewal; current official sources do not establish further renewal or conversion based merely on continued foreign remote work. It is therefore a good temporary-living route but not a confirmed citizenship-path route.",
+        "selection_summary": "Brazil’s RN 45 route supports foreign remote work and grants temporary residence for up to one year, renewable for an equal period. The reviewed rule does not impose a one-renewal cap. A matching conversion to indefinite residence is still unconfirmed, so this is not a verified citizenship route.",
         "visa_application": {
           "application_url": "https://www.gov.br/mre/pt-br/consulado-porto/servicos-consulares/vistos/visto-temporario-xiv-nomade-digital",
           "application_url_type": "official_route_info",
@@ -27677,12 +27710,13 @@
               "notes": "Articles 3 and 4 of RN 45 set the initial residence period at up to one year for both the temporary-visa and in-country residence procedures."
             },
             "extension_rules": {
-              "value": "Renewable once for an equal period after submitting the required renewal documents, CRNM and criminal-record evidence",
+              "value": "Up to one year initially, renewable for an equal period with continued eligibility and the required documents.",
               "source_ids": [
                 "rn45",
-                "nomad_current"
+                "nomad_current",
+                "BR_DEEP_MULTIPLE_RENEWALS"
               ],
-              "notes": "Article 6 authorizes renewal for an equal period. Neither RN 45 nor the current official route page provides a second renewal or automatic conversion to indefinite residence."
+              "notes": "Article 6 states no numeric renewal cap; Ministry guidance describes multiple renewals. Renewals remain temporary and do not establish indefinite residence."
             },
             "path_to_temporary_residence": {
               "value": "Direct: apply for VITEM XIV through the competent Brazilian consulate abroad, or request RN 45 residence authorization while in Brazil and complete registration/CRNM formalities.",
@@ -27711,7 +27745,7 @@
                 "migration_law",
                 "naturalization_service"
               ],
-              "notes": "Ordinary naturalization generally requires four years of qualifying residence plus Portuguese ability and a satisfactory criminal record. RN 45 is capped at two years and no matching remote-worker conversion covering the remaining period was confirmed."
+              "notes": "Ordinary naturalization requires separately established eligibility, including the required indefinite-residence status. RN 45 renewal alone does not prove that status."
             },
             "notes": "The route strongly fits temporary foreign-contract remote work but fails the citizenship-oriented selection because the exact status does not provide or confirm a complete settlement track.",
             "source_ids": [
@@ -28121,7 +28155,7 @@
               "nomad_current",
               "rn_catalog"
             ],
-            "notes": "No RN 45 conversion to indefinite or permanent residence was confirmed; the governing rule provides only one equal renewal."
+            "notes": "RN 45 permits temporary-residence renewal; a conversion to indefinite residence based solely on foreign remote work remains unconfirmed."
           },
           "years_to_citizenship_after_permanent_residence": {
             "value": null,
@@ -28139,7 +28173,7 @@
               "migration_law",
               "naturalization_service"
             ],
-            "notes": "Ordinary naturalization may be available after four years of qualifying residence, but RN 45 ends after at most two years and no matching foreign-remote-work conversion was confirmed."
+            "notes": "The general four-year rule cannot be treated as an RN 45 timeline without establishing the required indefinite-residence status."
           },
           "typical_citizenship_processing_time_months": {
             "value": 6,
@@ -28405,7 +28439,7 @@
             "url": "https://www.gov.br/mj/pt-br/assuntos/seus-direitos/migracoes/portal-de-imigracao-laboral/navegacao-guiada-1/possui-autorizacao-de-residencia/o-que-deseja/qual-a-finalidade-desejada-1/trabalho-sem-contrato-de-trabalho-no-brasil/nomade-digital/nomade-digital",
             "publisher": "Ministry of Justice and Public Security",
             "source_type": "official_government",
-            "accessed_at": "2026-08-15"
+            "accessed_at": "2026-09-25"
           },
           {
             "id": "visa_porto",
@@ -28686,6 +28720,14 @@
             "publisher": "Brazil Ministry of Justice and Public Security",
             "source_type": "law",
             "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "BR_DEEP_MULTIPLE_RENEWALS",
+            "title": "5-step process for a digital-nomad residency permit — multiple renewals",
+            "url": "https://portaldeimigracao.mj.gov.br/images/publicacoes/5_Passos_para_obter_autoriza%C3%A7%C3%A3o_de_resid%C3%AAncia_como_N%C3%B4made_Digital_Ingl%C3%AAs_2.pdf",
+            "publisher": "Ministry of Justice and Public Security",
+            "source_type": "official_government",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -28693,17 +28735,18 @@
           "can_lead_to_citizenship_from_this_route": false,
           "citizenship_track_strength": "none_or_separate_route_required",
           "requires_switch_to_another_status": true,
-          "nomad_only_warning": "RN 45 is capped at an initial period of up to one year plus one equal renewal. No ordinary foreign-contract conversion to indefinite residence was confirmed, so it cannot by itself cover the general four-year naturalization period.",
+          "nomad_only_warning": "RN 45 grants renewable temporary residence. No matching foreign-remote-work conversion to indefinite residence is confirmed.",
           "years_to_citizenship": null,
           "summary": "Brazil's RN 45 route is a strong temporary remote-work fit but not a confirmed settlement route. Citizenship would require changing to another independently qualifying residence basis; continuing the foreign remote contract alone does not supply one.",
           "source_ids": [
             "rn45",
             "nomad_current",
             "migration_law",
-            "naturalization_service"
+            "naturalization_service",
+            "BR_DEEP_MULTIPLE_RENEWALS"
           ],
-          "reviewed_at": "2026-08-15",
-          "notes": "The existence of general naturalization rules is not evidence that the two-year digital-nomad status itself supplies a complete citizenship path."
+          "reviewed_at": "2026-09-25",
+          "notes": "A statutory residence period and renewable temporary permission do not alone prove a complete naturalization path."
         },
         "citizenship_track_strength": "none_or_separate_route_required",
         "regular_foreign_contract_remote_work_fit": {
@@ -30687,12 +30730,11 @@
             "notes": "July 2026 Henley ranking; Bulgaria shares 11th place."
           },
           "visa_free_destinations": {
-            "value": 178,
+            "value": 142,
             "source_ids": [
-              "BG_HENLEY",
-              "BG_BTA_PASSPORT"
+              "BG_VISA_INDEX"
             ],
-            "notes": "Henley's access score includes destinations accessible without a prior visa, including qualifying visa-on-arrival access."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 51,
@@ -30708,7 +30750,16 @@
             ],
             "notes": "VisaIndex lists 29 visa-on-arrival and seven eTA destinations."
           },
-          "notes": "Henley supplies the headline rank and access score. VisaIndex separately reports 142 strictly visa-free, 29 visa-on-arrival, seven eTA and 51 visa/eVisa-in-advance destinations; the methodologies should not be mixed."
+          "notes": "Henley supplies the headline rank and access score. VisaIndex separately reports 142 strictly visa-free, 29 visa-on-arrival, seven eTA and 51 visa/eVisa-in-advance destinations; the methodologies should not be mixed.",
+          "mobility_score": {
+            "value": 178,
+            "source_ids": [
+              "BG_HENLEY",
+              "BG_BTA_PASSPORT",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score includes destinations accessible without a prior visa, including qualifying visa-on-arrival access."
+          }
         },
         "languages": {
           "official_languages": [
@@ -31115,6 +31166,14 @@
             "url": "https://dv.parliament.bg/DVWeb/showMaterialDV.jsp?idMat=239936",
             "publisher": "Bulgarian State Gazette",
             "source_type": "law",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
             "accessed_at": "2026-09-25"
           }
         ],
@@ -34969,11 +35028,11 @@
             "notes": "Shared rank in the 9 January 2026 Henley table."
           },
           "visa_free_destinations": {
-            "value": 50,
+            "value": 20,
             "source_ids": [
-              "KH_HENLEY_2026_PDF"
+              "KH_PASSPORT_INDEX_2026"
             ],
-            "notes": "Henley’s score combines destinations accessible without a prior visa, including visa-free, visa on arrival, and eTA; it is not a strictly visa-free count."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 132,
@@ -34989,7 +35048,15 @@
             ],
             "notes": "Passport Index separates 41 visa-on-arrival and 5 eTA destinations; combined here. It also lists 20 strictly visa-free destinations and a mobility score of 66."
           },
-          "notes": "Use one index consistently for comparisons. Henley is used for rank and overall no-prior-visa score; Passport Index is used only for the requested category breakdown because Henley’s public PDF does not separate it."
+          "notes": "Use one index consistently for comparisons. Henley is used for rank and overall no-prior-visa score; Passport Index is used only for the requested category breakdown because Henley’s public PDF does not separate it.",
+          "mobility_score": {
+            "value": 50,
+            "source_ids": [
+              "KH_HENLEY_2026_PDF",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley’s score combines destinations accessible without a prior visa, including visa-free, visa on arrival, and eTA; it is not a strictly visa-free count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -35435,6 +35502,14 @@
             "publisher": "Ministry of Interior, Cambodia",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -37041,12 +37116,11 @@
             "notes": "At least 1,095 credited presence days in the preceding five years are required, including at least 730 actual days as a permanent resident."
           },
           "total_years_to_citizenship": {
-            "value": 4,
+            "value": 3,
             "source_ids": [
-              "CA_CITIZENSHIP",
-              "CA_SERVICE_STANDARDS"
+              "CA_CITIZENSHIP"
             ],
-            "notes": "Approximate best-case period from becoming a permanent resident to completed citizenship: three years to meet presence plus the 12-month citizenship service standard. It excludes unpredictable Express Entry pool time and can be longer."
+            "notes": "Eligibility period after direct FSW permanent residence: 1,095 credited presence days within five years. Citizenship processing is additional and is recorded separately; invitation and PR processing before admission are excluded."
           },
           "typical_citizenship_processing_time_months": {
             "value": 12,
@@ -37352,7 +37426,7 @@
             "url": "https://www.canada.ca/en/immigration-refugees-citizenship/services/canadian-citizenship/adult-minor/who.html",
             "publisher": "Immigration, Refugees and Citizenship Canada",
             "source_type": "official_government",
-            "accessed_at": "2026-08-15"
+            "accessed_at": "2026-09-25"
           },
           {
             "id": "CA_SERVICE_STANDARDS",
@@ -46592,7 +46666,7 @@
           "status": "conditional",
           "pathway_type": "status_switch",
           "qualifying_status": "Qualifying temporary residence, for example rentista",
-          "remote_work_profile_supported": false,
+          "remote_work_profile_supported": "uncertain",
           "requires_status_switch": true,
           "requires_exit": "uncertain",
           "nomad_time_counts_toward_pr": false,
@@ -47000,7 +47074,7 @@
             "income_requirement_display": {
               "value": "Local employment required; XOF 75,000 statutory SMIG is not a visa threshold",
               "currency_basis": "XOF statutory minimum wage",
-              "usd_monthly_value": 130,
+              "usd_monthly_value": null,
               "local_or_formula_value": "XOF 75,000/month",
               "notes": "USD approximation uses about XOF 574.8 per USD; local-employer sponsorship makes this route ineligible regardless of salary.",
               "source_ids": [
@@ -50410,12 +50484,13 @@
             "notes": "The current Henley page is interactive; the Cyprus-specific 2026 figure was cross-checked against a secondary summary citing Henley."
           },
           "visa_free_destinations": {
-            "value": 174,
+            "value": null,
             "source_ids": [
               "HENLEY_2026",
-              "CY_PASSPORT_BREAKDOWN"
+              "CY_PASSPORT_BREAKDOWN",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's score combines destinations accessible without obtaining a visa before departure, including visa-on-arrival access; it is not a pure visa-free-only count."
+            "notes": "The recorded 174 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's score combines destinations accessible without obtaining a visa before departure, including visa-on-arrival access; it is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -50433,7 +50508,16 @@
             ],
             "notes": "The 174-point Henley score does not provide a Cyprus-specific split between pure visa-free, visa on arrival, and eTA in the reviewed material."
           },
-          "notes": "Rank and access score are current screening figures. Entry rules change frequently and should be checked with the destination before travel."
+          "notes": "Rank and access score are current screening figures. Entry rules change frequently and should be checked with the destination before travel.",
+          "mobility_score": {
+            "value": 174,
+            "source_ids": [
+              "HENLEY_2026",
+              "CY_PASSPORT_BREAKDOWN",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's score combines destinations accessible without obtaining a visa before departure, including visa-on-arrival access; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -50800,6 +50884,14 @@
             "publisher": "Cyprus Migration Department",
             "source_type": "official_government",
             "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -50888,31 +50980,31 @@
             "direct_temporary_residence_possible": true,
             "direct_permanent_residence_possible": false,
             "minimum_monthly_income_usd": {
-              "value": 3665,
+              "value": 3503,
               "source_ids": [
-                "CZ_DN_RULES",
-                "CZ_MPSV_MIN_WAGE",
+                "DEEP_REVIEW_CZ_PROGRAM_2025",
+                "DEEP_REVIEW_CZ_SALARY_2026",
                 "CZ_CNB_FX"
               ],
-              "notes": "Approximate conversion at CZK 21.076/USD. The programme requires at least 1.5 times the announced average gross salary; the 2026 reference of CZK 51,497 produces approximately CZK 77,246 monthly."
+              "notes": "Approximately USD 3,503 using the dataset’s existing indicative CZK 21.076/USD conversion. The controlling May 2026–April 2027 threshold is CZK 73,823 monthly: 1.5 × the MPSV-announced annual salary of CZK 590,580, divided by 12 and rounded up. The unrelated CZK 51,497 wage reference must not be used for this programme."
             },
             "minimum_income_local_currency": {
-              "value": "Approximately CZK 77,246 per month (1.5 × CZK 51,497)",
+              "value": "CZK 73,823 per month for May 2026–April 2027",
               "source_ids": [
-                "CZ_DN_RULES",
-                "CZ_MPSV_MIN_WAGE"
+                "DEEP_REVIEW_CZ_PROGRAM_2025",
+                "DEEP_REVIEW_CZ_SALARY_2026"
               ],
-              "notes": "Formula-based threshold that should be recalculated using the figure applicable when filing."
+              "notes": "1.5 × CZK 590,580 annual reference / 12 = CZK 73,822.50; whole-crown threshold rounded up. Recheck the announced figure for applications outside this period."
             },
             "income_requirement_display": {
-              "value": "About CZK 77,246/month (approximately USD 3,665)",
-              "currency_basis": "CZK formula",
-              "usd_monthly_value": 3665,
-              "local_or_formula_value": "1.5 × announced average gross salary",
-              "notes": "Minimum contractual salary or prorated service-contract remuneration, not an account-balance requirement.",
+              "value": "CZK 73,823/month (approximately USD 3,503)",
+              "currency_basis": "CZK formula; May 2026–April 2027 MPSV reference",
+              "usd_monthly_value": 3503,
+              "local_or_formula_value": "1.5 × CZK 590,580 per year / 12, rounded up to CZK 73,823 monthly",
+              "notes": "Contractual salary or prorated service remuneration, not a savings balance. USD uses the existing indicative exchange-rate basis.",
               "source_ids": [
-                "CZ_DN_RULES",
-                "CZ_MPSV_MIN_WAGE",
+                "DEEP_REVIEW_CZ_PROGRAM_2025",
+                "DEEP_REVIEW_CZ_SALARY_2026",
                 "CZ_CNB_FX"
               ]
             },
@@ -50973,10 +51065,11 @@
               "notes": "Foreign employees generally use an 'other purpose' long-term visa; freelancers use a business-purpose long-term visa."
             },
             "extension_rules": {
-              "value": "A foreign employee may seek renewed programme inclusion and follow-on long-term residence for the same purpose. A freelancer may continue through business-purpose long-term residence, generally issued for up to 2 years.",
+              "value": "A foreign employee must obtain renewed programme inclusion, including a Czech tax-domicile certificate, and then apply for long-term residence for the same other-purpose category before the visa expires. A freelancer may continue through business-purpose long-term residence.",
               "source_ids": [
                 "CZ_DN_RULES",
-                "CZ_BUSINESS_RESIDENCE"
+                "CZ_BUSINESS_RESIDENCE",
+                "DEEP_REVIEW_CZ_PROGRAM_2025"
               ],
               "notes": "Continued eligibility and fulfilment of the declared purpose must be documented."
             },
@@ -52018,6 +52111,22 @@
             "publisher": "Czech Ministry of the Interior",
             "source_type": "official_government",
             "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "DEEP_REVIEW_CZ_SALARY_2026",
+            "title": "MPO: Announced average annual salary and 2026–2027 immigration salary threshold",
+            "url": "https://mpo.gov.cz/cz/zahranicni-obchod/ekonomicka-migrace/navyseni-mzdy-pro-modre-karty-a-nove-formulare-cestneho-prohlaseni-_-program-klicovy-a-vedecky-personal-a-program-vysoce-kvalifikovany-zamestnanec--292547/",
+            "publisher": "Ministry of Industry and Trade of the Czech Republic",
+            "source_type": "official_government",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "DEEP_REVIEW_CZ_PROGRAM_2025",
+            "title": "Digital Nomad Programme rules effective 1 July 2025",
+            "url": "https://mpo.gov.cz/assets/cz/zahranicni-obchod/ekonomicka-migrace/programy-a-projekty/2025/7/Program-digitalni-nomad_1-7-2025.pdf",
+            "publisher": "Ministry of Industry and Trade of the Czech Republic",
+            "source_type": "official_government",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -52063,19 +52172,20 @@
           "summary": "The programme’s long-term visa can be followed by long-term residence for the same qualifying purpose and then permanent residence after five years of continuous qualifying residence.",
           "requirements": [
             "Meet the programme’s nationality, occupation and income requirements; freelancers need the appropriate Czech trade authorization.",
-            "Apply for long-term residence before the initial long-term visa expires and maintain the approved purpose.",
+            "Foreign employees must obtain renewed programme inclusion with a Czech tax-domicile certificate, then apply for long-term residence before the initial visa expires; freelancers use business-purpose residence.",
             "Meet PR continuity, financial, accommodation and Czech-language conditions."
           ],
           "source_ids": [
             "CZ_DN_RULES",
             "CZ_PERMANENT_RESIDENCE",
-            "PR_REVIEW_CZ_01"
+            "PR_REVIEW_CZ_01",
+            "DEEP_REVIEW_CZ_PROGRAM_2025"
           ],
           "reviewed_at": "2026-09-25",
           "reviewed_route_names": [
             "Digital Nomad Programme — foreign-employer IT specialist or IT freelancer"
           ],
-          "notes": "This is not a five-year nomad visa: the underlying long-term visa/residence sequence supplies the residence history. The programme rules were retrieved through official search indexing; their PDF direct fetch failed. The PR and general successor guidance were accessible. Programme admission is nationality-restricted and should be checked separately for the individual."
+          "notes": "The current July 2025 programme rules explicitly describe the employee and freelancer successor permits in sections 5.4 and 6.2. Programme admission remains nationality-restricted. Foreign employees need renewed programme inclusion and Czech tax domicile; the five-year PR history is supplied by the underlying visa/residence sequence."
         }
       }
     },
@@ -56359,11 +56469,11 @@
             "notes": "Henley global ranking dated 17 June 2026."
           },
           "visa_free_destinations": {
-            "value": 145,
+            "value": 116,
             "source_ids": [
-              "DOM_S24"
+              "DOM_S25"
             ],
-            "notes": "Henley access score: destinations accessible without obtaining a visa in advance, broader than strict visa-free-only entry."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 48,
@@ -56379,7 +56489,15 @@
             ],
             "notes": "VisaIndex separates 23 visa-on-arrival and 3 eTA destinations; it also lists 116 strictly visa-free destinations."
           },
-          "notes": "Methodologies differ: Henley reports rank 31 and access score 145, while VisaIndex reports rank 37 and mobility total 141. Do not mix the figures without identifying the index."
+          "notes": "Methodologies differ: Henley reports rank 31 and access score 145, while VisaIndex reports rank 37 and mobility total 141. Do not mix the figures without identifying the index.",
+          "mobility_score": {
+            "value": 145,
+            "source_ids": [
+              "DOM_S24",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley access score: destinations accessible without obtaining a visa in advance, broader than strict visa-free-only entry."
+          }
         },
         "languages": {
           "official_languages": [
@@ -56809,6 +56927,14 @@
             "publisher": "International Labour Organization",
             "source_type": "reputable_secondary",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -56847,7 +56973,7 @@
           "status": "conditional",
           "pathway_type": "status_switch",
           "qualifying_status": "Self-employed work permit with business registration, or another qualifying work/residence permit",
-          "remote_work_profile_supported": false,
+          "remote_work_profile_supported": "uncertain",
           "requires_status_switch": true,
           "requires_exit": false,
           "nomad_time_counts_toward_pr": "uncertain",
@@ -58807,7 +58933,7 @@
           {
             "id": "ECU_PR_21_MONTHS_2026",
             "title": "Concesión de visa de residencia permanente por tiempo de permanencia mayor a 21 meses",
-            "url": "https://gobec-dev02.gobiernoelectronico.gob.ec/mremh/tramites/concesion-visa-residencia-permanente-tiempo-permanencia-mayor-21-meses",
+            "url": "https://www.gob.ec/mremh/tramites/concesion-visa-residencia-permanente-tiempo-permanencia-mayor-21-meses",
             "publisher": "Ministerio de Relaciones Exteriores y Movilidad Humana / Guía Oficial de Trámites",
             "source_type": "official_government",
             "accessed_at": "2026-09-25"
@@ -59046,7 +59172,7 @@
           "reviewed_route_names": [
             "Visa de Residencia Temporal Rentista para Trabajo Remoto (Visa Nómada)"
           ],
-          "notes": "The official nomad procedure and PR procedure both opened successfully. 1.75 years is the 21-month application threshold, not a promise of approval or processing duration. The PR filing can be made through offices within Ecuador; continuity and absence rules still apply."
+          "notes": "The 1.75-year figure is the 21-month application threshold, not processing duration. The current production procedure requires online e-VISAS filing, including for applicants already in Ecuador with valid status. Continuity and absence rules still apply."
         }
       }
     },
@@ -59794,11 +59920,12 @@
             "notes": "Egypt is jointly ranked 85th."
           },
           "visa_free_destinations": {
-            "value": 50,
+            "value": null,
             "source_ids": [
-              "EG_HENLEY_2026"
+              "EG_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley’s score combines access without a prior visa, including qualifying visa-on-arrival and eTA access."
+            "notes": "The recorded 50 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley’s score combines access without a prior visa, including qualifying visa-on-arrival and eTA access."
           },
           "visa_required_destinations": {
             "value": null,
@@ -59814,7 +59941,15 @@
             ],
             "notes": "Henley combines qualifying access types and does not provide the requested split in the inspected ranking."
           },
-          "notes": "Travel access changes frequently."
+          "notes": "Travel access changes frequently.",
+          "mobility_score": {
+            "value": 50,
+            "source_ids": [
+              "EG_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley’s score combines access without a prior visa, including qualifying visa-on-arrival and eTA access."
+          }
         },
         "languages": {
           "official_languages": [
@@ -60211,6 +60346,14 @@
             "publisher": "International Labour Organization, ILOSTAT",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -74414,12 +74557,13 @@
             "notes": "A current secondary Ghana table reports this rank with attribution to Henley. Henley's general interactive page was also reviewed but did not expose a readable Ghana-specific table."
           },
           "visa_free_destinations": {
-            "value": 67,
+            "value": null,
             "source_ids": [
               "GH_PASSPORT_HENLEY_SECONDARY_2026",
-              "GH_HENLEY_INDEX_2026"
+              "GH_HENLEY_INDEX_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's score includes destinations accessible without obtaining a traditional visa before departure, including qualifying visa-on-arrival and eTA access; it is broader than strictly visa-free travel. Ghana's official passport portal separately advertises 60 visa-free countries."
+            "notes": "The recorded 67 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's score includes destinations accessible without obtaining a traditional visa before departure, including qualifying visa-on-arrival and eTA access; it is broader than strictly visa-free travel. Ghana's official passport portal separately advertises 60 visa-free countries."
           },
           "visa_required_destinations": {
             "value": 160,
@@ -74437,7 +74581,16 @@
             ],
             "notes": "The inspected current Henley materials did not separately divide Ghana's score among strictly visa-free, visa-on-arrival, and eTA destinations."
           },
-          "notes": "Passport access changes during the year. The official Ghana portal and Henley use different definitions, explaining the difference between 60 advertised visa-free countries and the broader Henley score of 67."
+          "notes": "Passport access changes during the year. The official Ghana portal and Henley use different definitions, explaining the difference between 60 advertised visa-free countries and the broader Henley score of 67.",
+          "mobility_score": {
+            "value": 67,
+            "source_ids": [
+              "GH_PASSPORT_HENLEY_SECONDARY_2026",
+              "GH_HENLEY_INDEX_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's score includes destinations accessible without obtaining a traditional visa before departure, including qualifying visa-on-arrival and eTA access; it is broader than strictly visa-free travel. Ghana's official passport portal separately advertises 60 visa-free countries."
+          }
         },
         "languages": {
           "official_languages": [
@@ -74804,6 +74957,14 @@
             "publisher": "Ghana Statistical Service",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -75692,11 +75853,12 @@
             "notes": "Current Henley interactive ranking accessed on the research date."
           },
           "visa_free_destinations": {
-            "value": 185,
+            "value": null,
             "source_ids": [
-              "GR_HENLEY_2026"
+              "GR_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's access score combines destinations accessible without obtaining a visa in advance, including visa-on-arrival and certain electronic travel authorities; it is not a strict visa-free-only count."
+            "notes": "The recorded 185 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's access score combines destinations accessible without obtaining a visa in advance, including visa-on-arrival and certain electronic travel authorities; it is not a strict visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -75712,7 +75874,15 @@
             ],
             "notes": "The current Henley ranking did not provide a separately captured visa-on-arrival/eTA subtotal."
           },
-          "notes": "The Greek passport is a very strong EU passport. Rank and access scores change as destination policies are updated."
+          "notes": "The Greek passport is a very strong EU passport. Rank and access scores change as destination policies are updated.",
+          "mobility_score": {
+            "value": 185,
+            "source_ids": [
+              "GR_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score combines destinations accessible without obtaining a visa in advance, including visa-on-arrival and certain electronic travel authorities; it is not a strict visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -76158,6 +76328,14 @@
             "url": "https://migration.gov.gr/wp-content/uploads/2023/04/%CE%9A%CF%8E%CE%B4%CE%B9%CE%BA%CE%B1%CF%82-%CE%9C%CE%B5%CF%84%CE%B1%CE%BD%CE%AC%CF%83%CF%84%CE%B5%CF%85%CF%83%CE%B7%CF%82.pdf",
             "publisher": "Greek Ministry of Migration and Asylum",
             "source_type": "law",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
             "accessed_at": "2026-09-25"
           }
         ],
@@ -78031,10 +78209,10 @@
           {
             "id": "GT_IGM_WORKER_FORM_2026",
             "title": "Solicitud de residencia temporal para trabajadores migrantes — titular (IGM 01-2026)",
-            "url": "https://igm.gob.gt/wp-content/uploads/2026/01/1.-Residencia-Temporal-para-trabajadores-migrantes-1.pdf",
+            "url": "https://extranjeria.igm.gob.gt/images/documentos/formularios-residencia-temporal/1.-Residencia-Temporal-para-trabajadores-migrantes-1.pdf",
             "publisher": "Instituto Guatemalteco de Migración",
             "source_type": "official_government",
-            "accessed_at": "2026-08-15"
+            "accessed_at": "2026-09-25"
           },
           {
             "id": "GT_IGM_TEMP_RES_INFO_2026",
@@ -78379,13 +78557,14 @@
           "source_ids": [
             "GT_IGM_PERMANENT_FORM_2026",
             "PR_REVIEW_GT_01",
-            "PR_REVIEW_GT_02"
+            "PR_REVIEW_GT_02",
+            "GT_IGM_WORKER_FORM_2026"
           ],
           "reviewed_at": "2026-09-25",
           "reviewed_route_names": [
             "Temporary residence for migrant workers — foreign-employer branch"
           ],
-          "notes": "This is a remote-worker branch of ordinary migrant-worker residence, not a separately named digital-nomad visa. The 2026 worker PDF failed direct opening, but the current IGM portal and its 2025 residence regulation were accessible. Articles 11–12 explicitly cover foreign employers; the 2026 PR checklist proves the five-year route."
+          "notes": "This is the foreign-employer branch of ordinary migrant-worker residence. The current IGM portal’s form IGM 01-2026 was opened and confirms the foreign-employer option, one year of income evidence and personal document submission. The PR checklist provides the five-year stage."
         }
       }
     },
@@ -79049,11 +79228,12 @@
             "notes": "The 2026 Henley table reviewed on 2026-08-15 listed Guinea at rank 82."
           },
           "visa_free_destinations": {
-            "value": 53,
+            "value": null,
             "source_ids": [
-              "GN_HENLEY_2026"
+              "GN_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's mobility score includes destinations accessible without a prior visa, including qualifying visa-on-arrival arrangements; it is not a strict visa-free-only count."
+            "notes": "The recorded 53 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's mobility score includes destinations accessible without a prior visa, including qualifying visa-on-arrival arrangements; it is not a strict visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -79071,7 +79251,15 @@
             ],
             "notes": "The Henley score combines access types, while the secondary table did not yield a reliable current combined VOA/eTA count."
           },
-          "notes": "Current rank and mobility score are retained; separate access-category counts remain null because the reviewed sources do not provide an auditable current breakdown."
+          "notes": "Current rank and mobility score are retained; separate access-category counts remain null because the reviewed sources do not provide an auditable current breakdown.",
+          "mobility_score": {
+            "value": 53,
+            "source_ids": [
+              "GN_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's mobility score includes destinations accessible without a prior visa, including qualifying visa-on-arrival arrangements; it is not a strict visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -79105,19 +79293,18 @@
         },
         "labor_market": {
           "average_wage_usd_monthly": {
-            "value": 20.3,
+            "value": null,
             "source_ids": [
-              "GN_INS_ENESIG_2019",
-              "GN_FX_MARKET_2026"
+              "GN_INS_ENESIG_2019"
             ],
-            "notes": "Approximate conversion of the survey's GNF 177,792 mean monthly income for employed persons using about GNF 8,774 per USD. The 2018/2019 survey is old and covers a predominantly informal labor market."
+            "notes": "The INS report prints GNF 177,792 in Table 7.9, but the adjacent income distribution cannot be reconciled without clarification of population coverage. A reliable national amount cannot be selected without clarification from INS; no USD conversion is retained."
           },
           "median_wage_usd_monthly": {
             "value": null,
             "source_ids": [
               "GN_INS_ENESIG_2019"
             ],
-            "notes": "The national all-worker table publishes income bands rather than an exact median. It shows the median falls within the GNF 1,000,000–2,000,000 band, while the exact GNF 450,000 median belongs only to workers in informal production units."
+            "notes": "No exact national median is published; unresolved mean/distribution comparability prevent a reliable national estimate."
           },
           "average_citizen_salary": {
             "min_salary_usd_monthly": {
@@ -79129,19 +79316,18 @@
               "notes": "Approximate conversion of the current GNF 550,000 CNSS contribution floor/SMIG. This is a statutory or contribution floor, not an observed minimum wage in the informal economy."
             },
             "average_salary_usd_monthly": {
-              "value": 20.3,
+              "value": null,
               "source_ids": [
-                "GN_INS_ENESIG_2019",
-                "GN_FX_MARKET_2026"
+                "GN_INS_ENESIG_2019"
               ],
-              "notes": "Approximate conversion of GNF 177,792 mean monthly income of employed persons in the 2018/2019 survey; it is not a current formal-sector salary."
+              "notes": "The INS report prints GNF 177,792 in Table 7.9, but the adjacent income distribution cannot be reconciled without clarification of population coverage. A reliable national amount cannot be selected without clarification from INS; no USD conversion is retained."
             },
             "median_salary_usd_monthly": {
               "value": null,
               "source_ids": [
                 "GN_INS_ENESIG_2019"
               ],
-              "notes": "No exact median for all employed persons is published. The survey's exact GNF 450,000 median applies to informal-production-unit workers only."
+              "notes": "No exact national median is published. GNF 450,000 describes informal-production-unit workers only."
             },
             "max_salary_usd_monthly": {
               "value": null,
@@ -79159,18 +79345,18 @@
               "notes": "CNSS identifies this as the current SMIG and minimum monthly contribution base."
             },
             "average_salary_local_currency": {
-              "value": "GNF 177,792/month",
+              "value": null,
               "source_ids": [
                 "GN_INS_ENESIG_2019"
               ],
-              "notes": "Mean monthly income of employed persons in the 2018/2019 national survey."
+              "notes": "The INS report prints GNF 177,792 in Table 7.9, but the adjacent income distribution cannot be reconciled without clarification of population coverage. A reliable national amount cannot be selected without clarification from INS; no USD conversion is retained."
             },
             "median_salary_local_currency": {
-              "value": "GNF 450,000/month (informal-production-unit workers only)",
+              "value": null,
               "source_ids": [
                 "GN_INS_ENESIG_2019"
               ],
-              "notes": "This is the exact median published in the survey's informal-sector worker analysis, not a national all-worker median. For all employed persons, the survey provides income bands showing that the median lies somewhere in the GNF 1,000,000–2,000,000 band but does not publish an exact value."
+              "notes": "GNF 450,000 is the published informal-production-unit subgroup median, not a national median. The national mean and distribution require clarification of comparable coverage."
             },
             "max_salary_local_currency": {
               "value": null,
@@ -79180,9 +79366,9 @@
               "notes": "The national employed-person distribution ends with an open category of GNF 8,000,000 or more, representing 8.1% of employed persons; because that category has no upper bound, GNF 8,000,000 is not a maximum and no finite maximum can be reported."
             },
             "currency": "GNF",
-            "salary_basis": "National survey mean monthly employment income; informal-sector median separately labelled; statutory CNSS/SMIG floor shown separately",
+            "salary_basis": "Statutory CNSS/SMIG floor; national mean and median unresolved because comparable population coverage could not be established",
             "period": "2018/2019 survey; CNSS floor current on pages reviewed 2026-08-15",
-            "confidence": "medium",
+            "confidence": "low",
             "source_ids": [
               "GN_INS_ENESIG_2019",
               "GN_ILO_SURVEY_CATALOG",
@@ -79190,7 +79376,7 @@
               "GN_CNSS_RECOVERY",
               "GN_FX_MARKET_2026"
             ],
-            "notes": "The survey reports 95.6% informal employment, explaining why the national mean is not comparable with the current formal-sector contribution floor. The exact GNF 450,000 median is restricted to informal-production-unit workers; the all-worker distribution supports only a median band, not an exact point estimate. USD values are approximate."
+            "notes": "The primary mean and distribution figures have unresolved comparability. National averages and medians remain unresolved; subgroup values are retained only as labelled context."
           },
           "cost_of_living_note": {
             "value": "No reliable current national expatriate cost-of-living basket was identified. The World Bank's inflation and poverty indicators provide macroeconomic context but cannot be converted into a defensible remote-worker monthly budget.",
@@ -79303,7 +79489,7 @@
             "url": "https://www.stat-guinee.org/images/Documents/Publications/INS/rapports_enquetes/autre%20enquete/RAPPORT%20GLOBAL%20ENESIG1%20CONS%20%20%2817-02-2020%29_VF%20%282%29.pdf",
             "publisher": "Institut National de la Statistique, Republic of Guinea",
             "source_type": "statistics",
-            "accessed_at": "2026-08-15"
+            "accessed_at": "2026-09-25"
           },
           {
             "id": "GN_ILO_SURVEY_CATALOG",
@@ -79472,6 +79658,14 @@
             "publisher": "U.S. Department of State",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -85709,11 +85903,12 @@
             "notes": "Current Henley online ranking captured during this review."
           },
           "visa_free_destinations": {
-            "value": 180,
+            "value": null,
             "source_ids": [
-              "IS26"
+              "IS26",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley access score includes destinations accessible without obtaining a visa in advance, including visa-on-arrival categories Henley counts."
+            "notes": "The recorded 180 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley access score includes destinations accessible without obtaining a visa in advance, including visa-on-arrival categories Henley counts."
           },
           "visa_required_destinations": {
             "value": null,
@@ -85731,7 +85926,15 @@
             ],
             "notes": "Henley does not expose a separate Iceland VOA/eTA total in the inspected ranking, and Passport Index did not provide a dependable summarized breakdown."
           },
-          "notes": "Rank and access figures can change when destination entry rules change."
+          "notes": "Rank and access figures can change when destination entry rules change.",
+          "mobility_score": {
+            "value": 180,
+            "source_ids": [
+              "IS26",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley access score includes destinations accessible without obtaining a visa in advance, including visa-on-arrival categories Henley counts."
+          }
         },
         "languages": {
           "official_languages": [
@@ -86158,6 +86361,14 @@
             "publisher": "Government of Iceland",
             "source_type": "law",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -87344,8 +87555,8 @@
       "data": {
         "country": "Indonesia",
         "researched_at": "2026-08-15",
-        "valid_for_selection": true,
-        "selection_summary": "Indonesia’s active E33G Remote Worker Visa fits an ordinary employee working remotely for a company established outside Indonesia. It is independently filed without an Indonesian sponsor, grants a one-year limited-stay permit (ITAS), is renewable, and is officially described as transferable to another stay permit. E33G is classified as a second-home remote-worker category, and current immigration rules allow eligible second-home ITAS holders to convert to permanent stay (ITAP) after three consecutive years. Citizenship law counts residence on an ITAS or ITAP toward the general five-consecutive-year naturalization requirement, making this a credible citizenship track, although Indonesian-language ability, stable income, good character, and avoidance of adult dual nationality are required.",
+        "valid_for_selection": "partial",
+        "selection_summary": "E33G supports foreign-employer remote work through renewable temporary ITAS. A direct E33G-to-ITAP path remains unconfirmed. Ordinary naturalization requires a valid KITAP as well as the general residence period, so renewable ITAS alone is not a verified complete settlement route.",
         "visa_application": {
           "application_url": "https://evisa.imigrasi.go.id/",
           "application_url_type": "direct_application",
@@ -87361,7 +87572,7 @@
           {
             "route_name": "E33G Remote Worker Visa / Limited Stay Permit",
             "route_type": "digital_nomad",
-            "valid_for_selection": true,
+            "valid_for_selection": "partial",
             "independent_application_possible": true,
             "local_employer_required": false,
             "foreign_contract_or_income_required": true,
@@ -87452,7 +87663,7 @@
                 "ID_E33G_OFFICIAL",
                 "ID_ITAS_RULES"
               ],
-              "notes": "Continued eligibility and updated supporting documents must be maintained. Conversion to ITAP may become available before the six-year ITAS ceiling."
+              "notes": "Maintain the foreign-employment basis and permit validity. Renewal does not itself establish eligibility for ITAP."
             },
             "path_to_temporary_residence": {
               "value": "Direct: entry on E33G produces an electronic Limited Stay Permit (ITAS), which is qualifying legal residence rather than visitor status.",
@@ -87473,20 +87684,25 @@
               ]
             },
             "path_to_citizenship": {
-              "value": "Naturalization may be requested after five consecutive years or ten non-consecutive years residing in Indonesia. Immigration guidance states that this period is counted from obtaining an ITAS or ITAP, so citizenship does not appear to require waiting five additional years after ITAP.",
+              "value": "The general residence threshold is five consecutive years or ten non-consecutive years. Ordinary naturalization also requires a valid KITAP; a complete E33G-to-citizenship chain is unconfirmed.",
               "source_ids": [
                 "ID_CITIZENSHIP_LAW",
-                "ID_SKIM_CITIZENSHIP"
+                "ID_SKIM_CITIZENSHIP",
+                "ID_DEEP_NATURALIZATION_CHECKLIST",
+                "ID_DEEP_NATURALIZATION_REGULATION"
               ],
-              "notes": "Applicants must satisfy Indonesian-language, health, character, stable-income, allegiance and anti-dual-nationality conditions. Naturalization is discretionary and becomes effective only after approval and the oath or pledge."
+              "notes": "Prior ITAS residence may contribute to the residence calculation, but this does not remove the KITAP filing requirement."
             },
-            "notes": "E33G directly grants ITAS, is renewable and transferable, and current law supplies a plausible ITAP and citizenship pathway. The strongest fit is a salaried remote employee; contractors should request written pre-filing confirmation because the official checklist specifically requests an employment agreement with an overseas company.",
+            "notes": "E33G grants renewable ITAS and permits a separately qualifying status change. Direct PR eligibility remains unresolved. The foreign-employment checklist is clearer for employees than independent contractors.",
             "source_ids": [
               "ID_E33G_OFFICIAL",
               "ID_E33G_SECOND_HOME",
               "ID_PP_40_2023",
               "ID_CITIZENSHIP_LAW",
-              "ID_SKIM_CITIZENSHIP"
+              "ID_SKIM_CITIZENSHIP",
+              "ID_ITAS_RULES",
+              "ID_DEEP_NATURALIZATION_CHECKLIST",
+              "ID_DEEP_NATURALIZATION_REGULATION"
             ]
           }
         ],
@@ -87939,28 +88155,30 @@
             "notes": "The E33G entry produces an e-ITAS immediately upon admission."
           },
           "years_to_permanent_residence_after_temporary": {
-            "value": 3,
+            "value": null,
             "source_ids": [
-              "ID_E33G_SECOND_HOME",
-              "ID_PP_40_2023"
+              "ID_ITAS_RULES",
+              "ID_PP_40_2023",
+              "ID_E33G_SECOND_HOME"
             ],
-            "notes": "The regulation permits qualifying second-home ITAS holders to apply for ITAP after at least three consecutive years. Approval is not automatic."
+            "notes": "Three years applies to qualifying conversion categories; E33G eligibility has not been established."
           },
           "years_to_citizenship_after_permanent_residence": {
-            "value": 2,
+            "value": null,
             "source_ids": [
               "ID_CITIZENSHIP_LAW",
-              "ID_SKIM_CITIZENSHIP"
+              "ID_DEEP_NATURALIZATION_CHECKLIST"
             ],
-            "notes": "This is a derived timeline: citizenship eligibility arises after five consecutive residence years counted from ITAS/ITAP, while ITAP may be sought after year three. ITAP is not stated to restart the clock."
+            "notes": "The previous two-year estimate assumed unverified PR at year three. Naturalization requires a valid KITAP and the general residence threshold."
           },
           "total_years_to_citizenship": {
             "value": 5,
             "source_ids": [
               "ID_CITIZENSHIP_LAW",
-              "ID_SKIM_CITIZENSHIP"
+              "ID_SKIM_CITIZENSHIP",
+              "ID_DEEP_NATURALIZATION_CHECKLIST"
             ],
-            "notes": "Statutory minimum residence is five consecutive years, alternatively ten non-consecutive years. Eligibility does not guarantee approval."
+            "notes": "General statutory residence floor only. KITAP is additionally required at filing, and the remote-worker PR bridge is unconfirmed; this is not a verified E33G timeline."
           },
           "typical_citizenship_processing_time_months": {
             "value": null,
@@ -87970,10 +88188,11 @@
             "notes": "The cited citizenship law provides procedural deadlines but does not publish an empirical typical-processing duration. Ministerial forwarding and a presidential decision are tied to three-month limits, notification follows within 14 days, and the oath may be scheduled within three months after the decision; those statutory stages are not a proven typical total."
           },
           "key_conditions": {
-            "value": "Age 18 or married; five consecutive or ten non-consecutive residence years; physical and mental health; Indonesian-language ability; recognition of Pancasila and the Constitution; no disqualifying conviction; stable work or income; payment of the naturalization charge; oath or pledge; and no resulting adult dual citizenship.",
+            "value": "A valid KITAP; five consecutive or ten non-consecutive residence years; adulthood or marriage; health, Indonesian-language ability, allegiance, character, income, fees and no resulting adult dual nationality.",
             "source_ids": [
               "ID_CITIZENSHIP_LAW",
-              "ID_SKIM_CITIZENSHIP"
+              "ID_SKIM_CITIZENSHIP",
+              "ID_DEEP_NATURALIZATION_CHECKLIST"
             ],
             "notes": "Long absences or departure for good can affect whether residence is treated as consecutive. Maintain ITAS/ITAP validity, tax compliance and evidence of actual residence."
           }
@@ -88445,27 +88664,46 @@
             "publisher": "BPS-Statistics Indonesia",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "ID_DEEP_NATURALIZATION_CHECKLIST",
+            "title": "Ordinary naturalization service requirements — valid KITAP required",
+            "url": "https://ntt.kemenkum.go.id/administrasi-hukum-umum/pengajuan-permohonan-layanan-pewarganegaraan-naturalisasi-murni",
+            "publisher": "Ministry of Law, East Nusa Tenggara Regional Office",
+            "source_type": "official_government",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "ID_DEEP_NATURALIZATION_REGULATION",
+            "title": "Government Regulation No. 2 of 2007 — Article 3(2)(d), KITAP requirement",
+            "url": "https://portal.ahu.go.id/uploads/_uploads/dl/PP_UU/Dit.Tatanegara/PP%20No.%202%20Th%202007.pdf",
+            "publisher": "Ministry of Law / Directorate General of General Legal Administration",
+            "source_type": "law",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
-          "classification": "strong_citizenship_track",
-          "can_lead_to_citizenship_from_this_route": true,
-          "citizenship_track_strength": "strong",
-          "requires_switch_to_another_status": false,
-          "nomad_only_warning": null,
+          "classification": "weak_or_uncertain_citizenship_track",
+          "can_lead_to_citizenship_from_this_route": "uncertain",
+          "citizenship_track_strength": "weak_or_uncertain",
+          "requires_switch_to_another_status": "uncertain",
+          "nomad_only_warning": "E33G provides temporary ITAS; neither a direct ITAP bridge nor a complete citizenship route is confirmed.",
           "years_to_citizenship": 5,
-          "summary": "E33G directly creates an ITAS rather than visitor status, and official immigration material confirms renewal and status transfer. Its second-home classification supports ITAP conversion after three consecutive years, while citizenship residence is counted from ITAS or ITAP and reaches the statutory minimum after five consecutive years.",
+          "summary": "E33G is renewable residence, but a valid KITAP is required for ordinary naturalization. The unresolved PR bridge prevents a strong citizenship classification.",
           "source_ids": [
             "ID_E33G_OFFICIAL",
             "ID_E33G_SECOND_HOME",
             "ID_PP_40_2023",
             "ID_CITIZENSHIP_LAW",
-            "ID_SKIM_CITIZENSHIP"
+            "ID_SKIM_CITIZENSHIP",
+            "ID_ITAS_RULES",
+            "ID_DEEP_NATURALIZATION_CHECKLIST",
+            "ID_DEEP_NATURALIZATION_REGULATION"
           ],
-          "reviewed_at": "2026-08-15",
-          "notes": "ITAP conversion and naturalization are applications, not automatic entitlements. Before planning around the three-year conversion, obtain filing-level confirmation that the issued E33G ITAS remains classified as a qualifying second-home facility under the then-current ministerial classification."
+          "reviewed_at": "2026-09-25",
+          "notes": "Five years records the general residence threshold, not a verified E33G completion time. Resolve ITAP eligibility before relying on this route for settlement."
         },
-        "citizenship_track_strength": "strong",
+        "citizenship_track_strength": "weak_or_uncertain",
         "regular_foreign_contract_remote_work_fit": {
           "value": true,
           "source_ids": [
@@ -88473,9 +88711,9 @@
           ],
           "notes": "The route expressly permits living in Indonesia while performing assignments for a company established outside Indonesia, requires no Indonesian sponsor and prohibits local remuneration. The official wording is strongest for an employment relationship; foreign-client contractors need manual pre-filing confirmation."
         },
-        "fully_matched": true,
-        "confidence": "high",
-        "notes": "The focused audit resolved the salary-median gap: BPS’s latest located nationwide employee median is IDR 2,750,136 for August 2025. The February 2026 wage products publish a fresher average but no directly comparable national median. E33G remains a qualifying ITAS route with a credible, though filing-dependent, ITAP and naturalization track; tax and BPJS treatment still require individualized professional confirmation.",
+        "fully_matched": false,
+        "confidence": "medium",
+        "notes": "PR and citizenship consistency rechecked on 2026-09-25. Remote-work permission is documented; the ITAP bridge remains uncertain. The salary and tax fields were not refreshed in this review.",
         "digital_nomad_pr_transition": {
           "status": "conditional",
           "pathway_type": "status_switch",
@@ -91616,11 +91854,12 @@
             "notes": "Ireland was tied at rank 4 in the Henley table accessed on 15 August 2026."
           },
           "visa_free_destinations": {
-            "value": 186,
+            "value": null,
             "source_ids": [
-              "IE_HENLEY"
+              "IE_HENLEY",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's access score counts destinations accessible without obtaining a conventional visa before departure, including categories such as visa on arrival where Henley's methodology treats them as visa-free access."
+            "notes": "The recorded 186 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's access score counts destinations accessible without obtaining a conventional visa before departure, including categories such as visa on arrival where Henley's methodology treats them as visa-free access."
           },
           "visa_required_destinations": {
             "value": 41,
@@ -91636,7 +91875,15 @@
             ],
             "notes": "The inspected Henley ranking did not provide a separate Ireland-specific combined visa-on-arrival/eTA count, so no unsupported breakdown is supplied."
           },
-          "notes": "The July/August 2026 Henley ranking showed Ireland tied fourth with an access score of 186. Scores and destination rules change over time."
+          "notes": "The July/August 2026 Henley ranking showed Ireland tied fourth with an access score of 186. Scores and destination rules change over time.",
+          "mobility_score": {
+            "value": 186,
+            "source_ids": [
+              "IE_HENLEY",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score counts destinations accessible without obtaining a conventional visa before departure, including categories such as visa on arrival where Henley's methodology treats them as visa-free access."
+          }
         },
         "languages": {
           "official_languages": [
@@ -92040,12 +92287,20 @@
             "publisher": "Revenue Commissioners",
             "source_type": "tax_authority",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
           "classification": "not_valid_no_regular_remote_work_route",
           "can_lead_to_citizenship_from_this_route": false,
-          "citizenship_track_strength": "none",
+          "citizenship_track_strength": "none_or_separate_route_required",
           "requires_switch_to_another_status": true,
           "nomad_only_warning": "Ireland has no digital-nomad permission to use as an entry status. Visitor presence, tax registration or sole-trader registration does not authorise residence or remote work.",
           "years_to_citizenship": null,
@@ -93768,11 +94023,12 @@
             "notes": "Italy is tied at fourth in the current 2026 ranking."
           },
           "visa_free_destinations": {
-            "value": 186,
+            "value": null,
             "source_ids": [
-              "IT_HENLEY_2026"
+              "IT_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley access score, which combines destinations accessible without a prior visa, including visa-on-arrival and similar qualifying access."
+            "notes": "The recorded 186 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley access score, which combines destinations accessible without a prior visa, including visa-on-arrival and similar qualifying access."
           },
           "visa_required_destinations": {
             "value": null,
@@ -93788,7 +94044,15 @@
             ],
             "notes": "Henley publishes a combined access score rather than a separate current visa-on-arrival/eTA subtotal on the reviewed ranking page."
           },
-          "notes": "Italy has a very strong EU passport, but the 186 figure should not be interpreted as strictly visa-free only because Henley's methodology combines several no-prior-visa access categories."
+          "notes": "Italy has a very strong EU passport, but the 186 figure should not be interpreted as strictly visa-free only because Henley's methodology combines several no-prior-visa access categories.",
+          "mobility_score": {
+            "value": 186,
+            "source_ids": [
+              "IT_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley access score, which combines destinations accessible without a prior visa, including visa-on-arrival and similar qualifying access."
+          }
         },
         "languages": {
           "official_languages": [
@@ -94157,6 +94421,14 @@
             "publisher": "Eurostat",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -95964,11 +96236,12 @@
             "notes": "Joint second in Henley's January 2026 release."
           },
           "visa_free_destinations": {
-            "value": 188,
+            "value": null,
             "source_ids": [
-              "JP20"
+              "JP20",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's score includes destinations accessible without obtaining a visa in advance and is not a pure visa-free-only count."
+            "notes": "The recorded 188 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's score includes destinations accessible without obtaining a visa in advance and is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": 39,
@@ -95984,7 +96257,15 @@
             ],
             "notes": "The inspected Henley release does not separately state VOA and eTA counts."
           },
-          "notes": "Index figures are methodology-dependent and may change."
+          "notes": "Index figures are methodology-dependent and may change.",
+          "mobility_score": {
+            "value": 188,
+            "source_ids": [
+              "JP20",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's score includes destinations accessible without obtaining a visa in advance and is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -96325,6 +96606,14 @@
             "url": "https://www.moj.go.jp/isa/content/001425124.pdf",
             "publisher": "Immigration Services Agency of Japan",
             "source_type": "official_government",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
             "accessed_at": "2026-09-25"
           }
         ],
@@ -105537,7 +105826,7 @@
             "url": "https://www.pmlp.gov.lv/en/documents-requesting-repeated-residence-permit",
             "publisher": "Office of Citizenship and Migration Affairs, Latvia",
             "source_type": "official_government",
-            "accessed_at": "2026-08-15"
+            "accessed_at": "2026-09-25"
           },
           {
             "id": "LV05",
@@ -105545,7 +105834,7 @@
             "url": "https://www.pmlp.gov.lv/en/what-cases-residence-permit-not-issued",
             "publisher": "Office of Citizenship and Migration Affairs, Latvia",
             "source_type": "official_government",
-            "accessed_at": "2026-08-15"
+            "accessed_at": "2026-09-25"
           },
           {
             "id": "LV06",
@@ -105776,13 +106065,15 @@
           "summary": "A nomad can apply independently for Latvian self-employed residence and later EU long-term residence. The remote-work D visa itself is not a substitute for the successor residence permit.",
           "requirements": [
             "Register and qualify as self-employed, submit an auditor-checked business plan and demonstrate resources for the activity.",
-            "Maintain the approved business and meet repeated-permit requirements.",
+            "Maintain active economic activity benefiting Latvia and pay at least EUR 9,960 of qualifying Latvian taxes in the preceding reporting year, or EUR 800/month for the first incomplete reporting year, to meet the published renewal test.",
             "Meet five years of qualifying residence, stable lawful means and Latvian A2 for EU long-term status."
           ],
           "source_ids": [
             "LV01",
             "LV03",
-            "LV06"
+            "LV06",
+            "LV04",
+            "LV05"
           ],
           "reviewed_at": "2026-09-25",
           "reviewed_route_names": [
@@ -113202,11 +113493,11 @@
             "notes": "Current 2026 Henley ranking page reviewed on 15 August 2026: Luxembourg is joint 4th."
           },
           "visa_free_destinations": {
-            "value": 186,
+            "value": 122,
             "source_ids": [
-              "LU15_HENLEY_RANKING"
+              "LU16_PASSPORT_INDEX"
             ],
-            "notes": "Henley access score counts destinations accessible without obtaining a prior visa and therefore includes visa-on-arrival and similar qualifying access."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 25,
@@ -113222,7 +113513,15 @@
             ],
             "notes": "Passport Index lists 41 visa-on-arrival and 10 eTA destinations. Its separate visa-free count is 122 and mobility score is 173, so these category counts should not be combined with Henley’s 186 score."
           },
-          "notes": "Henley is used for the headline rank and access score. Passport Index is used only because it separately reports visa-free, visa-on-arrival/eTA and visa-required categories."
+          "notes": "Henley is used for the headline rank and access score. Passport Index is used only because it separately reports visa-free, visa-on-arrival/eTA and visa-required categories.",
+          "mobility_score": {
+            "value": 186,
+            "source_ids": [
+              "LU15_HENLEY_RANKING",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley access score counts destinations accessible without obtaining a prior visa and therefore includes visa-on-arrival and similar qualifying access."
+          }
         },
         "languages": {
           "official_languages": [
@@ -113609,6 +113908,14 @@
             "publisher": "Eurostat",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -116697,11 +117004,12 @@
             "notes": "Bernama’s 23 July 2026 report states that Malaysia shared seventh place in the then-current Henley update."
           },
           "visa_free_destinations": {
-            "value": 183,
+            "value": null,
             "source_ids": [
-              "MY_PASSPORT_BERNAMA"
+              "MY_PASSPORT_BERNAMA",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley’s access score combines destinations accessible without obtaining a visa in advance, including visa-on-arrival access; it is not a pure visa-free-only count."
+            "notes": "The recorded 183 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley’s access score combines destinations accessible without obtaining a visa in advance, including visa-on-arrival access; it is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -116717,7 +117025,15 @@
             ],
             "notes": "The inspected current report combines visa-free and visa-on-arrival access and does not publish a separate visa-on-arrival/eTA subtotal."
           },
-          "notes": "Current passport rank and combined access score are available, but the requested category breakdown is not published by the cited current report."
+          "notes": "Current passport rank and combined access score are available, but the requested category breakdown is not published by the cited current report.",
+          "mobility_score": {
+            "value": 183,
+            "source_ids": [
+              "MY_PASSPORT_BERNAMA",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley’s access score combines destinations accessible without obtaining a visa in advance, including visa-on-arrival access; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -117111,6 +117427,14 @@
             "publisher": "Department of Statistics Malaysia",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -118016,11 +118340,12 @@
             "notes": "Current secondary country-specific reporting summarizes the 2026 Henley result as rank 49. Henley's main interactive page confirms its methodology but did not expose the Maldives row in the captured text."
           },
           "visa_free_destinations": {
-            "value": 92,
+            "value": null,
             "source_ids": [
-              "MV24"
+              "MV24",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "This is the reported 2026 Henley-style mobility score combining destinations accessible without a prior visa, rather than a strict visa-free-only count. The Maldivian Foreign Ministry separately listed 64 strictly visa-free countries and territories as of March 2024."
+            "notes": "The recorded 92 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. This is the reported 2026 Henley-style mobility score combining destinations accessible without a prior visa, rather than a strict visa-free-only count. The Maldivian Foreign Ministry separately listed 64 strictly visa-free countries and territories as of March 2024."
           },
           "visa_required_destinations": {
             "value": null,
@@ -118040,7 +118365,15 @@
             ],
             "notes": "The current 92-destination score combines access categories, while the official 2024 page lists only strict visa-free access; the reviewed sources do not publish a current separated visa-on-arrival/eTA total."
           },
-          "notes": "Rank and mobility score use the 2026 Henley summary. The only directly published Maldivian government count found was an older strict visa-free total of 64 as of March 2024."
+          "notes": "Rank and mobility score use the 2026 Henley summary. The only directly published Maldivian government count found was an older strict visa-free total of 64 as of March 2024.",
+          "mobility_score": {
+            "value": 92,
+            "source_ids": [
+              "MV24",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. This is the reported 2026 Henley-style mobility score combining destinations accessible without a prior visa, rather than a strict visa-free-only count. The Maldivian Foreign Ministry separately listed 64 strictly visa-free countries and territories as of March 2024."
+          }
         },
         "languages": {
           "official_languages": [
@@ -118433,6 +118766,14 @@
             "publisher": "Maldives Immigration",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -121402,11 +121743,12 @@
             "notes": "The current 2026 Henley ranking page showed Marshall Islands at joint 40th with a mobility score of 128 when checked."
           },
           "visa_free_destinations": {
-            "value": 128,
+            "value": null,
             "source_ids": [
-              "MH_S15_HENLEY"
+              "MH_S15_HENLEY",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's score counts destinations accessible without obtaining a visa before departure, including visa-on-arrival categories; it is not a literal visa-free-only count."
+            "notes": "The recorded 128 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's score counts destinations accessible without obtaining a visa before departure, including visa-on-arrival categories; it is not a literal visa-free-only count."
           },
           "visa_required_destinations": {
             "value": 47,
@@ -121422,7 +121764,15 @@
             ],
             "notes": "The secondary breakdown reports 33 visa-on-arrival and 3 eTA destinations, combined here. Entry rules change frequently."
           },
-          "notes": "Henley rank and mobility score are preferred for headline comparison. The category breakdown comes from a current secondary open-dataset source because Henley's public ranking does not expose a simple visa-required/VOA/eTA breakdown."
+          "notes": "Henley rank and mobility score are preferred for headline comparison. The category breakdown comes from a current secondary open-dataset source because Henley's public ranking does not expose a simple visa-required/VOA/eTA breakdown.",
+          "mobility_score": {
+            "value": 128,
+            "source_ids": [
+              "MH_S15_HENLEY",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's score counts destinations accessible without obtaining a visa before departure, including visa-on-arrival categories; it is not a literal visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -121806,6 +122156,14 @@
             "publisher": "United States Department of State",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -123585,12 +123943,13 @@
             "notes": "Henley's current ranking was cross-checked against a secondary table identifying Mauritius at rank 25."
           },
           "visa_free_destinations": {
-            "value": 147,
+            "value": null,
             "source_ids": [
               "MU20",
-              "MU21"
+              "MU21",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's mobility score includes destinations accessible without a prior visa, including visa-on-arrival categories; it is not a pure visa-free-only count."
+            "notes": "The recorded 147 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's mobility score includes destinations accessible without a prior visa, including visa-on-arrival categories; it is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -123606,7 +123965,16 @@
             ],
             "notes": "The secondary index reports 25 visa-on-arrival and 6 eTA destinations. Its methodology differs from Henley, so the figures should not be combined with Henley's 147 score."
           },
-          "notes": "Henley supplies the headline rank and mobility score; VisaIndex is used only for the separately categorized VOA/eTA breakdown."
+          "notes": "Henley supplies the headline rank and mobility score; VisaIndex is used only for the separately categorized VOA/eTA breakdown.",
+          "mobility_score": {
+            "value": 147,
+            "source_ids": [
+              "MU20",
+              "MU21",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's mobility score includes destinations accessible without a prior visa, including visa-on-arrival categories; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -123995,6 +124363,14 @@
             "publisher": "Statistics Mauritius",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -128988,9 +129364,12 @@
           "income_tax_rate_percent": {
             "value": 10,
             "source_ids": [
-              "MN15"
+              "MN15",
+              "MN_TAX_ADMIN_PIT_GUIDE",
+              "MN_CONSTITUTIONAL_PIT_2025",
+              "MN_PIT_NATIVE_CURRENT"
             ],
-            "notes": "This is the principal screening rate for relevant employment, operational/business, and covered foreign income—not the maximum rate for every statutory income category."
+            "notes": "10% applies to ordinary taxable business income; employment income instead has 10%, 15% and 20% marginal bands."
           },
           "social_contributions_percent": {
             "value": 13.5,
@@ -129016,49 +129395,92 @@
           },
           "caveats": "The immigration route is absent, so these figures describe hypothetical tax treatment rather than a digital-nomad regime. Contract classification, source of services income, permanent establishment or local business registration, social-insurance status, health insurance, treaty residence, and foreign tax credits require case-specific advice.",
           "taxation_system": {
-            "value": "Resident individuals are taxed on Mongolian and foreign income. A 10% rate applies to principal employment and operational-income categories, while specified categories carry 1%, 2%, 5%, 20%, or 40% rates.",
+            "value": "Resident employment income uses progressive 10%, 15% and 20% rates; ordinary operational income generally uses 10%. Other categories have separate rates.",
             "rate_type": "mixed",
             "top_personal_income_tax_rate_percent": 40,
             "tax_residency_rule": "At least 183 days in 12 consecutive months, or at least 50% of total taxable income earned in or derived from Mongolia, under the statutory sequential test.",
             "income_scope": "Worldwide income for resident taxpayers; Mongolian-source income for nonresidents.",
             "special_regimes": "No special digital-nomad or ordinary inbound-remote-worker regime found.",
             "social_security": "Voluntary insurance is 13.5% of declared income; compulsory employee contributions are 9.5%, plus employer contributions. Health insurance is regulated separately.",
-            "progressive_tax_notes": "The system is not presented here as a progressive wage schedule. The 40% figure is a special category rate and should not be interpreted as the expected rate on remote software income; the practical screening PIT rate is 10%.",
+            "progressive_tax_notes": "Employment bands are annual taxable amounts. The 40% statutory maximum concerns gambling/lottery income, not software earnings.",
             "tax_brackets": [
               {
                 "rate_percent": 10,
-                "threshold_local": "No general threshold stated for the relevant employment/operational categories",
+                "threshold_local": "Annual taxable employment income up to MNT 120,000,000",
+                "applies_to": "Employment and related benefits under Articles 14 and 18",
+                "notes": "2026 schedule; qualifying deductions apply.",
                 "threshold_usd_approx": null,
-                "applies_to": "Relevant employment income, operational income, and covered foreign income classifications",
-                "notes": "Income classification and deductions determine the actual liability.",
                 "source_ids": [
-                  "MN15"
+                  "MN_TAX_ADMIN_PIT_GUIDE",
+                  "MN_CONSTITUTIONAL_PIT_2025",
+                  "MN_PIT_NATIVE_CURRENT"
+                ]
+              },
+              {
+                "rate_percent": 15,
+                "threshold_local": "Above MNT 120,000,000 through MNT 180,000,000 annually",
+                "applies_to": "Employment and related benefits",
+                "notes": "MNT 12,000,000 plus 15% of the excess above MNT 120,000,000.",
+                "threshold_usd_approx": null,
+                "source_ids": [
+                  "MN_TAX_ADMIN_PIT_GUIDE",
+                  "MN_CONSTITUTIONAL_PIT_2025",
+                  "MN_PIT_NATIVE_CURRENT"
+                ]
+              },
+              {
+                "rate_percent": 20,
+                "threshold_local": "Above MNT 180,000,000 annually",
+                "applies_to": "Employment and related benefits",
+                "notes": "MNT 21,000,000 plus 20% of the excess above MNT 180,000,000.",
+                "threshold_usd_approx": null,
+                "source_ids": [
+                  "MN_TAX_ADMIN_PIT_GUIDE",
+                  "MN_CONSTITUTIONAL_PIT_2025",
+                  "MN_PIT_NATIVE_CURRENT"
+                ]
+              },
+              {
+                "rate_percent": 10,
+                "threshold_local": "Taxable operational/business income",
+                "applies_to": "Ordinary operational income",
+                "notes": "Separate category from employment; allowable business expenses affect the base.",
+                "threshold_usd_approx": null,
+                "source_ids": [
+                  "MN_TAX_ADMIN_PIT_GUIDE",
+                  "MN_CONSTITUTIONAL_PIT_2025",
+                  "MN_PIT_NATIVE_CURRENT"
                 ]
               },
               {
                 "rate_percent": 40,
-                "threshold_local": "No monetary threshold; category-specific",
+                "threshold_local": "Category-specific; no income band",
+                "applies_to": "Gambling and lottery winnings",
+                "notes": "Not the ordinary remote-work rate.",
                 "threshold_usd_approx": null,
-                "applies_to": "The specific income category referenced in Article 19.1.2",
-                "notes": "Included only to explain the statutory maximum category rate; it is not the ordinary remote-worker rate.",
                 "source_ids": [
-                  "MN15"
+                  "MN_TAX_ADMIN_PIT_GUIDE",
+                  "MN_CONSTITUTIONAL_PIT_2025",
+                  "MN_PIT_NATIVE_CURRENT"
                 ]
               }
             ],
             "confidence": "high",
             "source_ids": [
               "MN15",
-              "MN16"
+              "MN16",
+              "MN_TAX_ADMIN_PIT_GUIDE",
+              "MN_CONSTITUTIONAL_PIT_2025",
+              "MN_PIT_NATIVE_CURRENT"
             ],
-            "reviewed_at": "2026-08-15",
-            "notes": "The statutes are official but displayed as unofficial English translations."
+            "reviewed_at": "2026-09-25",
+            "notes": "Current employment rates were checked against the tax-administration guide and Constitutional Court. The native law labels its new allowance schedule effective from 1 January 2027; those future provisions are excluded here."
           },
           "digital_nomad_taxation": {
-            "value": "Not applicable as a special regime because Mongolia has no confirmed digital-nomad or foreign-remote-worker residence category. Hypothetically, a resident taxpayer's covered foreign employment or operational income would generally be screened at 10%.",
+            "value": "No special nomad regime exists. Hypothetical resident employment uses progressive rates up to 20%; ordinary business income generally uses 10%.",
             "route_tax_category": "No digital-nomad category; hypothetical resident individual with foreign employment or operational income",
-            "top_or_screening_pit_rate_percent": 10,
-            "income_tax_display": "10% principal screening PIT rate; category-specific rates may differ",
+            "top_or_screening_pit_rate_percent": 20,
+            "income_tax_display": "Employment: 10–20% progressive; ordinary business income: generally 10%",
             "tax_residency_rule": "Resident after at least 183 days in 12 consecutive months or under the 50%-of-income test in the PIT law.",
             "foreign_income_treatment": "A resident taxpayer's income earned abroad is taxable and covered foreign income is generally self-reported by February 15 following the tax year.",
             "special_digital_nomad_or_inbound_regime": "None found.",
@@ -129072,16 +129494,19 @@
             },
             "practical_scenarios": {
               "under_tax_residency_threshold": "A nonresident is generally taxed only on Mongolian-source income, but services physically performed in Mongolia may create source or compliance questions even when paid abroad.",
-              "tax_resident_remote_worker": "Resident taxpayers are subject to tax on foreign income; relevant foreign employment or operational income is generally screened at 10%, subject to classification and treaty relief.",
+              "tax_resident_remote_worker": "Resident foreign employment follows the employment bands; ordinary operational income generally uses 10%, subject to classification and treaty relief.",
               "self_employed_or_local_registration": "Operational income may be taxed at 10%, and voluntary social insurance may be available at 13.5% of declared income, but tax or business registration does not independently create immigration permission."
             },
             "confidence": "medium_high",
             "source_ids": [
               "MN15",
               "MN16",
-              "MN18"
+              "MN18",
+              "MN_TAX_ADMIN_PIT_GUIDE",
+              "MN_CONSTITUTIONAL_PIT_2025",
+              "MN_PIT_NATIVE_CURRENT"
             ],
-            "reviewed_at": "2026-08-15",
+            "reviewed_at": "2026-09-25",
             "notes": "High confidence in statutory headline rules; lower confidence in their application to a fact pattern for which no immigration category exists."
           }
         },
@@ -129623,6 +130048,30 @@
             "publisher": "Immigration Agency of Mongolia",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "MN_TAX_ADMIN_PIT_GUIDE",
+            "title": "Personal Income Tax manual and simplified tax table",
+            "url": "https://mta.gov.mn/files/pdf-files/factc34n7f/652793452cb0ae5731d067f4.pdf",
+            "publisher": "Mongolian Tax Administration",
+            "source_type": "tax_authority",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "MN_CONSTITUTIONAL_PIT_2025",
+            "title": "Constitutional Court annual report2025 — progressive PIT decision of16May2025",
+            "url": "https://constitutionalcourt.mn/wp-content/uploads/2026/02/UAT2025v5-eng_1-compressed.pdf",
+            "publisher": "Constitutional Court of Mongolia",
+            "source_type": "official_government",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "MN_PIT_NATIVE_CURRENT",
+            "title": "Personal Income Tax Law — native consolidated text and amendment effective dates",
+            "url": "https://legalinfo.mn/mn/detail/14410",
+            "publisher": "Legalinfo Mongolia",
+            "source_type": "law",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -138591,11 +139040,12 @@
             "notes": "Tied fourth place in the live 2026 ranking checked on 15 August 2026."
           },
           "visa_free_destinations": {
-            "value": 186,
+            "value": null,
             "source_ids": [
-              "NL24"
+              "NL24",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley access score. Henley includes destinations accessible without a prior visa, including qualifying visa-on-arrival and electronic travel-authorisation access, rather than publishing a pure visa-free-only count."
+            "notes": "The recorded 186 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley access score. Henley includes destinations accessible without a prior visa, including qualifying visa-on-arrival and electronic travel-authorisation access, rather than publishing a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -138611,7 +139061,15 @@
             ],
             "notes": "Henley aggregates these categories into its access score; a separate combined VOA/eTA total was not established from the inspected current source."
           },
-          "notes": "The access score should not be interpreted as 186 strictly visa-free destinations because Henley’s methodology also credits specified visa-on-arrival and eTA access."
+          "notes": "The access score should not be interpreted as 186 strictly visa-free destinations because Henley’s methodology also credits specified visa-on-arrival and eTA access.",
+          "mobility_score": {
+            "value": 186,
+            "source_ids": [
+              "NL24",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley access score. Henley includes destinations accessible without a prior visa, including qualifying visa-on-arrival and electronic travel-authorisation access, rather than publishing a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -138969,6 +139427,14 @@
             "publisher": "Dutch Tax and Customs Administration",
             "source_type": "tax_authority",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -142839,12 +143305,13 @@
             "notes": "Nigeria ranked 90th among 199 passports in the July 2026 Henley release."
           },
           "visa_free_destinations": {
-            "value": 44,
+            "value": null,
             "source_ids": [
               "NG19",
-              "NG20"
+              "NG20",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's access score counts destinations accessible without obtaining a visa in advance and can include visa-on-arrival access; it is not a pure visa-free-only count."
+            "notes": "The recorded 44 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's access score counts destinations accessible without obtaining a visa in advance and can include visa-on-arrival access; it is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -142862,7 +143329,16 @@
             ],
             "notes": "The current Henley ranking does not provide a separate Nigeria-specific visa-on-arrival/eTA breakdown in the inspected material."
           },
-          "notes": "Henley tracks 227 destinations and updates its ranking periodically. Rank and access score should be rechecked immediately before use."
+          "notes": "Henley tracks 227 destinations and updates its ranking periodically. Rank and access score should be rechecked immediately before use.",
+          "mobility_score": {
+            "value": 44,
+            "source_ids": [
+              "NG19",
+              "NG20",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score counts destinations accessible without obtaining a visa in advance and can include visa-on-arrival access; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -143236,6 +143712,14 @@
             "publisher": "National Bureau of Statistics",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -144847,9 +145331,11 @@
             "notes": "EF EPI uses a self-selected online test population and should be treated as a practical indicator, not a census. Macedonian remains necessary for the statutory permanent-residence and ordinary naturalization language requirements."
           },
           "russian_or_ukrainian_practicality": {
-            "value": "Limited and not reliable for administration or daily services. Macedonian is a South Slavic language, but no authoritative current source inspected established widespread functional Russian or Ukrainian use; English or Macedonian is the safer working language.",
-            "source_ids": [],
-            "notes": "This cautious assessment is retained because targeted searches did not produce a reliable national proficiency or service-availability dataset for Russian or Ukrainian."
+            "value": "Not established from the reviewed sources.",
+            "source_ids": [
+              "MK19"
+            ],
+            "notes": "The cited EF country page measures English proficiency only. It does not establish Russian or Ukrainian proficiency or service availability; no negative national assessment is inferred."
           }
         },
         "labor_market": {
@@ -145121,11 +145607,11 @@
           },
           {
             "id": "MK19",
-            "title": "North Macedonia — EF English Proficiency Index 2025",
-            "url": "https://www.ef.edu/epi/regions/europe/north-macedonia",
+            "title": "North Macedonia — EF English Proficiency Index country profile",
+            "url": "https://www.ef.no/epi/regions/europe/north-macedonia/",
             "publisher": "EF Education First",
             "source_type": "reputable_secondary",
-            "accessed_at": "2026-08-15"
+            "accessed_at": "2026-09-25"
           },
           {
             "id": "MK20",
@@ -150219,8 +150705,8 @@
               "notes": "The visa authorizes remote work and presence but is legally non-resident, not temporary residence."
             },
             "path_to_permanent_residence": {
-              "value": "Conditional separate professional-residence route with a later PR stage; engineering and other reserved professions are excluded, so the applicant’s exact degree must be accepted.",
-              "notes": "The current professional checklist and official engineering-exclusion notice were readable. The decree opened only as a scanned PDF with no usable text, and its two-year period was not independently extracted in this review, so years_to_pr remains null. No generic remote-worker conversion or exit rule was established. Short-stay time is not the professional provisional-residence period.",
+              "value": "A separately eligible Professional Foreigner can apply for PR after two years of provisional residence. The remote-worker short stay does not supply that clock; engineering qualifications may be excluded.",
+              "notes": "Article 4 of Decree 804/2012 was visually checked and establishes two years of provisional residence. It also lists tax clearance and nine consecutive social-security payments, which the current abbreviated checklist does not repeat; confirm the applicable evidence. The period starts on professional residence, not the remote-worker visa. Degree eligibility and change/exit procedure remain unresolved.",
               "source_ids": [
                 "PA_REMOTE_CHECKLIST",
                 "PA_PROF_CHECKLIST",
@@ -151104,11 +151590,11 @@
           "requires_status_switch": true,
           "requires_exit": "uncertain",
           "nomad_time_counts_toward_pr": false,
-          "years_to_pr": null,
+          "years_to_pr": 2,
           "summary": "A remote-worker short-stay holder needs a separate qualifying residence application. The Professional Foreigner route has a PR stage, but its degree and reserved-profession restrictions can exclude an engineering qualification.",
           "requirements": [
             "Hold a recognized/homologated degree in a profession not reserved for Panamanian nationals.",
-            "Obtain provisional residence and later meet the permanent-stage checklist.",
+            "Obtain provisional residence and complete its two-year period before applying for permanent residence; confirm the current permanent-stage documentation.",
             "Resolve the exact classification of a software/computer-engineering degree before treating this route as available."
           ],
           "source_ids": [
@@ -151121,7 +151607,7 @@
           "reviewed_route_names": [
             "Short-Stay Visa as a Remote Worker"
           ],
-          "notes": "The current professional checklist and official engineering-exclusion notice were readable. The decree opened only as a scanned PDF with no usable text, and its two-year period was not independently extracted in this review, so years_to_pr remains null. No generic remote-worker conversion or exit rule was established. Short-stay time is not the professional provisional-residence period."
+          "notes": "Article 4 of Decree 804/2012 was visually checked and establishes two years of provisional residence. It also lists tax clearance and nine consecutive social-security payments, which the current abbreviated checklist does not repeat; confirm the applicable evidence. The period starts on professional residence, not the remote-worker visa. Degree eligibility and change/exit procedure remain unresolved."
         }
       }
     },
@@ -155611,12 +156097,13 @@
             "notes": "July 2026 Henley position reported by a current secondary source; the interactive Henley page confirms the current index but did not expose a stable country row in extracted text."
           },
           "visa_free_destinations": {
-            "value": 65,
+            "value": null,
             "source_ids": [
               "PH_HENLEY",
-              "PH_PASSPORT_NEWS"
+              "PH_PASSPORT_NEWS",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's score combines destinations accessible without obtaining a visa in advance, including some visa-on-arrival arrangements; it is not the strict visa-free-only count."
+            "notes": "The recorded 65 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's score combines destinations accessible without obtaining a visa in advance, including some visa-on-arrival arrangements; it is not the strict visa-free-only count."
           },
           "visa_required_destinations": {
             "value": 119,
@@ -155632,7 +156119,16 @@
             ],
             "notes": "Passport Index reports 37 visa-on-arrival and 4 eTA destinations, combined here. This breakdown should not be added to the separate Henley score."
           },
-          "notes": "Henley and Passport Index use different methodologies. Rank 72 and access score 65 use the July 2026 Henley reporting; detailed category counts use Passport Index 2026."
+          "notes": "Henley and Passport Index use different methodologies. Rank 72 and access score 65 use the July 2026 Henley reporting; detailed category counts use Passport Index 2026.",
+          "mobility_score": {
+            "value": 65,
+            "source_ids": [
+              "PH_HENLEY",
+              "PH_PASSPORT_NEWS",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's score combines destinations accessible without obtaining a visa in advance, including some visa-on-arrival arrangements; it is not the strict visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -156034,6 +156530,14 @@
             "publisher": "Embassy of the Republic of the Philippines in Washington, D.C.",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -158087,11 +158591,12 @@
             "notes": "Portugal was tied in the fifth-ranked group in the current 2026 table inspected on the research date."
           },
           "visa_free_destinations": {
-            "value": 185,
+            "value": null,
             "source_ids": [
-              "PT19"
+              "PT19",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's access score combines destinations accessible without an advance visa, including categories such as visa on arrival; it is not a pure visa-free-only count."
+            "notes": "The recorded 185 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's access score combines destinations accessible without an advance visa, including categories such as visa on arrival; it is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -158107,7 +158612,15 @@
             ],
             "notes": "Henley publishes a combined access score but does not expose a separate visa-on-arrival/eTA total on the inspected ranking page."
           },
-          "notes": "Portugal has a very strong EU passport, but the access score can change during the year and should be rechecked near naturalization or travel."
+          "notes": "Portugal has a very strong EU passport, but the access score can change during the year and should be rechecked near naturalization or travel.",
+          "mobility_score": {
+            "value": 185,
+            "source_ids": [
+              "PT19",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score combines destinations accessible without an advance visa, including categories such as visa on arrival; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -158522,6 +159035,14 @@
             "url": "https://aima.gov.pt/pt/trabalhar/autorizacao-de-residencia-para-o-exercicio-de-atividade-profissional-prestada-de-forma-remota-com-visto-de-residencia-para-o-exe",
             "publisher": "AIMA",
             "source_type": "official_government",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
             "accessed_at": "2026-09-25"
           }
         ],
@@ -161426,11 +161947,12 @@
             "notes": "The reviewed official Henley 2026 analysis lists the Russian Federation at rank 47."
           },
           "visa_free_destinations": {
-            "value": 113,
+            "value": null,
             "source_ids": [
-              "RU_HENLEY_RANKING"
+              "RU_HENLEY_RANKING",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's mobility score includes qualifying visa-on-arrival and eTA access; it is not a pure visa-free-only total."
+            "notes": "The recorded 113 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's mobility score includes qualifying visa-on-arrival and eTA access; it is not a pure visa-free-only total."
           },
           "visa_required_destinations": {
             "value": null,
@@ -161446,7 +161968,15 @@
             ],
             "notes": "Henley aggregates these modes into the mobility score and did not expose a separate current Russia total."
           },
-          "notes": "Mode-specific destination totals remain null rather than being guessed."
+          "notes": "Mode-specific destination totals remain null rather than being guessed.",
+          "mobility_score": {
+            "value": 113,
+            "source_ids": [
+              "RU_HENLEY_RANKING",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's mobility score includes qualifying visa-on-arrival and eTA access; it is not a pure visa-free-only total."
+          }
         },
         "languages": {
           "official_languages": [
@@ -161859,6 +162389,14 @@
             "publisher": "Federal State Statistics Service (Rosstat)",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -165054,11 +165592,12 @@
             "notes": "The live 2026 Henley table reviewed on 2026-08-15 lists Saint Lucia at rank 32 with access to 143 destinations."
           },
           "visa_free_destinations": {
-            "value": 143,
+            "value": null,
             "source_ids": [
-              "LC22"
+              "LC22",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's access score combines destinations accessible without obtaining a visa in advance and is not a pure visa-free-only count."
+            "notes": "The recorded 143 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's access score combines destinations accessible without obtaining a visa in advance and is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": 61,
@@ -165074,7 +165613,15 @@
             ],
             "notes": "Passport Index listed 41 visa-on-arrival and 5 eTA destinations on 2026-08-15. This combined value excludes its separate eVisa category."
           },
-          "notes": "Passport rankings and access counts change frequently. Henley's current access score and Passport Index's category breakdown use different methodologies and should not be added together."
+          "notes": "Passport rankings and access counts change frequently. Henley's current access score and Passport Index's category breakdown use different methodologies and should not be added together.",
+          "mobility_score": {
+            "value": 143,
+            "source_ids": [
+              "LC22",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score combines destinations accessible without obtaining a visa in advance and is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -165490,6 +166037,14 @@
             "publisher": "Attorney General's Chambers, Saint Lucia",
             "source_type": "law",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -165714,7 +166269,7 @@
             "income_requirement_display": {
               "value": "No remote-worker threshold; visitor extensions cost EC$75 per month or part-month",
               "currency_basis": "XCD",
-              "usd_monthly_value": 27.78,
+              "usd_monthly_value": null,
               "local_or_formula_value": "EC$75 per extension month",
               "notes": "USD conversion uses EC$2.70 per US$1.",
               "source_ids": [
@@ -167209,11 +167764,12 @@
             "notes": "The live Henley ranking inspected on 15 August 2026 listed Samoa at rank 39 with a score of 129. A secondary page still reported rank 35, so the current official live ranking was preferred."
           },
           "visa_free_destinations": {
-            "value": 129,
+            "value": null,
             "source_ids": [
-              "WS_S19"
+              "WS_S19",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's score counts destinations accessible without a prior visa, including visa-free and visa-on-arrival access; it is not a pure visa-free-only count."
+            "notes": "The recorded 129 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's score counts destinations accessible without a prior visa, including visa-free and visa-on-arrival access; it is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -167231,7 +167787,15 @@
             ],
             "notes": "A current Samoa-specific VOA/eTA subtotal was not exposed in the sources reviewed; 129 is the combined Henley access score and should not be duplicated here."
           },
-          "notes": "Passport data are current-index screening figures and can change whenever destination entry rules change."
+          "notes": "Passport data are current-index screening figures and can change whenever destination entry rules change.",
+          "mobility_score": {
+            "value": 129,
+            "source_ids": [
+              "WS_S19",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's score counts destinations accessible without a prior visa, including visa-free and visa-on-arrival access; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -167523,6 +168087,14 @@
             "publisher": "Central Bank of Samoa",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -177675,11 +178247,12 @@
             "notes": "Current 2026 ranking reviewed on 2026-08-15."
           },
           "visa_free_destinations": {
-            "value": 182,
+            "value": null,
             "source_ids": [
-              "SK22_HENLEY"
+              "SK22_HENLEY",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley access score combines destinations accessible without a prior visa under its methodology, including visa-on-arrival categories; it is not a pure visa-free-only count."
+            "notes": "The recorded 182 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley access score combines destinations accessible without a prior visa under its methodology, including visa-on-arrival categories; it is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -177695,7 +178268,15 @@
             ],
             "notes": "The reviewed Henley source aggregates its access score and did not provide a reliable separate Slovakia VOA/eTA count."
           },
-          "notes": "Strong EU passport. Rank and access score can change during the year."
+          "notes": "Strong EU passport. Rank and access score can change during the year.",
+          "mobility_score": {
+            "value": 182,
+            "source_ids": [
+              "SK22_HENLEY",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley access score combines destinations accessible without a prior visa under its methodology, including visa-on-arrival categories; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -178085,6 +178666,14 @@
             "publisher": "National Labour Inspectorate of the Slovak Republic",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -178694,7 +179283,7 @@
             "notes": "No reliable current official typical processing duration was found. Administrative-unit workload and the need to document release from prior citizenship can materially affect timing."
           },
           "key_conditions": {
-            "value": "Maintain continuous lawful and actual residence; avoid excessive absences; convert before the one-year digital-nomad permit ends; obtain A2 Slovenian for permanent residence and basic Slovenian for naturalisation; maintain livelihood, insurance and tax compliance; meet criminal-record/public-order requirements; take the citizenship oath; and normally obtain release from prior citizenship unless an exception applies.",
+            "value": "Maintain continuous lawful and actual residence; avoid excessive absences; file a qualifying follow-on application before the one-year digital-nomad permit ends and maintain lawful residence while it is decided; obtain A2 Slovenian for permanent residence and basic Slovenian for naturalisation; maintain livelihood, insurance and tax compliance; meet criminal-record/public-order requirements; take the citizenship oath; and normally obtain release from prior citizenship unless an exception applies.",
             "source_ids": [
               "SI04",
               "SI12",
@@ -178785,11 +179374,12 @@
             "notes": "Henley global ranking dated 17 June 2026; Slovenia was tied at rank 7."
           },
           "visa_free_destinations": {
-            "value": 183,
+            "value": null,
             "source_ids": [
-              "SI23"
+              "SI23",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's access score counts destinations accessible without obtaining a visa in advance and therefore includes some visa-on-arrival arrangements; it is not the same as Passport Index's strict visa-free count."
+            "notes": "The recorded 183 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's access score counts destinations accessible without obtaining a visa in advance and therefore includes some visa-on-arrival arrangements; it is not the same as Passport Index's strict visa-free count."
           },
           "visa_required_destinations": {
             "value": 27,
@@ -178805,7 +179395,15 @@
             ],
             "notes": "Passport Index lists 43 visa-on-arrival and 10 eTA destinations. eVisa and other online-authorisation categories are not included in this sum."
           },
-          "notes": "Do not add Henley's 183 score to the Passport Index breakdown: the indexes define access categories differently."
+          "notes": "Do not add Henley's 183 score to the Passport Index breakdown: the indexes define access categories differently.",
+          "mobility_score": {
+            "value": 183,
+            "source_ids": [
+              "SI23",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score counts destinations accessible without obtaining a visa in advance and therefore includes some visa-on-arrival arrangements; it is not the same as Passport Index's strict visa-free count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -179154,6 +179752,14 @@
             "publisher": "Financial Administration of the Republic of Slovenia",
             "source_type": "tax_authority",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -179161,7 +179767,7 @@
           "can_lead_to_citizenship_from_this_route": true,
           "citizenship_track_strength": "possible_with_conversion",
           "requires_switch_to_another_status": true,
-          "nomad_only_warning": "The digital-nomad permit cannot be extended beyond one year. Settlement fails if the applicant does not secure a qualifying follow-on temporary residence basis before it expires.",
+          "nomad_only_warning": "The digital-nomad permit cannot be renewed beyond one year. A qualifying follow-on application must be lodged in time and lawful residence maintained while it is decided; eventual approval and the successor’s eligibility conditions remain necessary.",
           "years_to_citizenship": 10,
           "summary": "The permit is genuine temporary residence and its time appears to count under the general five-year permanent-residence rule, because Article 52 counts temporary permits and does not exclude digital nomads. However, the permit ends after one year, so a timely conversion—potentially to local self-employment after the one-year prior-residence condition—is mandatory for a credible citizenship path.",
           "source_ids": [
@@ -183317,11 +183923,11 @@
             "notes": "July 2026 Henley result; tied with Japan and the United Arab Emirates."
           },
           "visa_free_destinations": {
-            "value": 188,
+            "value": 114,
             "source_ids": [
-              "KR_PASSPORT_HENLEY_REPORT"
+              "KR_PASSPORT_INDEX_BREAKDOWN"
             ],
-            "notes": "Henley’s access score combines destinations accessible without a prior visa, including visa-on-arrival access; it is not a pure visa-free-only count."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 25,
@@ -183337,7 +183943,15 @@
             ],
             "notes": "Passport Index separates 47 visa-on-arrival and 12 eTA destinations; combined here to match this field."
           },
-          "notes": "Do not combine the Henley score of 188 with Passport Index’s separated categories as if they used the same destination universe or methodology."
+          "notes": "Do not combine the Henley score of 188 with Passport Index’s separated categories as if they used the same destination universe or methodology.",
+          "mobility_score": {
+            "value": 188,
+            "source_ids": [
+              "KR_PASSPORT_HENLEY_REPORT",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley’s access score combines destinations accessible without a prior visa, including visa-on-arrival access; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -183725,6 +184339,14 @@
             "url": "https://mojhome.moj.go.kr/bbs/immigration_eng/230/454085/download.do",
             "publisher": "Ministry of Justice of the Republic of Korea",
             "source_type": "official_government",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
             "accessed_at": "2026-09-25"
           }
         ],
@@ -184432,11 +185054,12 @@
             "notes": "Current 2026 table inspected on 2026-08-15."
           },
           "visa_free_destinations": {
-            "value": 42,
+            "value": null,
             "source_ids": [
-              "SS_HENLEY_2026"
+              "SS_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley’s access score combines destinations accessible without obtaining a visa in advance, including qualifying visa-on-arrival access."
+            "notes": "The recorded 42 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley’s access score combines destinations accessible without obtaining a visa in advance, including qualifying visa-on-arrival access."
           },
           "visa_required_destinations": {
             "value": null,
@@ -184452,7 +185075,15 @@
             ],
             "notes": "The inspected ranking does not separate visa on arrival or eTA from the overall access score."
           },
-          "notes": "The previous rank 91 and score 41 were outdated; the inspected 2026 Henley table shows rank 92 and access score 42."
+          "notes": "The previous rank 91 and score 41 were outdated; the inspected 2026 Henley table shows rank 92 and access score 42.",
+          "mobility_score": {
+            "value": 42,
+            "source_ids": [
+              "SS_HENLEY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley’s access score combines destinations accessible without obtaining a visa in advance, including qualifying visa-on-arrival access."
+          }
         },
         "languages": {
           "official_languages": [
@@ -184899,6 +185530,14 @@
             "publisher": "South Sudan NGO Forum / Ministry of Labour",
             "source_type": "reputable_secondary",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -189152,7 +189791,7 @@
         "settlement_track": {
           "classification": "not_valid_no_regular_remote_work_route",
           "can_lead_to_citizenship_from_this_route": false,
-          "citizenship_track_strength": "none",
+          "citizenship_track_strength": "none_or_separate_route_required",
           "requires_switch_to_another_status": true,
           "nomad_only_warning": "General residence is not a digital-nomad or remote-work authorization. Foreign means supporting a residence application do not by themselves authorize foreign-client work.",
           "years_to_citizenship": null,
@@ -191064,11 +191703,12 @@
             "notes": "Current ranking page checked 2026-08-15; Henley rankings can change during the year."
           },
           "visa_free_destinations": {
-            "value": 185,
+            "value": null,
             "source_ids": [
-              "CH16"
+              "CH16",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's access score includes destinations accessible without a prior traditional visa, including visa-on-arrival arrangements; it is not a pure visa-free-only count."
+            "notes": "The recorded 185 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's access score includes destinations accessible without a prior traditional visa, including visa-on-arrival arrangements; it is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": 42,
@@ -191084,7 +191724,15 @@
             ],
             "notes": "The current Henley ranking page did not provide a separate combined visa-on-arrival/eTA count, so no split was invented."
           },
-          "notes": "The current live Henley table differs from its January 2026 press release; the live ranking was preferred."
+          "notes": "The current live Henley table differs from its January 2026 press release; the live ranking was preferred.",
+          "mobility_score": {
+            "value": 185,
+            "source_ids": [
+              "CH16",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score includes destinations accessible without a prior traditional visa, including visa-on-arrival arrangements; it is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -191453,6 +192101,14 @@
             "publisher": "Swiss Federal Statistical Office",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -195452,11 +196108,11 @@
             "notes": "Live Henley ranking observed on the research date; rankings change periodically."
           },
           "visa_free_destinations": {
-            "value": 77,
+            "value": 40,
             "source_ids": [
-              "TH_HENLEY"
+              "TH_PASSPORT_INDEX"
             ],
-            "notes": "Henley's access score includes destinations accessible without obtaining a visa in advance and is broader than strict visa-free access."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 105,
@@ -195472,7 +196128,15 @@
             ],
             "notes": "Passport Index reports 48 visa-on-arrival and five eTA destinations; it separately reports 40 strictly visa-free destinations."
           },
-          "notes": "Do not treat the Henley access score and Passport Index category counts as methodologically identical."
+          "notes": "Do not treat the Henley access score and Passport Index category counts as methodologically identical.",
+          "mobility_score": {
+            "value": 77,
+            "source_ids": [
+              "TH_HENLEY",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score includes destinations accessible without obtaining a visa in advance and is broader than strict visa-free access."
+          }
         },
         "languages": {
           "official_languages": [
@@ -195980,6 +196644,14 @@
             "url": "https://thailand.go.th/issue-focus-detail/applying-for-thailand-permanent-residency-pr-visa?hl=en",
             "publisher": "Government of Thailand",
             "source_type": "official_government",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
             "accessed_at": "2026-09-25"
           }
         ],
@@ -201526,11 +202198,11 @@
             "notes": "The dynamic Henley 2026 table inspected on the research date showed Tunisia tied at rank 71."
           },
           "visa_free_destinations": {
-            "value": 67,
+            "value": 36,
             "source_ids": [
-              "TN_HENLEY"
+              "TN_PASSPORT_INDEX"
             ],
-            "notes": "Henley's access score includes destinations accessible without obtaining a visa in advance and is not identical to Passport Index's strict visa-free count."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 123,
@@ -201546,7 +202218,15 @@
             ],
             "notes": "Passport Index listed 35 visa-on-arrival and four eTA destinations. Its separate strict visa-free count was 36."
           },
-          "notes": "Passport rankings and entry categories change frequently. Henley and Passport Index use different methodologies, so their category totals should not be combined into one calculation."
+          "notes": "Passport rankings and entry categories change frequently. Henley and Passport Index use different methodologies, so their category totals should not be combined into one calculation.",
+          "mobility_score": {
+            "value": 67,
+            "source_ids": [
+              "TN_HENLEY",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score includes destinations accessible without obtaining a visa in advance and is not identical to Passport Index's strict visa-free count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -201981,6 +202661,14 @@
             "publisher": "ValutaFX",
             "source_type": "other",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -202598,11 +203286,12 @@
             "notes": "Ranking displayed on the inspected 2026 Henley page when checked on 2026-08-15."
           },
           "visa_free_destinations": {
-            "value": 113,
+            "value": null,
             "source_ids": [
-              "TR21"
+              "TR21",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley access score, which combines destinations accessible without a prior visa, including qualifying visa-on-arrival and electronic-travel-authorisation access under Henley’s methodology."
+            "notes": "The recorded 113 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley access score, which combines destinations accessible without a prior visa, including qualifying visa-on-arrival and electronic-travel-authorisation access under Henley’s methodology."
           },
           "visa_required_destinations": {
             "value": null,
@@ -202618,7 +203307,15 @@
             ],
             "notes": "The inspected Henley page does not separate visa-on-arrival and eTA destinations from the aggregate access score."
           },
-          "notes": "The live 2026 Henley page supported rank 48 and an access score of 113; its score should not be described as a strict visa-free-only count."
+          "notes": "The live 2026 Henley page supported rank 48 and an access score of 113; its score should not be described as a strict visa-free-only count.",
+          "mobility_score": {
+            "value": 113,
+            "source_ids": [
+              "TR21",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley access score, which combines destinations accessible without a prior visa, including qualifying visa-on-arrival and electronic-travel-authorisation access under Henley’s methodology."
+          }
         },
         "languages": {
           "official_languages": [
@@ -203008,6 +203705,14 @@
             "publisher": "Türkiye Presidency of Migration Management",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -206988,11 +207693,12 @@
             "notes": "Henley's January 2026 report states that Ukraine had risen to 30th place. A frequently updated secondary table displayed 31st when checked, so the dated primary Henley report is used for rank."
           },
           "visa_free_destinations": {
-            "value": 142,
+            "value": null,
             "source_ids": [
-              "UA_PASSPORT_SECONDARY"
+              "UA_PASSPORT_SECONDARY",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "The secondary country table reports visa-free or visa-on-arrival access to 142 destinations. Henley's accessible primary press page confirmed rank but did not expose Ukraine's score in static page text."
+            "notes": "The recorded 142 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. The secondary country table reports visa-free or visa-on-arrival access to 142 destinations. Henley's accessible primary press page confirmed rank but did not expose Ukraine's score in static page text."
           },
           "visa_required_destinations": {
             "value": null,
@@ -207010,7 +207716,15 @@
             ],
             "notes": "Henley's score combines visa-free, visa-on-arrival and certain electronic authorizations, while the reviewed sources did not provide a reliable current aggregate VOA/eTA-only total."
           },
-          "notes": "Passport figures can change during the year. Rank uses the dated primary Henley January 2026 report; the 142-access score is retained from a directly relevant secondary compilation and should be refreshed from Henley's downloadable dataset when available."
+          "notes": "Passport figures can change during the year. Rank uses the dated primary Henley January 2026 report; the 142-access score is retained from a directly relevant secondary compilation and should be refreshed from Henley's downloadable dataset when available.",
+          "mobility_score": {
+            "value": 142,
+            "source_ids": [
+              "UA_PASSPORT_SECONDARY",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. The secondary country table reports visa-free or visa-on-arrival access to 142 destinations. Henley's accessible primary press page confirmed rank but did not expose Ukraine's score in static page text."
+          }
         },
         "languages": {
           "official_languages": [
@@ -207379,6 +208093,14 @@
             "publisher": "State Migration Service of Ukraine",
             "source_type": "official_government",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -208104,11 +208826,12 @@
             "notes": "July 2026 Henley update; the UAE shares second place with Japan and South Korea."
           },
           "visa_free_destinations": {
-            "value": 188,
+            "value": null,
             "source_ids": [
-              "UAE_HENLEY_JULY_2026"
+              "UAE_HENLEY_JULY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley's access score combines destinations accessible without a prior visa, including visa-on-arrival access; it is not a strict visa-free-only count."
+            "notes": "The recorded 188 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley's access score combines destinations accessible without a prior visa, including visa-on-arrival access; it is not a strict visa-free-only count."
           },
           "visa_required_destinations": {
             "value": 16,
@@ -208124,7 +208847,15 @@
             ],
             "notes": "Passport Index lists 44 visa-on-arrival and 10 eTA destinations; combined here. Fast-track eVisa destinations are excluded."
           },
-          "notes": "The UAE passport is exceptionally strong, but passport strength should not be confused with accessibility of citizenship through Green or Virtual Work residence."
+          "notes": "The UAE passport is exceptionally strong, but passport strength should not be confused with accessibility of citizenship through Green or Virtual Work residence.",
+          "mobility_score": {
+            "value": 188,
+            "source_ids": [
+              "UAE_HENLEY_JULY_2026",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's access score combines destinations accessible without a prior visa, including visa-on-arrival access; it is not a strict visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -208550,6 +209281,14 @@
             "url": "https://www.uaelegislation.gov.ae/en/legislations/1528/download",
             "publisher": "UAE Legislation",
             "source_type": "law",
+            "accessed_at": "2026-09-25"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
             "accessed_at": "2026-09-25"
           }
         ],
@@ -210534,11 +211273,11 @@
             "notes": "Henley's live country page showed the United States in 10th place on the research date."
           },
           "visa_free_destinations": {
-            "value": 180,
+            "value": 111,
             "source_ids": [
-              "US24"
+              "US25"
             ],
-            "notes": "Henley's live score on 2026-08-15 was 180 destinations accessible without obtaining a prior visa under Henley's methodology, which includes qualifying visa-on-arrival and electronic travel-authority access."
+            "notes": "Strictly visa-free category already recorded in this country’s original sourced passport notes. This preserves that dated category count and separates it from the Henley combined access score; it is not a fresh September count."
           },
           "visa_required_destinations": {
             "value": 31,
@@ -210554,7 +211293,15 @@
             ],
             "notes": "Passport Index reported 46 visa-on-arrival destinations and 10 eTA destinations, combined here. This breakdown should not be arithmetically reconciled with the Henley score because the indexes use different category and destination methodologies."
           },
-          "notes": "Henley's January 2026 release initially reported 179 destinations, while its live monthly index showed 180 on 2026-08-15; the fresher live value is used. Passport Index separately reported 111 strictly visa-free, 46 visa-on-arrival, 10 eTA, 31 visa-required, and additional eVisa destinations."
+          "notes": "Henley's January 2026 release initially reported 179 destinations, while its live monthly index showed 180 on 2026-08-15; the fresher live value is used. Passport Index separately reported 111 strictly visa-free, 46 visa-on-arrival, 10 eTA, 31 visa-required, and additional eVisa destinations.",
+          "mobility_score": {
+            "value": 180,
+            "source_ids": [
+              "US24",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley's live score on 2026-08-15 was 180 destinations accessible without obtaining a prior visa under Henley's methodology, which includes qualifying visa-on-arrival and electronic travel-authority access."
+          }
         },
         "languages": {
           "official_languages": [
@@ -210883,6 +211630,14 @@
             "publisher": "U.S. Census Bureau",
             "source_type": "statistics",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {
@@ -213916,12 +214671,13 @@
             "notes": "The current specialist source reports approximately 57th place using the 26 June 2026 Henley data. Henley’s live page was inspected, but its accessible text did not expose Vanuatu’s row; treat the exact rank as medium-confidence and recheck the live index before relying on it."
           },
           "visa_free_destinations": {
-            "value": 87,
+            "value": null,
             "source_ids": [
               "VU_23",
-              "VU_24"
+              "VU_24",
+              "PASSPORT_HENLEY_METHODOLOGY"
             ],
-            "notes": "Henley-style access score combining destinations available without a prior visa, including visa on arrival. It is not a pure visa-free-only count."
+            "notes": "The recorded 87 is a combined access score, now stored in mobility_score. A separate strictly visa-free-only count for the same research snapshot was not established; no breakdown is inferred by subtraction. Henley-style access score combining destinations available without a prior visa, including visa on arrival. It is not a pure visa-free-only count."
           },
           "visa_required_destinations": {
             "value": null,
@@ -213939,7 +214695,16 @@
             ],
             "notes": "The current source combines visa-free and visa-on-arrival access into 87 and does not provide a reliable separate VOA/eTA subtotal."
           },
-          "notes": "Vanuatu lost UK visa-free access in 2023 and Schengen visa exemption was permanently revoked by the EU in December 2024. The current combined access score is therefore materially below older records."
+          "notes": "Vanuatu lost UK visa-free access in 2023 and Schengen visa exemption was permanently revoked by the EU in December 2024. The current combined access score is therefore materially below older records.",
+          "mobility_score": {
+            "value": 87,
+            "source_ids": [
+              "VU_23",
+              "VU_24",
+              "PASSPORT_HENLEY_METHODOLOGY"
+            ],
+            "notes": "Combined access score retained from the original dated research; it is not a strictly visa-free-only count. Henley-style access score combining destinations available without a prior visa, including visa on arrival. It is not a pure visa-free-only count."
+          }
         },
         "languages": {
           "official_languages": [
@@ -214331,6 +215096,14 @@
             "publisher": "WageIndicator Foundation",
             "source_type": "reputable_secondary",
             "accessed_at": "2026-08-15"
+          },
+          {
+            "id": "PASSPORT_HENLEY_METHODOLOGY",
+            "title": "Henley Passport Index methodology — combined access score",
+            "url": "https://www.henleyglobal.com/passport-index/methodology",
+            "publisher": "Henley & Partners",
+            "source_type": "passport_index",
+            "accessed_at": "2026-09-25"
           }
         ],
         "settlement_track": {

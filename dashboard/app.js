@@ -565,8 +565,10 @@ function renderDetails(visibleRows) {
       <h3>PASSPORT AND LANGUAGES</h3>
       <p class="explain">Passport values come from the captured passport index source; language values are official languages, not a guarantee of practical English support.</p>
       <ul class="detail-list">
-        <li>RANK: ${formatNullable(numberValue(data.passport?.rank), (value) => `#${value}`)}</li>
-        <li>VISA-FREE: ${formatNullable(numberValue(data.passport?.visa_free_destinations), (value) => `${value} DESTINATIONS`)}</li>
+        <li>INDEX: ${escapeHtml(data.passport?.index_name ?? "NOT RECORDED")}</li>
+        <li>RANK: ${formatSourcedInline(data.passport?.rank, (value) => `#${value}`)}</li>
+        ${data.passport?.mobility_score ? `<li>ACCESS SCORE (COMBINED): ${formatRecordedPeriod(data.passport.mobility_score, "DESTINATIONS")}</li>` : ""}
+        <li>STRICTLY VISA-FREE: ${formatRecordedPeriod(data.passport?.visa_free_destinations, "DESTINATIONS")}</li>
         <li>LANGUAGES: ${escapeHtml((data.languages?.official_languages ?? []).join(", ") || "NOT FOUND")}</li>
         <li>PASSPORT NOTES: ${formatSourcedInline(data.passport?.notes)}</li>
       </ul>
